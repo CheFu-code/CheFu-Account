@@ -12,8 +12,8 @@ export function AccountPageClient() {
 
     if (account.isLoading) {
         return (
-            <section className="flex min-h-dvh items-center justify-center bg-[#202124] px-5 text-white">
-                <div className="flex items-center gap-3 rounded-lg border border-white/10 bg-[#2b2c2f] px-5 py-4 text-sm font-semibold shadow-sm">
+            <section className="flex min-h-dvh items-center justify-center bg-[#101216] px-5 text-white">
+                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-[#191b20] px-5 py-4 text-sm font-semibold shadow-2xl shadow-black/20">
                     <Loader2 className="size-4 animate-spin text-emerald-300" aria-hidden="true" />
                     Loading your CheFu Account
                 </div>
@@ -23,15 +23,15 @@ export function AccountPageClient() {
 
     if (!account.account) {
         return (
-            <section className="flex min-h-dvh items-center justify-center bg-[#202124] px-5 text-white">
-                <div className="max-w-md rounded-lg border border-white/10 bg-[#2b2c2f] p-6 text-center shadow-sm">
+            <section className="flex min-h-dvh items-center justify-center bg-[#101216] px-5 text-white">
+                <div className="max-w-md rounded-3xl border border-white/10 bg-[#191b20] p-6 text-center shadow-2xl shadow-black/20">
                     <h1 className="text-2xl font-semibold">Account unavailable</h1>
                     <p className="mt-2 text-sm leading-6 text-slate-300">
                         We could not load your CheFu Account session.
                     </p>
                     <Link
                         href="/login?returnTo=/account"
-                        className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-slate-200"
+                        className="mt-5 inline-flex items-center gap-2 rounded-full bg-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-200"
                     >
                         Sign in
                         <ArrowRight className="size-4" aria-hidden="true" />

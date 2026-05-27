@@ -20,31 +20,33 @@ export function SectionCard({
     title: string;
 }) {
     return (
-        <section className="rounded-lg border border-white/10 bg-[#2b2c2f] p-4 shadow-[0_12px_34px_rgba(0,0,0,0.2)] sm:p-5">
-            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div className="flex items-start gap-3">
-                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white/8 text-emerald-300">
-                        <Icon className="size-5" aria-hidden="true" />
-                    </span>
-                    <div>
-                        <h2 className="text-lg font-semibold tracking-normal text-white">
-                            {title}
-                        </h2>
-                        <p className="mt-1 text-sm leading-6 text-slate-400">
-                            {description}
-                        </p>
+        <section className="overflow-hidden rounded-3xl border border-white/10 bg-[#191b20]/95 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
+            <div className="border-b border-white/10 bg-white/[0.025] p-5 sm:p-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="flex items-start gap-3">
+                        <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-emerald-300/20 bg-emerald-300/10 text-emerald-200">
+                            <Icon className="size-5" aria-hidden="true" />
+                        </span>
+                        <div>
+                            <h2 className="text-xl font-semibold tracking-tight text-white">
+                                {title}
+                            </h2>
+                            <p className="mt-1 text-sm leading-6 text-slate-400">
+                                {description}
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {aside ? (
+                            <span className="rounded-full bg-white/8 px-3 py-1.5 text-xs font-semibold text-slate-200">
+                                {aside}
+                            </span>
+                        ) : null}
+                        {action}
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    {aside ? (
-                        <span className="rounded-full bg-white/8 px-3 py-1.5 text-xs font-semibold text-slate-200">
-                            {aside}
-                        </span>
-                    ) : null}
-                    {action}
-                </div>
             </div>
-            {children}
+            <div className="p-5 sm:p-6">{children}</div>
         </section>
     );
 }
@@ -62,7 +64,7 @@ export function QuickLink({
         <button
             type="button"
             onClick={onClick}
-            className="inline-flex items-center gap-2 rounded-full border border-white/16 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+            className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/[0.03] px-4 py-2 text-sm font-semibold text-white transition hover:border-emerald-200/30 hover:bg-white/10"
         >
             <Icon className="size-4" aria-hidden="true" />
             {label}
@@ -84,7 +86,9 @@ export function ActionRow({
     return (
         <div className="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">
-                <Icon className="mt-0.5 size-5 text-slate-400" aria-hidden="true" />
+                <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-white/[0.04] text-slate-300">
+                    <Icon className="size-4" aria-hidden="true" />
+                </span>
                 <div>
                     <p className="font-semibold text-white">{title}</p>
                     <p className="mt-1 text-sm leading-6 text-slate-400">{description}</p>
@@ -116,7 +120,7 @@ export function ToggleRow({
                 type="button"
                 onClick={onToggle}
                 className={`relative h-7 w-12 shrink-0 rounded-full transition ${
-                    checked ? "bg-emerald-400" : "bg-slate-600"
+                    checked ? "bg-emerald-400" : "bg-slate-700"
                 }`}
                 aria-pressed={checked}
             >
@@ -158,7 +162,7 @@ export function TextField({
                 max={max}
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
-                className="mt-2 h-11 w-full rounded-lg border border-white/10 bg-[#202124] px-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-300"
+                className="mt-2 h-12 w-full rounded-xl border border-white/10 bg-[#111318] px-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-300 focus:ring-4 focus:ring-emerald-300/10"
                 placeholder={placeholder}
             />
         </label>
@@ -175,7 +179,7 @@ export function LockedInfo({
     value: string;
 }) {
     return (
-        <div className="rounded-lg border border-white/10 bg-[#202124] p-4">
+        <div className="rounded-2xl border border-white/10 bg-[#111318] p-4">
             <div className="flex items-start gap-3">
                 <LockKeyhole className="mt-0.5 size-4 text-slate-400" aria-hidden="true" />
                 <div className="min-w-0">
@@ -205,7 +209,7 @@ export function SelectField({
             <select
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
-                className="mt-2 h-11 w-full rounded-lg border border-white/10 bg-[#202124] px-4 text-sm text-white outline-none transition focus:border-emerald-300"
+                className="mt-2 h-12 w-full rounded-xl border border-white/10 bg-[#111318] px-4 text-sm text-white outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-300/10"
             >
                 {options.map((option) => (
                     <option key={option} value={option}>
@@ -222,7 +226,7 @@ export function SaveButton({ isSaving, label }: { isSaving: boolean; label: stri
         <button
             type="submit"
             disabled={isSaving}
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-200 disabled:opacity-60"
         >
             {isSaving ? (
                 <Loader2 className="size-4 animate-spin" aria-hidden="true" />

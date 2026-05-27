@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleHelp, Grid3X3, Loader2, LogOut } from "lucide-react";
+import { CircleHelp, Grid3X3, Loader2, LogOut, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { navItems } from "./account-data";
@@ -20,25 +20,33 @@ export function AccountFrame({
     onSelectSection,
     onSignOut,
 }: AccountFrameProps) {
+    const activeItem = navItems.find((item) => item.id === activeSection) ?? navItems[0];
+
     return (
-        <section className="min-h-dvh bg-[#202124] text-white">
-            <header className="sticky top-0 z-30 border-b border-white/8 bg-[#2b2c2f]/95 backdrop-blur">
-                <div className="flex h-16 items-center justify-between gap-4 px-5 lg:px-9">
-                    <Link href="/account" className="text-2xl font-medium tracking-normal text-white">
-                        CheFu <span className="text-emerald-300">Account</span>
+        <section className="min-h-dvh bg-[#101216] text-white">
+            <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(52,211,153,0.14),transparent_34%),radial-gradient(circle_at_80%_20%,rgba(56,189,248,0.12),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.03),transparent_30%)]" />
+            <header className="sticky top-0 z-30 border-b border-white/10 bg-[#111318]/85 backdrop-blur-xl">
+                <div className="flex h-[68px] items-center justify-between gap-4 px-5 lg:px-9">
+                    <Link href="/account" className="flex items-center gap-3 text-xl font-semibold tracking-tight text-white">
+                        <span className="flex size-10 items-center justify-center rounded-2xl border border-emerald-300/20 bg-emerald-300/10 text-emerald-200">
+                            <ShieldCheck className="size-5" aria-hidden="true" />
+                        </span>
+                        <span>
+                            CheFu <span className="text-emerald-300">Account</span>
+                        </span>
                     </Link>
                     <div className="flex items-center gap-3">
                         <Link
                             href="https://chefuinc.com/contact"
-                            className="hidden size-10 items-center justify-center rounded-full text-slate-200 transition hover:bg-white/10 sm:flex"
+                            className="hidden size-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-slate-200 transition hover:bg-white/10 sm:flex"
                             aria-label="Help"
                         >
                             <CircleHelp className="size-5" aria-hidden="true" />
                         </Link>
                         <Link
-                            href="https://chefuinc.com#portfolio"
-                            className="hidden size-10 items-center justify-center rounded-full text-slate-200 transition hover:bg-white/10 sm:flex"
-                            aria-label="CheFu apps"
+                            href="https://chefuinc.com/portfolio"
+                            className="hidden size-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-slate-200 transition hover:bg-white/10 sm:flex"
+                            aria-label="CheFu Apps"
                         >
                             <Grid3X3 className="size-5" aria-hidden="true" />
                         </Link>
@@ -46,7 +54,7 @@ export function AccountFrame({
                             type="button"
                             onClick={onSignOut}
                             disabled={isSigningOut}
-                            className="inline-flex items-center gap-2 rounded-full border border-white/12 px-3 py-2 text-sm font-semibold text-slate-100 transition hover:bg-white/10 disabled:opacity-60"
+                            className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.03] px-3 py-2 text-sm font-semibold text-slate-100 transition hover:bg-white/10 disabled:opacity-60"
                         >
                             {isSigningOut ? (
                                 <Loader2 className="size-4 animate-spin" aria-hidden="true" />
@@ -59,9 +67,18 @@ export function AccountFrame({
                 </div>
             </header>
 
-            <div className="mx-auto grid w-full max-w-[1480px] gap-6 px-4 py-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:px-8">
+            <div className="relative mx-auto grid w-full max-w-[1480px] gap-6 px-4 py-6 lg:grid-cols-[310px_minmax(0,1fr)] lg:px-8">
                 <aside className="hidden lg:block">
-                    <nav className="sticky top-24 space-y-3" aria-label="Account sections">
+                    <nav className="sticky top-24 overflow-hidden rounded-3xl border border-white/10 bg-[#191b20]/80 p-3 shadow-2xl shadow-black/20" aria-label="Account sections">
+                        <div className="mb-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200">
+                                Manage
+                            </p>
+                            <h2 className="mt-2 text-lg font-semibold text-white">{activeItem.label}</h2>
+                            <p className="mt-1 text-sm leading-5 text-slate-400">
+                                {activeItem.description}
+                            </p>
+                        </div>
                         {navItems.map((item) => (
                             <NavButton
                                 key={item.id}
@@ -82,8 +99,8 @@ export function AccountFrame({
                                 onClick={() => onSelectSection(item.id)}
                                 className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold text-slate-100 ${
                                     activeSection === item.id
-                                        ? "border-white/30 bg-white/10"
-                                        : "border-white/12"
+                                        ? "border-emerald-200/30 bg-emerald-300/10"
+                                        : "border-white/12 bg-white/[0.03]"
                                 }`}
                                 aria-current={activeSection === item.id ? "page" : undefined}
                             >
@@ -114,15 +131,18 @@ function NavButton({
         <button
             type="button"
             onClick={onClick}
-            className={`flex w-full items-center gap-3 rounded-full px-3 py-3 text-left transition hover:bg-white/10 ${
-                active ? "bg-white/10" : ""
+            className={`group flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition hover:bg-white/10 ${
+                active ? "bg-emerald-300/10 ring-1 ring-emerald-200/20" : ""
             }`}
             aria-current={active ? "page" : undefined}
         >
-            <span className={`flex size-12 shrink-0 items-center justify-center rounded-full ${item.color}`}>
+            <span className={`flex size-11 shrink-0 items-center justify-center rounded-2xl ${item.color}`}>
                 <item.icon className="size-6" aria-hidden="true" />
             </span>
-            <span className="text-base font-semibold text-white">{item.label}</span>
+            <span className="min-w-0">
+                <span className="block truncate text-sm font-semibold text-white">{item.label}</span>
+                <span className="block truncate text-xs text-slate-400">{item.description}</span>
+            </span>
         </button>
     );
 }

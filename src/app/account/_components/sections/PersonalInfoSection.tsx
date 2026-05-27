@@ -9,10 +9,8 @@ export function PersonalInfoSection({
     account,
     bio,
     isSaving,
-    language,
     name,
     setBio,
-    setLanguage,
     setName,
 }: AccountSettingsFormProps) {
     return (
@@ -36,24 +34,11 @@ export function PersonalInfoSection({
                     placeholder="Short profile description"
                     wide
                 />
-                <TextField
-                    label="Language"
-                    value={language}
-                    onChange={setLanguage}
-                    placeholder="en"
-                />
                 <LockedInfo
                     label="Detected country"
                     value={detectedCountryLabel(account.profile)}
                     description={detectedCountryDescription(account.profile)}
                 />
-                {account.profile.country || account.profile.countryCode ? (
-                    <LockedInfo
-                        label="Existing Academy country"
-                        value={legacyCountryLabel(account.profile)}
-                        description="Kept only for compatibility. New country checks use the server-detected country."
-                    />
-                ) : null}
             </div>
         </SectionCard>
     );
@@ -70,9 +55,5 @@ function detectedCountryDescription(profile: AccountProfile) {
         return "Sign in through the live site so the server can detect this from trusted request headers.";
     }
 
-    return `Detected by the server${source ? ` through ${source}` : ""}. Users cannot edit this value.`;
-}
-
-function legacyCountryLabel(profile: AccountProfile) {
-    return [profile.country, profile.countryCode].filter(Boolean).join(" / ");
+    return `Detected by the server${source ? ` through ${source}` : ""}.`;
 }

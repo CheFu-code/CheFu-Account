@@ -14,7 +14,7 @@ html {
 
 body {
     margin: 0;
-    background: #202124;
+    background: #101216;
     color: #fff;
     font-family:
         Arial,
@@ -31,4 +31,23 @@ textarea {
 
 ::selection {
     background: rgba(110, 231, 183, 0.32);
+}
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+}
+
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.35);
+    border-radius: 999px;
 }

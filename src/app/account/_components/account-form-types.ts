@@ -16,7 +16,7 @@ export type AccountSettingsFormProps = {
     emailPreferences: EmailPreferences;
     isSaving: boolean;
     isSendingReset: boolean;
-    language: string;
+    language?: string;
     learningGoal: string;
     learningInterestsInput: string;
     lessonStyle: AccountProfile["lessonStyle"];
@@ -39,7 +39,7 @@ export type AccountSettingsFormProps = {
     privacy: PrivacyPreferences;
     securityEmailsEnabled: boolean;
     setBio: (value: string) => void;
-    setLanguage: (value: string) => void;
+    setLanguage?: (value: string) => void;
     setLearningGoal: (value: string) => void;
     setName: (value: string) => void;
     setSecurityEmailsEnabled: Dispatch<SetStateAction<boolean>>;
