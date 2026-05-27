@@ -1,6 +1,7 @@
 "use client";
 
-import { CircleHelp, Grid3X3, Loader2, LogOut, ShieldCheck } from "lucide-react";
+import { CheFuUserDropdown, type CheFuUserDropdownUser } from "@chefu/ui";
+import { CircleHelp, Grid3X3, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { navItems } from "./account-data";
@@ -11,6 +12,7 @@ type AccountFrameProps = {
     isSigningOut: boolean;
     onSelectSection: (id: string) => void;
     onSignOut: () => void;
+    user: CheFuUserDropdownUser;
 };
 
 export function AccountFrame({
@@ -19,6 +21,7 @@ export function AccountFrame({
     isSigningOut,
     onSelectSection,
     onSignOut,
+    user,
 }: AccountFrameProps) {
     const activeItem = navItems.find((item) => item.id === activeSection) ?? navItems[0];
 
@@ -50,19 +53,13 @@ export function AccountFrame({
                         >
                             <Grid3X3 className="size-5" aria-hidden="true" />
                         </Link>
-                        <button
-                            type="button"
-                            onClick={onSignOut}
-                            disabled={isSigningOut}
-                            className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.03] px-3 py-2 text-sm font-semibold text-slate-100 transition hover:bg-white/10 disabled:opacity-60"
-                        >
-                            {isSigningOut ? (
-                                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                            ) : (
-                                <LogOut className="size-4" aria-hidden="true" />
-                            )}
-                            Sign out
-                        </button>
+                        <CheFuUserDropdown
+                            onSignOut={onSignOut}
+                            pendingSignOut={isSigningOut}
+                            triggerClassName="rounded-full border-white/12 bg-white/[0.03]"
+                            user={user}
+                            variant="cyan"
+                        />
                     </div>
                 </div>
             </header>
