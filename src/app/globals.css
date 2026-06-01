@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@source "../../node_modules/@chefu/ui/dist";
+@source "../../node_modules/chefu-ui/dist";
 
 :root {
     color-scheme: dark;

@@ -1,6 +1,6 @@
 "use client";
 
-import { CheFuUserDropdown, type CheFuUserDropdownUser } from "@chefu/ui";
+import { CheFuUserDropdown, type CheFuUserDropdownUser } from "chefu-ui";
 import { CircleHelp, Grid3X3, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
