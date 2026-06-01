@@ -8,7 +8,8 @@
     "build": "next build",
     "typecheck": "tsc --noEmit",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "smoke": "node scripts/smoke-routes.mjs"
   },
   "dependencies": {
     "chefu-ui": "^0.1.0",
