@@ -87,7 +87,7 @@ export function AccountAuthScreen({
                                 </h1>
                                 <p className="mt-4 max-w-md text-base leading-7 text-slate-300">
                                     Continue to {appName} with the same identity you use
-                                    across CheFu Academy, Flow, Muzalo, and Quantum.
+                                    across CheFu Ecosystem.
                                 </p>
                             </div>
                         </div>
