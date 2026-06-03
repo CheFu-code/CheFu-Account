@@ -4,13 +4,18 @@ import { signOut } from "firebase/auth";
 import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { auth } from "../../lib/firebase";
-import { clearChefuAccountSession, safeReturnTo } from "../../lib/chefu-account";
+import {
+    clearChefuAccountSession,
+    resolveChefuApp,
+    safeReturnTo,
+} from "../../lib/chefu-account";
 
 export function LogoutClient() {
     const searchParams = useSearchParams();
 
     useEffect(() => {
-        const returnTo = safeReturnTo(searchParams.get("returnTo"), "/login");
+        const appId = resolveChefuApp(searchParams.get("app"));
+        const returnTo = safeReturnTo(searchParams.get("returnTo"), appId, "/login");
 
         Promise.allSettled([clearChefuAccountSession(), signOut(auth)]).finally(() => {
             window.location.replace(returnTo);

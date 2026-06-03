@@ -27,6 +27,7 @@ export function LoginClient() {
     const appName = chefuAppLabel(appId);
     const fromPath = safeReturnTo(
         searchParams.get("returnTo") || searchParams.get("next"),
+        appId,
         "/account",
     );
     const registerHref = useMemo(

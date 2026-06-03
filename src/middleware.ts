@@ -1,6 +1,29 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { validateAuthRedirectParams } from "./lib/redirect-policy";
+
+const AUTH_REDIRECT_PATHS = new Set([
+    "/forgot-password",
+    "/login",
+    "/logout",
+    "/register",
+]);
 
 export function middleware(request: NextRequest) {
+    if (AUTH_REDIRECT_PATHS.has(request.nextUrl.pathname)) {
+        const redirectValidation = validateAuthRedirectParams(request.nextUrl.searchParams);
+
+        if (redirectValidation && !redirectValidation.ok) {
+            return NextResponse.json(
+                {
+                    error: "invalid_return_to",
+                    message: redirectValidation.message,
+                    reason: redirectValidation.reason,
+                },
+                { status: 400 },
+            );
+        }
+    }
+
     const response = NextResponse.next();
     response.headers.set(
         "x-request-id",

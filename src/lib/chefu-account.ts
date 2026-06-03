@@ -1,30 +1,12 @@
-export type ChefuAppId = "academy" | "admin" | "flow" | "muzalo" | "quantum";
+import {
+    resolveChefuAppId,
+    validateReturnToForApp,
+    type ChefuAppId,
+} from "./redirect-policy";
+
+export type { ChefuAppId };
 
 const CHEFU_APP_HEADER = "x-chefu-app";
-
-const DEFAULT_ALLOWED_RETURN_ORIGINS = [
-    "https://api.chefuinc.com",
-    "https://chefuinc.com",
-    "https://myaccount.chefuinc.com",
-    "https://academy.chefuinc.com",
-    "https://flow.chefuinc.com",
-    "https://internal.chefuinc.com",
-    "https://music.chefuinc.com",
-    "https://muzalo.chefuinc.com",
-    "https://quantum.chefuinc.com",
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "http://localhost:3002",
-    "http://localhost:3003",
-    "http://localhost:3004",
-    "http://localhost:4000",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:3001",
-    "http://127.0.0.1:3002",
-    "http://127.0.0.1:3003",
-    "http://127.0.0.1:3004",
-    "http://127.0.0.1:4000",
-];
 
 const appLabels: Record<ChefuAppId, string> = {
     academy: "CheFu Academy",
@@ -50,89 +32,41 @@ export function accountAppUrl(path = "/account") {
 }
 
 export function resolveChefuApp(value?: string | null): ChefuAppId {
-    const normalized = value?.trim().toLowerCase();
-
-    if (normalized === "admin" || normalized === "internal") return "admin";
-    if (normalized === "flow") return "flow";
-    if (normalized === "muzalo" || normalized === "music") return "muzalo";
-    if (normalized === "quantum") return "quantum";
-    return "academy";
+    return resolveChefuAppId(value);
 }
 
 export function chefuAppLabel(appId: ChefuAppId) {
     return appLabels[appId];
 }
 
-export function safeReturnTo(value?: string | null, fallback = "/account") {
-    if (!value) return fallback;
+export function safeReturnTo(value?: string | null, fallback?: string): string;
+export function safeReturnTo(
+    value: string | null | undefined,
+    appId: ChefuAppId,
+    fallback?: string,
+): string;
+export function safeReturnTo(
+    value?: string | null,
+    appIdOrFallback: ChefuAppId | string = "academy",
+    fallback = "/account",
+) {
+    const appId = isChefuAppId(appIdOrFallback) ? appIdOrFallback : "academy";
+    const fallbackTarget = isChefuAppId(appIdOrFallback)
+        ? fallback
+        : appIdOrFallback;
+    const result = validateReturnToForApp(value, appId);
 
-    if (isSafeRelativePath(value)) return value;
-
-    try {
-        const url = new URL(value);
-
-        if (isAllowedReturnUrl(url)) {
-            return url.toString();
-        }
-    } catch {
-        return fallback;
-    }
-
-    return fallback;
+    return result.ok ? result.target : fallbackTarget;
 }
 
-function isSafeRelativePath(value: string) {
+function isChefuAppId(value: string): value is ChefuAppId {
     return (
-        value.startsWith("/") &&
-        !value.startsWith("//") &&
-        !value.startsWith("/\\") &&
-        !hasUnsafePathCharacters(value)
+        value === "academy" ||
+        value === "admin" ||
+        value === "flow" ||
+        value === "muzalo" ||
+        value === "quantum"
     );
-}
-
-function hasUnsafePathCharacters(value: string) {
-    return Array.from(value).some(
-        character => character === "\\" || character.charCodeAt(0) < 0x20,
-    );
-}
-
-function isAllowedReturnUrl(url: URL) {
-    if (url.username || url.password || url.hash) return false;
-    if (url.protocol !== "https:" && !isLocalDevOrigin(url)) return false;
-
-    return allowedReturnOrigins().has(url.origin);
-}
-
-function isLocalDevOrigin(url: URL) {
-    return (
-        url.protocol === "http:" &&
-        (url.hostname === "localhost" || url.hostname === "127.0.0.1")
-    );
-}
-
-function allowedReturnOrigins() {
-    const configuredOrigins =
-        process.env.NEXT_PUBLIC_ALLOWED_RETURN_ORIGINS?.split(",") || [];
-    const runtimeOrigins = [
-        process.env.NEXT_PUBLIC_API_BASE_URL,
-        process.env.NEXT_PUBLIC_ACCOUNT_APP_URL,
-    ];
-
-    return new Set(
-        [...DEFAULT_ALLOWED_RETURN_ORIGINS, ...runtimeOrigins, ...configuredOrigins]
-            .map(origin => normalizeOrigin(origin))
-            .filter((origin): origin is string => Boolean(origin)),
-    );
-}
-
-function normalizeOrigin(value?: string) {
-    if (!value) return null;
-
-    try {
-        return new URL(value).origin;
-    } catch {
-        return null;
-    }
 }
 
 export function preserveAuthParams(
