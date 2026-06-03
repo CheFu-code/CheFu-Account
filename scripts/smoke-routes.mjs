@@ -1,5 +1,5 @@
 const baseUrl = process.env.SMOKE_BASE_URL;
-const routes = ["/", "/login"];
+const routes = ["/", "/login", "/forgot-password"];
 
 if (!baseUrl) {
     console.log("SMOKE_BASE_URL is not set; skipping smoke checks.");

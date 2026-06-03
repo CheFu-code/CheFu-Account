@@ -136,7 +136,7 @@ function normalizeOrigin(value?: string) {
 }
 
 export function preserveAuthParams(
-    path: "/login" | "/register",
+    path: "/login" | "/register" | "/forgot-password",
     params: URLSearchParams,
 ) {
     const nextParams = new URLSearchParams();

@@ -4,6 +4,7 @@ import {
     ArrowRight,
     Building2,
     ChevronRight,
+    KeyRound,
     Loader2,
     Lock,
     Mail,
@@ -12,17 +13,34 @@ import {
 import Link from "next/link";
 import type { FormEvent } from "react";
 
-type AccountAuthScreenProps = {
+type AccountAuthBaseProps = {
     alternateHref: string;
     appName: string;
     email: string;
     isSubmitting: boolean;
-    mode: "login" | "register";
     onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-    password: string;
     setEmail: (email: string) => void;
-    setPassword: (password: string) => void;
 };
+
+type AccountAuthScreenProps =
+    | (AccountAuthBaseProps & {
+          forgotPasswordHref: string;
+          mode: "login";
+          password: string;
+          setPassword: (password: string) => void;
+      })
+    | (AccountAuthBaseProps & {
+          forgotPasswordHref?: never;
+          mode: "register";
+          password: string;
+          setPassword: (password: string) => void;
+      })
+    | (AccountAuthBaseProps & {
+          forgotPasswordHref?: never;
+          mode: "forgot-password";
+          password?: never;
+          setPassword?: never;
+      });
 
 const modeCopy = {
     login: {
@@ -32,6 +50,7 @@ const modeCopy = {
         heading: "Sign in",
         passwordAutoComplete: "current-password",
         passwordHelp: "",
+        supporting: "",
         submitting: "Signing in...",
     },
     register: {
@@ -41,21 +60,25 @@ const modeCopy = {
         heading: "Create your CheFu Account",
         passwordAutoComplete: "new-password",
         passwordHelp: "Use at least 6 characters.",
+        supporting: "",
         submitting: "Creating account...",
+    },
+    "forgot-password": {
+        alternateAction: "Back to sign in",
+        alternateLead: "Remember your password?",
+        buttonIdle: "Send reset email",
+        heading: "Reset your password",
+        passwordAutoComplete: "off",
+        passwordHelp: "",
+        supporting:
+            "Enter the email for your CheFu Account and we will send a secure reset link.",
+        submitting: "Sending reset email...",
     },
 } as const;
 
-export function AccountAuthScreen({
-    alternateHref,
-    appName,
-    email,
-    isSubmitting,
-    mode,
-    onSubmit,
-    password,
-    setEmail,
-    setPassword,
-}: AccountAuthScreenProps) {
+export function AccountAuthScreen(props: AccountAuthScreenProps) {
+    const { alternateHref, appName, email, isSubmitting, mode, onSubmit, setEmail } =
+        props;
     const copy = modeCopy[mode];
 
     return (
@@ -102,6 +125,11 @@ export function AccountAuthScreen({
                             <h2 className="mt-5 text-3xl font-semibold tracking-normal text-slate-950 sm:text-4xl">
                                 {copy.heading}
                             </h2>
+                            {copy.supporting ? (
+                                <p className="mt-3 text-sm leading-6 text-slate-600">
+                                    {copy.supporting}
+                                </p>
+                            ) : null}
 
                             <form onSubmit={onSubmit} className="mt-6 space-y-4">
                                 <label className="block space-y-2" htmlFor="email">
@@ -123,30 +151,45 @@ export function AccountAuthScreen({
                                     </span>
                                 </label>
 
-                                <label className="block space-y-2" htmlFor="password">
-                                    <span className="flex items-center justify-between gap-3">
-                                        <span className="text-sm font-semibold text-slate-800">
-                                            Password
-                                        </span>
-                                        {copy.passwordHelp ? (
-                                            <span className="text-xs font-medium text-slate-500">
-                                                {copy.passwordHelp}
+                                {mode !== "forgot-password" ? (
+                                    <label className="block space-y-2" htmlFor="password">
+                                        <span className="flex items-center justify-between gap-3">
+                                            <span className="text-sm font-semibold text-slate-800">
+                                                Password
                                             </span>
-                                        ) : null}
-                                    </span>
-                                    <span className="relative block">
-                                        <Lock className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-                                        <input
-                                            id="password"
-                                            type="password"
-                                            value={password}
-                                            onChange={(event) => setPassword(event.target.value)}
-                                            placeholder="Your password"
-                                            className="h-12 w-full rounded-md border border-slate-300 bg-white pl-10 pr-3 text-slate-950 shadow-sm outline-none placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20"
-                                            autoComplete={copy.passwordAutoComplete}
-                                        />
-                                    </span>
-                                </label>
+                                            {mode === "login" ? (
+                                                <Link
+                                                    href={props.forgotPasswordHref}
+                                                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 transition hover:text-emerald-900"
+                                                >
+                                                    <KeyRound
+                                                        className="size-3.5"
+                                                        aria-hidden="true"
+                                                    />
+                                                    Forgot password?
+                                                </Link>
+                                            ) : copy.passwordHelp ? (
+                                                <span className="text-xs font-medium text-slate-500">
+                                                    {copy.passwordHelp}
+                                                </span>
+                                            ) : null}
+                                        </span>
+                                        <span className="relative block">
+                                            <Lock className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+                                            <input
+                                                id="password"
+                                                type="password"
+                                                value={props.password}
+                                                onChange={(event) =>
+                                                    props.setPassword(event.target.value)
+                                                }
+                                                placeholder="Your password"
+                                                className="h-12 w-full rounded-md border border-slate-300 bg-white pl-10 pr-3 text-slate-950 shadow-sm outline-none placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20"
+                                                autoComplete={copy.passwordAutoComplete}
+                                            />
+                                        </span>
+                                    </label>
+                                ) : null}
 
                                 <button
                                     type="submit"

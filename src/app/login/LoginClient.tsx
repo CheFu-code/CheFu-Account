@@ -33,6 +33,14 @@ export function LoginClient() {
         () => preserveAuthParams("/register", new URLSearchParams(searchParams.toString())),
         [searchParams],
     );
+    const forgotPasswordHref = useMemo(
+        () =>
+            preserveAuthParams(
+                "/forgot-password",
+                new URLSearchParams(searchParams.toString()),
+            ),
+        [searchParams],
+    );
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -96,6 +104,7 @@ export function LoginClient() {
             alternateHref={registerHref}
             appName={appName}
             email={email}
+            forgotPasswordHref={forgotPasswordHref}
             isSubmitting={isSubmitting}
             mode="login"
             onSubmit={onSubmit}
