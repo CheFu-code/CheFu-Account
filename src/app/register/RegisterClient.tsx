@@ -1,7 +1,7 @@
 "use client";
 
 import { FirebaseError } from "firebase/app";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, signOut } from "firebase/auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState, type FormEvent } from "react";
 import { toast } from "sonner";
@@ -43,14 +43,25 @@ export function RegisterClient() {
 
         setIsSubmitting(true);
 
+        let registered = false;
+
         try {
             const credential = await createUserWithEmailAndPassword(auth, email, password);
+            registered = true;
             const idToken = await credential.user.getIdToken(true);
             await syncChefuAccountSession(idToken, appId);
             toast.success(`CheFu Account created for ${appName}.`);
             completeAuthRedirect(fromPath, router.replace);
         } catch (error) {
-            toast.error(readFirebaseRegisterError(error));
+            if (registered) {
+                await signOut(auth).catch(() => undefined);
+                toast.error(`Unable to continue to ${appName}.`, {
+                    description:
+                        error instanceof Error ? error.message : "Please sign in again.",
+                });
+            } else {
+                toast.error(readFirebaseRegisterError(error));
+            }
         } finally {
             setIsSubmitting(false);
         }

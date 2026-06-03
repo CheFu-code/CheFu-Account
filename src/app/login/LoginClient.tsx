@@ -1,7 +1,7 @@
 "use client";
 
 import { FirebaseError } from "firebase/app";
-import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { toast } from "sonner";
@@ -43,8 +43,9 @@ export function LoginClient() {
             user.getIdToken(true)
                 .then((idToken) => syncChefuAccountSession(idToken, appId))
                 .then(() => completeAuthRedirect(fromPath, router.replace))
-                .catch((error) => {
-                    toast.error("Unable to continue your CheFu Account session.", {
+                .catch(async (error) => {
+                    await signOut(auth).catch(() => undefined);
+                    toast.error(`Unable to continue to ${appName}.`, {
                         description:
                             error instanceof Error ? error.message : "Please sign in again.",
                     });
@@ -53,7 +54,7 @@ export function LoginClient() {
         });
 
         return () => unsubscribe();
-    }, [appId, fromPath, isSubmitting, router]);
+    }, [appId, appName, fromPath, isSubmitting, router]);
 
     const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -65,14 +66,26 @@ export function LoginClient() {
 
         setIsSubmitting(true);
 
+        let signedIn = false;
+
         try {
             const credential = await signInWithEmailAndPassword(auth, email, password);
+            signedIn = true;
             const idToken = await credential.user.getIdToken(true);
             await syncChefuAccountSession(idToken, appId);
             toast.success(`Signed in to ${appName}.`);
             completeAuthRedirect(fromPath, router.replace);
         } catch (error) {
-            toast.error(readFirebaseLoginError(error));
+            if (signedIn) {
+                attemptedExistingSession.current = true;
+                await signOut(auth).catch(() => undefined);
+                toast.error(`Unable to continue to ${appName}.`, {
+                    description:
+                        error instanceof Error ? error.message : "Please sign in again.",
+                });
+            } else {
+                toast.error(readFirebaseLoginError(error));
+            }
         } finally {
             setIsSubmitting(false);
         }
