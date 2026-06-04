@@ -45,7 +45,7 @@ const CHEFU_APP_RETURN_TO_POLICY: Record<ChefuAppId, AppRedirectPolicy> = {
             "http://localhost:3000",
             "http://127.0.0.1:3000",
         ],
-        oauthClientIds: ["chefu-academy-web", "chefu-inc-web"],
+        oauthClientIds: ["chefu-academy-mobile", "chefu-academy-web", "chefu-inc-web"],
     },
     admin: {
         allowedOrigins: [
@@ -95,6 +95,10 @@ const OAUTH_CLIENT_RETURN_TO_POLICY: Record<string, OauthClientRedirectPolicy> =
             "https://academy.chefuinc.com/auth/callback",
             "http://localhost:3000/auth/callback",
         ],
+    },
+    "chefu-academy-mobile": {
+        appId: "academy",
+        redirectUris: ["chefu-academy://auth/sso"],
     },
     "chefu-admin-web": {
         appId: "admin",
