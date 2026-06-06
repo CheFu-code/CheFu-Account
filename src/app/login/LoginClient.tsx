@@ -9,6 +9,7 @@ import { AccountAuthScreen } from "../_components/AccountAuthScreen";
 import { auth } from "../../lib/firebase";
 import {
     chefuAppLabel,
+    clearChefuAccountSession,
     preserveAuthParams,
     resolveChefuApp,
     safeReturnTo,
@@ -22,9 +23,11 @@ export function LoginClient() {
     const [password, setPassword] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const attemptedExistingSession = useRef(false);
+    const clearedFreshLogin = useRef(false);
 
     const appId = resolveChefuApp(searchParams.get("app"));
     const appName = chefuAppLabel(appId);
+    const forceFreshLogin = searchParams.get("prompt") === "login";
     const fromPath = safeReturnTo(
         searchParams.get("returnTo") || searchParams.get("next"),
         appId,
@@ -44,8 +47,30 @@ export function LoginClient() {
     );
 
     useEffect(() => {
+        if (!forceFreshLogin || clearedFreshLogin.current) return;
+
+        clearedFreshLogin.current = true;
+        attemptedExistingSession.current = true;
+        setIsSubmitting(true);
+
+        Promise.allSettled([
+            clearChefuAccountSession(false),
+            signOut(auth),
+        ]).finally(() => {
+            setIsSubmitting(false);
+        });
+    }, [forceFreshLogin]);
+
+    useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (!user || isSubmitting || attemptedExistingSession.current) return;
+            if (
+                !user ||
+                isSubmitting ||
+                attemptedExistingSession.current ||
+                (forceFreshLogin && !clearedFreshLogin.current)
+            ) {
+                return;
+            }
 
             attemptedExistingSession.current = true;
             setIsSubmitting(true);
@@ -63,7 +88,7 @@ export function LoginClient() {
         });
 
         return () => unsubscribe();
-    }, [appId, appName, fromPath, isSubmitting, router]);
+    }, [appId, appName, forceFreshLogin, fromPath, isSubmitting, router]);
 
     const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
