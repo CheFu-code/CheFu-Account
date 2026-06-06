@@ -1,7 +1,7 @@
 "use client";
 
 import { sendPasswordResetEmail, signOut, updateProfile } from "firebase/auth";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import {
@@ -21,6 +21,8 @@ import { auth } from "../../../lib/firebase";
 
 export function useAccountController() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const sectionParam = searchParams.get("section");
     const [account, setAccount] = useState<AccountResponse | null>(null);
     const [name, setName] = useState("");
     const [bio, setBio] = useState("");
@@ -45,7 +47,9 @@ export function useAccountController() {
     const [learningInterestsInput, setLearningInterestsInput] = useState("");
     const [securityEmailsEnabled, setSecurityEmailsEnabled] = useState(true);
     const [accountSearch, setAccountSearch] = useState("");
-    const [activeSection, setActiveSection] = useState("home");
+    const [activeSection, setActiveSection] = useState(() =>
+        resolveAccountSection(sectionParam),
+    );
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isSendingReset, setIsSendingReset] = useState(false);
@@ -62,7 +66,9 @@ export function useAccountController() {
                 });
 
                 if (response.status === 401) {
-                    router.replace("/login?returnTo=/account");
+                    router.replace(
+                        `/login?returnTo=${encodeURIComponent(getCurrentAccountPath())}`,
+                    );
                     return;
                 }
 
@@ -87,6 +93,11 @@ export function useAccountController() {
             cancelled = true;
         };
     }, [router]);
+
+    useEffect(() => {
+        if (!sectionParam) return;
+        setActiveSection(resolveAccountSection(sectionParam));
+    }, [sectionParam]);
 
     const initials = useMemo(() => {
         const label = name || account?.user.email || "CheFu Account";
@@ -301,4 +312,13 @@ export function useAccountController() {
         skillLevel,
         weeklyLearningGoal,
     };
+}
+
+function resolveAccountSection(value: string | null) {
+    return value && navItems.some((item) => item.id === value) ? value : "home";
+}
+
+function getCurrentAccountPath() {
+    if (typeof window === "undefined") return "/account";
+    return `${window.location.pathname}${window.location.search}`;
 }
