@@ -10,13 +10,22 @@ import {
     ShieldCheck,
     Smartphone,
 } from "lucide-react";
-import { sendEmailVerification } from "firebase/auth";
-import { useEffect, useState } from "react";
+import QRCode from "qrcode";
+import { FirebaseError } from "firebase/app";
+import {
+    multiFactor,
+    sendEmailVerification,
+    TotpMultiFactorGenerator,
+    type TotpSecret,
+} from "firebase/auth";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { toast } from "sonner";
+import { useFirebaseAuthState } from "@/hooks/useFirebaseAuthState";
 import { ActionRow, SectionCard } from "../AccountControls";
 import type { AccountSettingsFormProps } from "../account-form-types";
 import { apiUrl } from "../../../../lib/chefu-account";
 import { auth } from "../../../../lib/firebase";
+import { TotpSetupPanel } from "./TotpSetupPanel";
 
 type SecuritySummary = {
     emailVerified: boolean;
@@ -37,11 +46,32 @@ export function SecuritySection({
     isSendingReset,
     onSendResetEmail,
 }: AccountSettingsFormProps) {
+    const {
+        isReady: firebaseReady,
+        refresh: refreshFirebaseUser,
+        user: firebaseUser,
+    } = useFirebaseAuthState();
     const [summary, setSummary] = useState<SecuritySummary | null>(null);
     const [codes, setCodes] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isGeneratingCodes, setIsGeneratingCodes] = useState(false);
     const [isSendingVerification, setIsSendingVerification] = useState(false);
+    const [totpSecret, setTotpSecret] = useState<TotpSecret | null>(null);
+    const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+    const [secretText, setSecretText] = useState("");
+    const [totpCode, setTotpCode] = useState("");
+    const [isStartingTotp, setIsStartingTotp] = useState(false);
+    const [isVerifyingTotp, setIsVerifyingTotp] = useState(false);
+    const [isDisablingTotp, setIsDisablingTotp] = useState(false);
+
+    const currentUser = firebaseUser ?? auth.currentUser;
+    const totpFactorUid = useMemo(
+        () =>
+            summary?.enrolledFactors.find(
+                (factor) => factor.factorId === TotpMultiFactorGenerator.FACTOR_ID,
+            )?.uid,
+        [summary?.enrolledFactors],
+    );
 
     useEffect(() => {
         void loadSecuritySummary();
@@ -66,7 +96,7 @@ export function SecuritySection({
         }
     }
 
-    async function generateBackupCodes() {
+    async function generateBackupCodes(successMessage = "Recovery codes generated.") {
         setIsGeneratingCodes(true);
         try {
             const response = await fetch(apiUrl("/auth/mfa/backup-codes"), {
@@ -88,7 +118,7 @@ export function SecuritySection({
             }
 
             setCodes(data.codes);
-            toast.success("Recovery codes generated.");
+            toast.success(successMessage);
             await loadSecuritySummary();
         } catch (error) {
             toast.error("Unable to generate recovery codes.", {
@@ -100,7 +130,7 @@ export function SecuritySection({
     }
 
     async function sendVerificationEmail() {
-        const user = auth.currentUser;
+        const user = currentUser;
         if (!user) {
             toast.error("Please sign in again before sending verification email.");
             return;
@@ -119,6 +149,105 @@ export function SecuritySection({
         } finally {
             setIsSendingVerification(false);
         }
+    }
+
+    async function startTotpSetup() {
+        const user = currentUser;
+        if (!user?.email) {
+            toast.error(
+                firebaseReady
+                    ? "Please sign in again before enabling 2FA."
+                    : "Still checking your sign-in session. Try again in a moment.",
+            );
+            return;
+        }
+
+        setIsStartingTotp(true);
+
+        try {
+            const session = await multiFactor(user).getSession();
+            const secret = await TotpMultiFactorGenerator.generateSecret(session);
+            const qrUrl = secret.generateQrCodeUrl(user.email, "CheFu Account");
+            const dataUrl = await QRCode.toDataURL(qrUrl, { margin: 1, width: 220 });
+
+            setTotpSecret(secret);
+            setQrDataUrl(dataUrl);
+            setSecretText(secret.secretKey);
+            setTotpCode("");
+        } catch (error) {
+            toast.error("Unable to start 2FA setup.", {
+                description: readFirebaseMfaError(error),
+            });
+        } finally {
+            setIsStartingTotp(false);
+        }
+    }
+
+    async function verifyTotpSetup(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+
+        if (!currentUser || !totpSecret) {
+            toast.error("Please restart 2FA setup.");
+            return;
+        }
+
+        if (totpCode.length !== 6) {
+            toast.error("Enter the 6-digit authenticator code.");
+            return;
+        }
+
+        setIsVerifyingTotp(true);
+
+        try {
+            const assertion = TotpMultiFactorGenerator.assertionForEnrollment(
+                totpSecret,
+                totpCode,
+            );
+
+            await multiFactor(currentUser).enroll(assertion, "CheFu Account TOTP");
+            await refreshFirebaseUser();
+            cancelTotpSetup();
+            await generateBackupCodes("2FA enabled. Recovery codes generated.");
+            await loadSecuritySummary();
+        } catch (error) {
+            toast.error("Unable to enable 2FA.", {
+                description: readFirebaseMfaError(error),
+            });
+        } finally {
+            setIsVerifyingTotp(false);
+        }
+    }
+
+    async function disableTotp() {
+        const user = currentUser;
+
+        if (!user || !totpFactorUid) {
+            toast.error("No authenticator factor is enrolled for this session.");
+            return;
+        }
+
+        setIsDisablingTotp(true);
+
+        try {
+            await multiFactor(user).unenroll(totpFactorUid);
+            await refreshFirebaseUser();
+            setCodes([]);
+            await loadSecuritySummary();
+            toast.success("2FA disabled.");
+        } catch (error) {
+            toast.error("Unable to disable 2FA.", {
+                description: readFirebaseMfaError(error),
+            });
+        } finally {
+            setIsDisablingTotp(false);
+        }
+    }
+
+    function cancelTotpSetup() {
+        setTotpSecret(null);
+        setQrDataUrl(null);
+        setSecretText("");
+        setTotpCode("");
     }
 
     async function copyCodes() {
@@ -184,20 +313,66 @@ export function SecuritySection({
                     description={
                         summary?.mfaEnabled
                             ? `${summary.enrolledFactors.length} second factor${summary.enrolledFactors.length === 1 ? "" : "s"} enrolled.`
-                            : "No second factor is enrolled yet. Recovery codes are available for MFA recovery."
+                            : currentUser || !firebaseReady
+                                ? "No second factor is enrolled yet. Add an authenticator app to protect CheFu Account sign-ins."
+                                : "Sign in again to CheFu Account before enrolling an authenticator app."
                     }
                     action={
-                        <button
-                            type="button"
-                            onClick={loadSecuritySummary}
-                            disabled={isLoading}
-                            className="inline-flex items-center justify-center gap-2 rounded-full border border-white/14 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:bg-white/10 disabled:opacity-60"
-                        >
-                            <RotateCcw className={`size-4 ${isLoading ? "animate-spin" : ""}`} />
-                            Refresh
-                        </button>
+                        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                            <button
+                                type="button"
+                                onClick={loadSecuritySummary}
+                                disabled={isLoading}
+                                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/14 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:bg-white/10 disabled:opacity-60"
+                            >
+                                <RotateCcw className={`size-4 ${isLoading ? "animate-spin" : ""}`} />
+                                Refresh
+                            </button>
+                            {summary?.mfaEnabled ? (
+                                <button
+                                    type="button"
+                                    onClick={disableTotp}
+                                    disabled={isDisablingTotp || !totpFactorUid}
+                                    className="inline-flex items-center justify-center gap-2 rounded-full border border-red-300/30 px-4 py-2 text-sm font-semibold text-red-100 transition hover:bg-red-400/10 disabled:opacity-60"
+                                >
+                                    {isDisablingTotp ? (
+                                        <Loader2 className="size-4 animate-spin" />
+                                    ) : (
+                                        <ShieldCheck className="size-4" />
+                                    )}
+                                    Disable 2FA
+                                </button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={startTotpSetup}
+                                    disabled={isStartingTotp || !firebaseReady || !currentUser}
+                                    className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-200 disabled:opacity-60"
+                                >
+                                    {isStartingTotp ? (
+                                        <Loader2 className="size-4 animate-spin" />
+                                    ) : (
+                                        <Smartphone className="size-4" />
+                                    )}
+                                    Enable 2FA
+                                </button>
+                            )}
+                        </div>
                     }
                 />
+                {totpSecret && qrDataUrl && secretText ? (
+                    <div className="pb-4">
+                        <TotpSetupPanel
+                            code={totpCode}
+                            isVerifying={isVerifyingTotp}
+                            onCancel={cancelTotpSetup}
+                            onCodeChange={setTotpCode}
+                            onSubmit={verifyTotpSetup}
+                            qrDataUrl={qrDataUrl}
+                            secretText={secretText}
+                        />
+                    </div>
+                ) : null}
                 <div className="py-4">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div>
@@ -208,7 +383,7 @@ export function SecuritySection({
                         </div>
                         <button
                             type="button"
-                            onClick={generateBackupCodes}
+                            onClick={() => void generateBackupCodes()}
                             disabled={isGeneratingCodes}
                             className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
                         >
@@ -255,4 +430,30 @@ export function SecuritySection({
             </div>
         </SectionCard>
     );
+}
+
+function readFirebaseMfaError(error: unknown) {
+    if (!(error instanceof FirebaseError)) {
+        return error instanceof Error ? error.message : "Please try again.";
+    }
+
+    switch (error.code) {
+        case "auth/requires-recent-login":
+            return "Sign in again before changing 2FA.";
+        case "auth/unverified-email":
+            return "Verify your email before enabling 2FA.";
+        case "auth/invalid-verification-code":
+        case "auth/invalid-totp-code":
+            return "The authenticator code is incorrect.";
+        case "auth/code-expired":
+            return "That code expired. Try the next code.";
+        case "auth/second-factor-already-in-use":
+            return "This authenticator is already enrolled.";
+        case "auth/maximum-second-factor-count-exceeded":
+            return "This account already has the maximum number of second factors.";
+        case "auth/too-many-requests":
+            return "Too many attempts. Please wait and try again.";
+        default:
+            return error.message || "Please try again.";
+    }
 }

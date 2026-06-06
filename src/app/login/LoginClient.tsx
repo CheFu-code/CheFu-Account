@@ -1,11 +1,20 @@
 "use client";
 
 import { FirebaseError } from "firebase/app";
-import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import {
+    getMultiFactorResolver,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    signOut,
+    TotpMultiFactorGenerator,
+    type MultiFactorError,
+    type MultiFactorResolver,
+} from "firebase/auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { AccountAuthScreen } from "../_components/AccountAuthScreen";
+import { MfaChallengeDialog } from "./MfaChallengeDialog";
 import { auth } from "../../lib/firebase";
 import {
     chefuAppLabel,
@@ -21,6 +30,9 @@ export function LoginClient() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [mfaCode, setMfaCode] = useState("");
+    const [mfaEmail, setMfaEmail] = useState("");
+    const [mfaResolver, setMfaResolver] = useState<MultiFactorResolver | null>(null);
     const attemptedExistingSession = useRef(false);
 
     const appId = resolveChefuApp(searchParams.get("app"));
@@ -92,6 +104,21 @@ export function LoginClient() {
                     description:
                         error instanceof Error ? error.message : "Please sign in again.",
                 });
+            } else if (isMfaRequiredError(error)) {
+                const resolver = getMultiFactorResolver(auth, error);
+                const totpHint = resolver.hints.find(
+                    (hint) => hint.factorId === TotpMultiFactorGenerator.FACTOR_ID,
+                );
+
+                if (!totpHint) {
+                    toast.error("This account requires MFA, but no authenticator factor is available.");
+                    return;
+                }
+
+                setMfaResolver(resolver);
+                setMfaEmail(email);
+                setMfaCode("");
+                toast.info("Enter your authenticator code to finish signing in.");
             } else {
                 toast.error(readFirebaseLoginError(error));
             }
@@ -100,20 +127,79 @@ export function LoginClient() {
         }
     };
 
+    const onMfaSubmit = async (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        if (!mfaResolver || mfaCode.length !== 6) {
+            toast.error("Enter the 6-digit authenticator code.");
+            return;
+        }
+
+        const totpHint = mfaResolver.hints.find(
+            (hint) => hint.factorId === TotpMultiFactorGenerator.FACTOR_ID,
+        );
+
+        if (!totpHint) {
+            toast.error("No authenticator factor is available for this sign-in.");
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        try {
+            const assertion = TotpMultiFactorGenerator.assertionForSignIn(
+                totpHint.uid,
+                mfaCode,
+            );
+            const credential = await mfaResolver.resolveSignIn(assertion);
+            const idToken = await credential.user.getIdToken(true);
+
+            await syncChefuAccountSession(idToken, appId);
+            setMfaResolver(null);
+            setMfaCode("");
+            toast.success(`Signed in to ${appName}.`);
+            completeAuthRedirect(fromPath, router.replace);
+        } catch (error) {
+            toast.error("Unable to verify your 2FA code.", {
+                description: readFirebaseMfaError(error),
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     return (
-        <AccountAuthScreen
-            alternateHref={registerHref}
-            appName={appName}
-            email={email}
-            forgotPasswordHref={forgotPasswordHref}
-            isSubmitting={isSubmitting}
-            mode="login"
-            onSubmit={onSubmit}
-            password={password}
-            setEmail={setEmail}
-            setPassword={setPassword}
-        />
+        <>
+            <AccountAuthScreen
+                alternateHref={registerHref}
+                appName={appName}
+                email={email}
+                forgotPasswordHref={forgotPasswordHref}
+                isSubmitting={isSubmitting}
+                mode="login"
+                onSubmit={onSubmit}
+                password={password}
+                setEmail={setEmail}
+                setPassword={setPassword}
+            />
+            <MfaChallengeDialog
+                code={mfaCode}
+                email={mfaEmail}
+                isSubmitting={isSubmitting}
+                open={Boolean(mfaResolver)}
+                onCancel={() => {
+                    setMfaResolver(null);
+                    setMfaCode("");
+                }}
+                onCodeChange={setMfaCode}
+                onSubmit={onMfaSubmit}
+            />
+        </>
     );
+}
+
+function isMfaRequiredError(error: unknown): error is MultiFactorError {
+    return error instanceof FirebaseError && error.code === "auth/multi-factor-auth-required";
 }
 
 function completeAuthRedirect(target: string, replace: (href: string) => void) {
@@ -149,5 +235,23 @@ function readFirebaseLoginError(error: unknown) {
             return "Invalid Firebase API key. Contact support.";
         default:
             return "Login failed. Please try again.";
+    }
+}
+
+function readFirebaseMfaError(error: unknown) {
+    if (!(error instanceof FirebaseError)) {
+        return error instanceof Error ? error.message : "Check the code and try again.";
+    }
+
+    switch (error.code) {
+        case "auth/invalid-verification-code":
+        case "auth/invalid-totp-code":
+            return "The authenticator code is incorrect.";
+        case "auth/code-expired":
+            return "That code expired. Try the next code.";
+        case "auth/too-many-requests":
+            return "Too many attempts. Please wait and try again.";
+        default:
+            return error.message || "Check the code and try again.";
     }
 }
