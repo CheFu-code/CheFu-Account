@@ -5,10 +5,12 @@ import type {
     EmailPreferences,
     PrivacyPreferences,
 } from "./account-types";
+import type { ChefuAppId } from "../../../lib/chefu-account";
 
 export type AccountSettingsFormProps = {
     account: AccountResponse;
     activeSection: string;
+    appId: ChefuAppId;
     aiTutorSuggestions: boolean;
     bio: string;
     connectedAppCount: number;

@@ -67,6 +67,7 @@ export function AccountPageClient() {
                 <AccountSettingsForm
                     account={account.account}
                     activeSection={account.activeSection}
+                    appId={account.appId}
                     aiTutorSuggestions={account.aiTutorSuggestions}
                     bio={account.bio}
                     connectedAppCount={account.connectedAppCount}

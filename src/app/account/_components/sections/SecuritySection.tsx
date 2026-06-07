@@ -19,12 +19,12 @@ import {
     type TotpSecret,
     type User,
 } from "firebase/auth";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useFirebaseAuthState } from "@/hooks/useFirebaseAuthState";
 import { ActionRow, SectionCard } from "../AccountControls";
 import type { AccountSettingsFormProps } from "../account-form-types";
-import { apiUrl } from "../../../../lib/chefu-account";
+import { apiUrl, syncChefuAccountSession } from "../../../../lib/chefu-account";
 import { auth } from "../../../../lib/firebase";
 import { TotpSetupPanel } from "./TotpSetupPanel";
 
@@ -44,6 +44,7 @@ type SecuritySummary = {
 
 export function SecuritySection({
     account,
+    appId,
     isSendingReset,
     onSendResetEmail,
 }: AccountSettingsFormProps) {
@@ -74,16 +75,15 @@ export function SecuritySection({
         [summary?.enrolledFactors],
     );
 
-    useEffect(() => {
-        void loadSecuritySummary();
-    }, []);
+    const loadSecuritySummary = useCallback(async (idToken?: string) => {
+        const headers: Record<string, string> = { "x-chefu-app": appId };
+        if (idToken) headers.Authorization = `Bearer ${idToken}`;
 
-    async function loadSecuritySummary() {
         setIsLoading(true);
         try {
             const response = await fetch(apiUrl("/auth/security"), {
                 credentials: "include",
-                headers: { "x-chefu-app": "academy" },
+                headers,
             });
 
             if (!response.ok) throw new Error("Could not load security status.");
@@ -95,32 +95,44 @@ export function SecuritySection({
         } finally {
             setIsLoading(false);
         }
-    }
+    }, [appId]);
 
-    async function generateBackupCodes(successMessage = "Recovery codes generated.") {
+    useEffect(() => {
+        void loadSecuritySummary();
+    }, [loadSecuritySummary]);
+
+    async function generateBackupCodes(
+        successMessage = "Recovery codes generated.",
+        idToken?: string,
+    ) {
+        const bearerToken = idToken || (await getFreshIdToken());
+        const headers: Record<string, string> = { "x-chefu-app": appId };
+        if (bearerToken) headers.Authorization = `Bearer ${bearerToken}`;
+
         setIsGeneratingCodes(true);
         try {
             const response = await fetch(apiUrl("/auth/mfa/backup-codes"), {
                 method: "POST",
                 credentials: "include",
-                headers: { "x-chefu-app": "academy" },
+                headers,
             });
-            const data = (await response.json().catch(() => null)) as
-                | { codes?: string[]; remaining?: number }
-                | { message?: string }
-                | null;
+            const data = (await response.json().catch(() => null)) as {
+                codes?: string[];
+                error?: string;
+                message?: string;
+                remaining?: number;
+                requestId?: string;
+            } | null;
 
             if (!response.ok || !data || !("codes" in data) || !data.codes) {
                 throw new Error(
-                    data && "message" in data
-                        ? data.message
-                        : "Could not generate recovery codes.",
+                    formatApiError(data, "Could not generate recovery codes."),
                 );
             }
 
             setCodes(data.codes);
             toast.success(successMessage);
-            await loadSecuritySummary();
+            await loadSecuritySummary(bearerToken);
         } catch (error) {
             toast.error("Unable to generate recovery codes.", {
                 description: error instanceof Error ? error.message : "Please try again.",
@@ -207,11 +219,13 @@ export function SecuritySection({
 
             await multiFactor(user).enroll(assertion, "CheFu Account TOTP");
             const refreshedUser = await refreshFirebaseUser();
-            applyFirebaseMfaSummary(refreshedUser ?? user);
+            const enrolledUser = refreshedUser ?? auth.currentUser ?? user;
+            const idToken = await enrolledUser.getIdToken(true);
+            await syncChefuSession(idToken);
+            applyFirebaseMfaSummary(enrolledUser);
             cancelTotpSetup();
             toast.success("2FA enabled.");
-            await generateBackupCodes("Recovery codes generated.");
-            await loadSecuritySummary();
+            await generateBackupCodes("Recovery codes generated.", idToken);
         } catch (error) {
             toast.error("Unable to enable 2FA.", {
                 description: readFirebaseMfaError(error),
@@ -233,9 +247,13 @@ export function SecuritySection({
 
         try {
             await multiFactor(user).unenroll(totpFactorUid);
-            await refreshFirebaseUser();
+            const refreshedUser = await refreshFirebaseUser();
+            const idToken = await (refreshedUser ?? auth.currentUser ?? user).getIdToken(
+                true,
+            );
+            await syncChefuSession(idToken);
             setCodes([]);
-            await loadSecuritySummary();
+            await loadSecuritySummary(idToken);
             toast.success("2FA disabled.");
         } catch (error) {
             toast.error("Unable to disable 2FA.", {
@@ -251,6 +269,28 @@ export function SecuritySection({
         setQrDataUrl(null);
         setSecretText("");
         setTotpCode("");
+    }
+
+    async function getFreshIdToken() {
+        const user = currentUser;
+        if (!user) return "";
+
+        try {
+            return await user.getIdToken(true);
+        } catch {
+            return "";
+        }
+    }
+
+    async function syncChefuSession(idToken: string) {
+        try {
+            await syncChefuAccountSession(idToken, appId);
+        } catch (error) {
+            toast.warning("2FA changed, but your CheFu session could not refresh.", {
+                description:
+                    error instanceof Error ? error.message : "Sign in again if the page feels stale.",
+            });
+        }
     }
 
     function applyFirebaseMfaSummary(user: User) {
@@ -342,7 +382,7 @@ export function SecuritySection({
                         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                             <button
                                 type="button"
-                                onClick={loadSecuritySummary}
+                                onClick={() => void loadSecuritySummary()}
                                 disabled={isLoading}
                                 className="inline-flex items-center justify-center gap-2 rounded-full border border-white/14 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:bg-white/10 disabled:opacity-60"
                             >
@@ -477,4 +517,14 @@ function readFirebaseMfaError(error: unknown) {
         default:
             return error.message || "Please try again.";
     }
+}
+
+function formatApiError(
+    data:
+        | { error?: string; message?: string; requestId?: string }
+        | null,
+    fallback: string,
+) {
+    const message = data?.message || data?.error || fallback;
+    return data?.requestId ? `${message} Request ID: ${data.requestId}` : message;
 }

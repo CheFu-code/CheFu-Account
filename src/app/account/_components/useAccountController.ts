@@ -16,12 +16,17 @@ import type {
     EmailPreferences,
     PrivacyPreferences,
 } from "./account-types";
-import { apiUrl, clearChefuAccountSession } from "../../../lib/chefu-account";
+import {
+    apiUrl,
+    clearChefuAccountSession,
+    resolveChefuApp,
+} from "../../../lib/chefu-account";
 import { auth } from "../../../lib/firebase";
 
 export function useAccountController() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const appId = resolveChefuApp(searchParams.get("app"));
     const sectionParam = searchParams.get("section");
     const [account, setAccount] = useState<AccountResponse | null>(null);
     const [name, setName] = useState("");
@@ -271,6 +276,7 @@ export function useAccountController() {
         account,
         accountSearch,
         activeSection,
+        appId,
         aiTutorSuggestions,
         bio,
         connectedAppCount,
