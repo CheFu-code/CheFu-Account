@@ -225,6 +225,7 @@ export function SecuritySection({
             applyFirebaseMfaSummary(enrolledUser);
             cancelTotpSetup();
             toast.success("2FA enabled.");
+            await notifyMfaChanged("enabled", idToken);
             await generateBackupCodes("Recovery codes generated.", idToken);
         } catch (error) {
             toast.error("Unable to enable 2FA.", {
@@ -254,6 +255,7 @@ export function SecuritySection({
             await syncChefuSession(idToken);
             setCodes([]);
             await loadSecuritySummary(idToken);
+            await notifyMfaChanged("disabled", idToken);
             toast.success("2FA disabled.");
         } catch (error) {
             toast.error("Unable to disable 2FA.", {
@@ -269,6 +271,40 @@ export function SecuritySection({
         setQrDataUrl(null);
         setSecretText("");
         setTotpCode("");
+    }
+
+    async function notifyMfaChanged(action: "enabled" | "disabled", idToken: string) {
+        try {
+            const response = await fetch(apiUrl("/email/mfa-changed"), {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    Authorization: `Bearer ${idToken}`,
+                    "Content-Type": "application/json",
+                    "x-chefu-app": appId,
+                },
+                body: JSON.stringify({
+                    action,
+                    location: accountLocationLabel(account.profile),
+                    userName: account.profile.name || account.user.displayName || undefined,
+                }),
+            });
+            const data = (await response.json().catch(() => null)) as {
+                error?: string;
+                message?: string;
+                reason?: string;
+                requestId?: string;
+                sent?: boolean;
+            } | null;
+
+            if (!response.ok) {
+                throw new Error(formatApiError(data, "Could not send security email."));
+            }
+        } catch (error) {
+            toast.warning("2FA changed, but the security email could not send.", {
+                description: error instanceof Error ? error.message : "Please try again.",
+            });
+        }
     }
 
     async function getFreshIdToken() {
@@ -527,4 +563,17 @@ function formatApiError(
 ) {
     const message = data?.message || data?.error || fallback;
     return data?.requestId ? `${message} Request ID: ${data.requestId}` : message;
+}
+
+function accountLocationLabel(profile: {
+    country?: string;
+    countryCode?: string;
+    detectedCountryCode?: string;
+}) {
+    return (
+        profile.country?.trim() ||
+        profile.countryCode?.trim().toUpperCase() ||
+        profile.detectedCountryCode?.trim().toUpperCase() ||
+        undefined
+    );
 }
