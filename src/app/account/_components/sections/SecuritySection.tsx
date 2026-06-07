@@ -17,8 +17,9 @@ import {
     sendEmailVerification,
     TotpMultiFactorGenerator,
     type TotpSecret,
+    type User,
 } from "firebase/auth";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useFirebaseAuthState } from "@/hooks/useFirebaseAuthState";
 import { ActionRow, SectionCard } from "../AccountControls";
@@ -183,10 +184,10 @@ export function SecuritySection({
         }
     }
 
-    async function verifyTotpSetup(event: FormEvent<HTMLFormElement>) {
-        event.preventDefault();
+    async function verifyTotpSetup() {
+        const user = currentUser;
 
-        if (!currentUser || !totpSecret) {
+        if (!user || !totpSecret) {
             toast.error("Please restart 2FA setup.");
             return;
         }
@@ -204,10 +205,12 @@ export function SecuritySection({
                 totpCode,
             );
 
-            await multiFactor(currentUser).enroll(assertion, "CheFu Account TOTP");
-            await refreshFirebaseUser();
+            await multiFactor(user).enroll(assertion, "CheFu Account TOTP");
+            const refreshedUser = await refreshFirebaseUser();
+            applyFirebaseMfaSummary(refreshedUser ?? user);
             cancelTotpSetup();
-            await generateBackupCodes("2FA enabled. Recovery codes generated.");
+            toast.success("2FA enabled.");
+            await generateBackupCodes("Recovery codes generated.");
             await loadSecuritySummary();
         } catch (error) {
             toast.error("Unable to enable 2FA.", {
@@ -248,6 +251,24 @@ export function SecuritySection({
         setQrDataUrl(null);
         setSecretText("");
         setTotpCode("");
+    }
+
+    function applyFirebaseMfaSummary(user: User) {
+        const enrolledFactors = multiFactor(user).enrolledFactors.map((factor) => ({
+            uid: factor.uid,
+            displayName: factor.displayName || null,
+            factorId: factor.factorId,
+            enrollmentTime: factor.enrollmentTime || null,
+        }));
+
+        setSummary((currentSummary) => ({
+            emailVerified: user.emailVerified,
+            mfaEnabled: enrolledFactors.length > 0,
+            enrolledFactors,
+            backupCodesRemaining: currentSummary?.backupCodesRemaining || 0,
+            backupCodesGeneratedAt: currentSummary?.backupCodesGeneratedAt || null,
+            backupCodesLastUsedAt: currentSummary?.backupCodesLastUsedAt || null,
+        }));
     }
 
     async function copyCodes() {
@@ -367,7 +388,7 @@ export function SecuritySection({
                             isVerifying={isVerifyingTotp}
                             onCancel={cancelTotpSetup}
                             onCodeChange={setTotpCode}
-                            onSubmit={verifyTotpSetup}
+                            onVerify={verifyTotpSetup}
                             qrDataUrl={qrDataUrl}
                             secretText={secretText}
                         />
