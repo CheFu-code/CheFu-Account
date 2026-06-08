@@ -5,7 +5,6 @@ import {
     Home,
     IdCard,
     LockKeyhole,
-    MonitorSmartphone,
     ShieldCheck,
 } from "lucide-react";
 import type {
@@ -89,13 +88,6 @@ export const navItems: AccountNavItem[] = [
         description: "Password reset and security alerts",
         icon: LockKeyhole,
         color: "bg-cyan-300 text-cyan-950",
-    },
-    {
-        id: "linked-apps",
-        label: "Linked apps",
-        description: "CheFu products connected to this account",
-        icon: MonitorSmartphone,
-        color: "bg-blue-300 text-blue-950",
     },
     {
         id: "privacy",

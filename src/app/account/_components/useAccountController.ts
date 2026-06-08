@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import {
-    connectedApps,
     defaultEmailPreferences,
     defaultPrivacyPreferences,
     navItems,
@@ -113,13 +112,6 @@ export function useAccountController() {
             .map((part) => part[0]?.toUpperCase())
             .join("");
     }, [account?.user.email, name]);
-
-    const connectedAppCount = useMemo(
-        () =>
-            connectedApps.filter((app) => account?.profile.apps?.[app.id]?.enabled)
-                .length,
-        [account?.profile.apps],
-    );
 
     const filteredSections = useMemo(() => {
         const query = accountSearch.trim().toLowerCase();
@@ -279,7 +271,6 @@ export function useAccountController() {
         appId,
         aiTutorSuggestions,
         bio,
-        connectedAppCount,
         defaultCourseDifficulty,
         emailPreferences,
         filteredSections,

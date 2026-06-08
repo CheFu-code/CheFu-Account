@@ -12,8 +12,6 @@ export type AccountSettingsFormProps = {
     activeSection: string;
     appId: ChefuAppId;
     aiTutorSuggestions: boolean;
-    bio: string;
-    connectedAppCount: number;
     defaultCourseDifficulty: AccountProfile["defaultCourseDifficulty"];
     emailPreferences: EmailPreferences;
     isSaving: boolean;
@@ -40,7 +38,6 @@ export type AccountSettingsFormProps = {
     preferredContentFormat: AccountProfile["preferredContentFormat"];
     privacy: PrivacyPreferences;
     securityEmailsEnabled: boolean;
-    setBio: (value: string) => void;
     setLanguage?: (value: string) => void;
     setLearningGoal: (value: string) => void;
     setName: (value: string) => void;

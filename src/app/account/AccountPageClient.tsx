@@ -69,8 +69,6 @@ export function AccountPageClient() {
                     activeSection={account.activeSection}
                     appId={account.appId}
                     aiTutorSuggestions={account.aiTutorSuggestions}
-                    bio={account.bio}
-                    connectedAppCount={account.connectedAppCount}
                     defaultCourseDifficulty={account.defaultCourseDifficulty}
                     emailPreferences={account.emailPreferences}
                     isSaving={account.isSaving}
@@ -95,7 +93,6 @@ export function AccountPageClient() {
                     preferredContentFormat={account.preferredContentFormat}
                     privacy={account.privacy}
                     securityEmailsEnabled={account.securityEmailsEnabled}
-                    setBio={account.setBio}
                     setLanguage={account.setLanguage}
                     setLearningGoal={account.setLearningGoal}
                     setName={account.setName}

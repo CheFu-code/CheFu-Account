@@ -2,7 +2,6 @@
 
 import { AcademySection } from "./sections/AcademySection";
 import { DeveloperSection } from "./sections/DeveloperSection";
-import { LinkedAppsSection } from "./sections/LinkedAppsSection";
 import { NotificationsSection } from "./sections/NotificationsSection";
 import { PersonalInfoSection } from "./sections/PersonalInfoSection";
 import { PrivacySection } from "./sections/PrivacySection";
@@ -16,9 +15,6 @@ export function AccountSettingsForm(props: AccountSettingsFormProps) {
                 <PersonalInfoSection {...props} />
             ) : null}
             {props.activeSection === "security" ? <SecuritySection {...props} /> : null}
-            {props.activeSection === "linked-apps" ? (
-                <LinkedAppsSection {...props} />
-            ) : null}
             {props.activeSection === "privacy" ? <PrivacySection {...props} /> : null}
             {props.activeSection === "academy" ? <AcademySection {...props} /> : null}
             {props.activeSection === "notifications" ? (

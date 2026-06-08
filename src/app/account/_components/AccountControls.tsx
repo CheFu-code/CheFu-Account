@@ -174,7 +174,7 @@ export function LockedInfo({
     label,
     value,
 }: {
-    description: string;
+    description?: string;
     label: string;
     value: string;
 }) {

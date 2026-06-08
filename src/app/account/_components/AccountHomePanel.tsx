@@ -6,7 +6,6 @@ import {
     Camera,
     Code2,
     KeyRound,
-    MonitorSmartphone,
     Search,
     ShieldCheck,
     type LucideIcon,
@@ -33,9 +32,6 @@ export function AccountHomePanel({
     onSearchChange,
     onSelectSection,
 }: AccountHomePanelProps) {
-    const connectedAppCount = Object.values(account.profile.apps || {}).filter(
-        (app) => app?.enabled,
-    ).length;
     const country = account.profile.detectedCountryCode?.toUpperCase() || "Pending";
     const developerEnabled = account.profile.roles.includes("developer");
 
@@ -115,7 +111,6 @@ export function AccountHomePanel({
 
                         <div className="mt-5 flex flex-wrap gap-3">
                             <QuickLink icon={KeyRound} label="Security" onClick={() => onSelectSection("security")} />
-                            <QuickLink icon={MonitorSmartphone} label="Linked apps" onClick={() => onSelectSection("linked-apps")} />
                             <QuickLink icon={ShieldCheck} label="Privacy" onClick={() => onSelectSection("privacy")} />
                             <QuickLink icon={BookOpenCheck} label="Academy" onClick={() => onSelectSection("academy")} />
                             <QuickLink icon={BellRing} label="Email" onClick={() => onSelectSection("notifications")} />
@@ -125,12 +120,6 @@ export function AccountHomePanel({
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <StatusCard
-                    icon={MonitorSmartphone}
-                    label="Linked apps"
-                    value={`${connectedAppCount}`}
-                    description="Products connected to this account"
-                />
                 <StatusCard
                     icon={ShieldCheck}
                     label="Verified country"
@@ -156,8 +145,8 @@ export function AccountHomePanel({
                     <div>
                         <h2 className="text-xl font-semibold text-white">Account privacy is managed here</h2>
                         <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
-                            Update profile data, review connected products, manage notifications,
-                            and prepare recovery options from one place.
+                            Update profile data, manage notifications, and prepare recovery
+                            options from one place.
                         </p>
                     </div>
                     <button
