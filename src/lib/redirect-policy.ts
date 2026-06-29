@@ -66,7 +66,6 @@ const CHEFU_APP_RETURN_TO_POLICY: Record<ChefuAppId, AppRedirectPolicy> = {
     muzalo: {
         allowedOrigins: [
             "https://muzalo.chefuinc.com",
-            "https://music.chefuinc.com",
             "http://localhost:3002",
             "http://127.0.0.1:3002",
         ],
