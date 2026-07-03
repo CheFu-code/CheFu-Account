@@ -140,7 +140,7 @@ export function AccountHomePanel({
                 />
             </div>
 
-            <div className="rounded-[2.5rem] border border-white/10 bg-[#14151b]/90 p-5 shadow-xl shadow-black/20">
+            <div className="rounded-4xl border border-white/10 bg-[#14151b]/90 p-5 shadow-xl shadow-black/20">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h2 className="text-lg font-semibold text-white">Account privacy is managed here</h2>
@@ -159,8 +159,6 @@ export function AccountHomePanel({
                 </div>
             </div>
         </section>
-
-function StatusCard({
     );
 }
 
@@ -176,7 +174,7 @@ function StatusCard({
     value: string;
 }) {
     return (
-        <div className="rounded-3xl border border-white/10 bg-[#191b20]/80 p-5 shadow-xl shadow-black/15">
+        <div className="rounded-4xl border border-white/10 bg-[#191b20]/80 p-5 shadow-xl shadow-black/15">
             <div className="flex items-start justify-between gap-4">
                 <div>
                     <p className="text-sm font-medium text-slate-400">{label}</p>

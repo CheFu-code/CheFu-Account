@@ -20,15 +20,15 @@ export function SectionCard({
     title: string;
 }) {
     return (
-        <section className="overflow-hidden rounded-3xl border border-white/10 bg-[#191b20]/95 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
-            <div className="border-b border-white/10 bg-white/2.5 p-5 sm:p-6">
+        <section className="overflow-hidden rounded-4xl border border-white/10 bg-[#191b20]/95 shadow-[0_20px_50px_rgba(0,0,0,0.22)]">
+            <div className="border-b border-white/10 bg-white/2.5 p-4 sm:p-5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex items-start gap-3">
                         <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-emerald-300/20 bg-emerald-300/10 text-emerald-200">
                             <Icon className="size-5" aria-hidden="true" />
                         </span>
                         <div>
-                            <h2 className="text-xl font-semibold tracking-tight text-white">
+                            <h2 className="text-lg font-semibold tracking-tight text-white">
                                 {title}
                             </h2>
                             <p className="mt-1 text-sm leading-6 text-slate-400">
@@ -38,7 +38,7 @@ export function SectionCard({
                     </div>
                     <div className="flex items-center gap-2">
                         {aside ? (
-                            <span className="rounded-full bg-white/8 px-3 py-1.5 text-xs font-semibold text-slate-200">
+                            <span className="rounded-full bg-white/8 px-2.5 py-1 text-[11px] font-semibold text-slate-200">
                                 {aside}
                             </span>
                         ) : null}
@@ -46,7 +46,7 @@ export function SectionCard({
                     </div>
                 </div>
             </div>
-            <div className="p-5 sm:p-6">{children}</div>
+            <div className="p-4 sm:p-5">{children}</div>
         </section>
     );
 }
@@ -64,7 +64,7 @@ export function QuickLink({
         <button
             type="button"
             onClick={onClick}
-            className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/3 px-4 py-2 text-sm font-semibold text-white transition hover:border-emerald-200/30 hover:bg-white/10"
+            className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/5 px-3 py-2 text-xs font-semibold text-white transition hover:border-emerald-200/30 hover:bg-white/10"
         >
             <Icon className="size-4" aria-hidden="true" />
             {label}
@@ -84,7 +84,7 @@ export function ActionRow({
     title: string;
 }) {
     return (
-        <div className="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">
                 <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-white/4 text-slate-300">
                     <Icon className="size-4" aria-hidden="true" />
@@ -111,7 +111,7 @@ export function ToggleRow({
     title: string;
 }) {
     return (
-        <div className="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <p className="font-semibold text-white">{title}</p>
                 <p className="mt-1 text-sm leading-6 text-slate-400">{description}</p>
@@ -119,13 +119,13 @@ export function ToggleRow({
             <button
                 type="button"
                 onClick={onToggle}
-                className={`relative h-7 w-12 shrink-0 rounded-full transition ${
+                className={`relative h-6 w-11 shrink-0 rounded-full transition ${
                     checked ? "bg-emerald-400" : "bg-slate-700"
                 }`}
                 aria-pressed={checked}
             >
                 <span
-                    className={`absolute top-1 size-5 rounded-full bg-white shadow transition ${
+                    className={`absolute top-1 size-4 rounded-full bg-white shadow transition ${
                         checked ? "left-6" : "left-1"
                     }`}
                 />
@@ -162,7 +162,7 @@ export function TextField({
                 max={max}
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
-                className="mt-2 h-12 w-full rounded-xl border border-white/10 bg-[#111318] px-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-300 focus:ring-4 focus:ring-emerald-300/10"
+                className="mt-2 h-11 w-full rounded-xl border border-white/10 bg-[#111318] px-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-300 focus:ring-4 focus:ring-emerald-300/10"
                 placeholder={placeholder}
             />
         </label>
@@ -179,7 +179,7 @@ export function LockedInfo({
     value: string;
 }) {
     return (
-        <div className="rounded-2xl border border-white/10 bg-[#111318] p-4">
+        <div className="rounded-2xl border border-white/10 bg-[#111318] p-3">
             <div className="flex items-start gap-3">
                 <LockKeyhole className="mt-0.5 size-4 text-slate-400" aria-hidden="true" />
                 <div className="min-w-0">
@@ -209,7 +209,7 @@ export function SelectField({
             <select
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
-                className="mt-2 h-12 w-full rounded-xl border border-white/10 bg-[#111318] px-4 text-sm text-white outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-300/10"
+                className="mt-2 h-11 w-full rounded-xl border border-white/10 bg-[#111318] px-3 text-sm text-white outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-300/10"
             >
                 {options.map((option) => (
                     <option key={option} value={option}>
