@@ -106,33 +106,32 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
 
                 <div className="mx-auto grid min-h-0 w-full max-w-6xl items-center gap-6 px-5 pb-4 sm:px-8 sm:pb-6 lg:grid-cols-[0.92fr_1.08fr]">
                     <aside className="hidden lg:block">
-                        <div className="overflow-hidden rounded-lg border border-slate-900 bg-slate-950 text-white shadow-2xl">
-                            <div className="border-b border-white/10 bg-[linear-gradient(135deg,rgba(20,184,166,0.22),rgba(255,255,255,0)_48%,rgba(245,158,11,0.16))] p-7">
-                                <div className="inline-flex items-center gap-2 rounded-md border border-white/15 bg-white/10 px-3 py-2 text-sm font-medium text-slate-200">
+                        <div className="overflow-hidden rounded-4xl border border-slate-900 bg-[#0f1116] text-white shadow-[0_30px_80px_rgba(0,0,0,0.25)]">
+                            <div className="border-b border-white/10 bg-[linear-gradient(135deg,rgba(20,184,166,0.18),rgba(255,255,255,0)_48%,rgba(245,158,11,0.12))] p-7">
+                                <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-slate-200">
                                     <Building2
                                         className="size-4 text-emerald-300"
                                         aria-hidden="true"
                                     />
                                     CheFu Account
                                 </div>
-                                <h1 className="mt-8 max-w-md text-4xl font-semibold leading-tight tracking-normal text-white">
+                                <h1 className="mt-8 max-w-md text-4xl font-semibold leading-tight tracking-tight text-white">
                                     One secure account for every CheFu product.
                                 </h1>
                                 <p className="mt-4 max-w-md text-base leading-7 text-slate-300">
-                                    Continue to {appName} with the same identity you use across
-                                    CheFu Ecosystem.
+                                    Continue to {appName} with the same identity you use across the CheFu ecosystem.
                                 </p>
                             </div>
                         </div>
                     </aside>
 
                     <div className="mx-auto w-full max-w-130">
-                        <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-[0_24px_80px_rgba(15,23,42,0.14)] sm:p-7">
-                            <div className="inline-flex items-center gap-2 rounded-md bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800">
+                        <div className="rounded-4xl border border-slate-200/50 bg-white p-6 shadow-[0_28px_60px_rgba(15,23,42,0.12)] sm:p-7">
+                            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800">
                                 <ShieldCheck className="size-4" aria-hidden="true" />
                                 {appName}
                             </div>
-                            <h2 className="mt-5 text-3xl font-semibold tracking-normal text-slate-950 sm:text-4xl">
+                            <h2 className="mt-5 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
                                 {copy.heading}
                             </h2>
                             {copy.supporting ? (
@@ -186,19 +185,20 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                                             <button
                                                 type="button"
                                                 onClick={() => setShowPassword(!showPassword)}
-                                                className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2"
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 transition hover:text-slate-800"
+                                                aria-label={showPassword ? "Hide password" : "Show password"}
                                             >
                                                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                             </button>
                                             <input
                                                 id="password"
-                                                type={showPassword ? 'text' : "password"}
+                                                type={showPassword ? "text" : "password"}
                                                 value={props.password}
                                                 onChange={(event) =>
                                                     props.setPassword(event.target.value)
                                                 }
                                                 placeholder="Your password"
-                                                className="h-12 w-full rounded-md border border-slate-300 bg-white pl-10 pr-3 text-slate-950 shadow-sm outline-none placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20"
+                                                className="h-12 w-full rounded-xl border border-slate-300 bg-white pl-10 pr-3 text-slate-950 shadow-sm outline-none placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20"
                                                 autoComplete={copy.passwordAutoComplete}
                                             />
                                         </span>

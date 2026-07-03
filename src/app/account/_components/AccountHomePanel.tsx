@@ -36,13 +36,13 @@ export function AccountHomePanel({
     const developerEnabled = account.profile.roles.includes("developer");
 
     return (
-        <section className="space-y-6">
-            <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#191b20]/95 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
-                <div className="grid gap-8 p-6 lg:grid-cols-[0.9fr_1.1fr] lg:p-8">
+        <section className="space-y-5">
+            <div className="overflow-hidden rounded-4xl border border-white/10 bg-[#14151b]/95 shadow-[0_24px_60px_rgba(0,0,0,0.22)]">
+                <div className="grid gap-6 p-6 lg:grid-cols-[0.95fr_1.05fr] lg:p-7">
                     <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
-                        <div className="relative flex size-28 items-center justify-center rounded-[2rem] border border-white/10 bg-[#101216] shadow-2xl shadow-black/30">
+                        <div className="relative flex h-28 w-28 items-center justify-center rounded-4xl border border-white/10 bg-[#0f1116] shadow-[0_12px_40px_rgba(0,0,0,0.35)]">
                             <div
-                                className="flex size-24 items-center justify-center rounded-[1.65rem] bg-cover bg-center text-3xl font-semibold text-white"
+                                className="flex h-24 w-24 items-center justify-center rounded-3xl bg-cover bg-center text-3xl font-semibold text-white"
                                 style={
                                     account.profile.profilePicture
                                         ? {
@@ -53,24 +53,24 @@ export function AccountHomePanel({
                             >
                                 {!account.profile.profilePicture ? initials || "C" : null}
                             </div>
-                            <span className="absolute -bottom-2 -right-2 flex size-9 items-center justify-center rounded-full border border-[#191b20] bg-emerald-300 text-emerald-950 shadow-lg">
+                            <span className="absolute -bottom-2 -right-2 flex h-9 w-9 items-center justify-center rounded-full border border-[#14151b] bg-emerald-300 text-emerald-950 shadow-lg">
                                 <Camera className="size-4" aria-hidden="true" />
                             </span>
                         </div>
 
-                        <p className="mt-6 text-sm font-semibold uppercase tracking-[0.24em] text-emerald-200">
+                        <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.28em] text-emerald-200">
                             CheFu Account
                         </p>
-                        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-5xl">
+                        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
                             {name || "Your profile"}
                         </h1>
-                        <p className="mt-3 text-base text-slate-300">{account.user.email}</p>
+                        <p className="mt-2 text-sm text-slate-400">{account.user.email}</p>
                     </div>
 
-                    <div className="flex flex-col justify-center">
+                    <div className="flex flex-col justify-center gap-4">
                         <div className="relative">
                             <Search
-                                className="pointer-events-none absolute left-5 top-1/2 size-5 -translate-y-1/2 text-slate-300"
+                                className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-500"
                                 aria-hidden="true"
                             />
                             <input
@@ -78,11 +78,11 @@ export function AccountHomePanel({
                                 value={accountSearch}
                                 onChange={(event) => onSearchChange(event.target.value)}
                                 placeholder="Search settings, apps, privacy, security"
-                                className="h-14 w-full rounded-2xl border border-white/10 bg-[#101216] pl-14 pr-5 text-base text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-300 focus:ring-4 focus:ring-emerald-300/10"
+                                className="h-14 w-full rounded-2xl border border-white/10 bg-[#111318] pl-12 pr-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-300 focus:ring-4 focus:ring-emerald-300/10"
                                 aria-label="Search CheFu Account sections"
                             />
                             {filteredSections.length > 0 ? (
-                                <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-20 overflow-hidden rounded-2xl border border-white/10 bg-[#191b20] text-left shadow-2xl">
+                                <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-20 overflow-hidden rounded-2xl border border-white/10 bg-[#111318] text-left shadow-2xl shadow-black/20">
                                     {filteredSections.map((item) => (
                                         <button
                                             key={item.id}
@@ -109,7 +109,7 @@ export function AccountHomePanel({
                             ) : null}
                         </div>
 
-                        <div className="mt-5 flex flex-wrap gap-3">
+                        <div className="grid gap-3 sm:grid-cols-2">
                             <QuickLink icon={KeyRound} label="Security" onClick={() => onSelectSection("security")} />
                             <QuickLink icon={ShieldCheck} label="Privacy" onClick={() => onSelectSection("privacy")} />
                             <QuickLink icon={BookOpenCheck} label="Academy" onClick={() => onSelectSection("academy")} />
@@ -140,13 +140,12 @@ export function AccountHomePanel({
                 />
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-[#191b20]/80 p-6 shadow-xl shadow-black/20">
-                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="rounded-[2.5rem] border border-white/10 bg-[#14151b]/90 p-5 shadow-xl shadow-black/20">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h2 className="text-xl font-semibold text-white">Account privacy is managed here</h2>
-                        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
-                            Update profile data, manage notifications, and prepare recovery
-                            options from one place.
+                        <h2 className="text-lg font-semibold text-white">Account privacy is managed here</h2>
+                        <p className="mt-2 text-sm leading-6 text-slate-400">
+                            Update profile data, manage notifications, and prepare recovery options from one place.
                         </p>
                     </div>
                     <button
@@ -160,6 +159,8 @@ export function AccountHomePanel({
                 </div>
             </div>
         </section>
+
+function StatusCard({
     );
 }
 
@@ -181,7 +182,7 @@ function StatusCard({
                     <p className="text-sm font-medium text-slate-400">{label}</p>
                     <p className="mt-2 text-2xl font-semibold text-white">{value}</p>
                 </div>
-                <span className="flex size-11 items-center justify-center rounded-2xl bg-white/[0.04] text-emerald-200">
+                <span className="flex size-11 items-center justify-center rounded-2xl bg-white/4 text-emerald-200">
                     <Icon className="size-5" aria-hidden="true" />
                 </span>
             </div>

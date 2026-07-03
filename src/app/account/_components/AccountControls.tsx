@@ -21,7 +21,7 @@ export function SectionCard({
 }) {
     return (
         <section className="overflow-hidden rounded-3xl border border-white/10 bg-[#191b20]/95 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
-            <div className="border-b border-white/10 bg-white/[0.025] p-5 sm:p-6">
+            <div className="border-b border-white/10 bg-white/2.5 p-5 sm:p-6">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex items-start gap-3">
                         <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-emerald-300/20 bg-emerald-300/10 text-emerald-200">
@@ -64,7 +64,7 @@ export function QuickLink({
         <button
             type="button"
             onClick={onClick}
-            className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/[0.03] px-4 py-2 text-sm font-semibold text-white transition hover:border-emerald-200/30 hover:bg-white/10"
+            className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/3 px-4 py-2 text-sm font-semibold text-white transition hover:border-emerald-200/30 hover:bg-white/10"
         >
             <Icon className="size-4" aria-hidden="true" />
             {label}
@@ -86,7 +86,7 @@ export function ActionRow({
     return (
         <div className="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">
-                <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-white/[0.04] text-slate-300">
+                <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-white/4 text-slate-300">
                     <Icon className="size-4" aria-hidden="true" />
                 </span>
                 <div>
@@ -226,7 +226,7 @@ export function SaveButton({ isSaving, label }: { isSaving: boolean; label: stri
         <button
             type="submit"
             disabled={isSaving}
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-200 disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-200 disabled:opacity-60 disabled:cursor-not-allowed"
         >
             {isSaving ? (
                 <Loader2 className="size-4 animate-spin" aria-hidden="true" />

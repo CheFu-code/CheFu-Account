@@ -26,11 +26,11 @@ export function AccountFrame({
     const activeItem = navItems.find((item) => item.id === activeSection) ?? navItems[0];
 
     return (
-        <section className="min-h-dvh bg-[#101216] text-white">
+        <section className="min-h-dvh bg-[#0b0d13] text-white">
             <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(52,211,153,0.14),transparent_34%),radial-gradient(circle_at_80%_20%,rgba(56,189,248,0.12),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.03),transparent_30%)]" />
-            <header className="sticky top-0 z-30 border-b border-white/10 bg-[#111318]/85 backdrop-blur-xl">
-                <div className="flex h-[68px] items-center justify-between gap-4 px-5 lg:px-9">
-                    <Link href="/account" className="flex items-center gap-3 text-xl font-semibold tracking-tight text-white">
+            <header className="sticky top-0 z-30 border-b border-white/10 bg-[#111318]/90 backdrop-blur-xl">
+                <div className="flex min-h-16 items-center justify-between gap-4 px-4 py-3 lg:px-8">
+                    <Link href="/account" className="flex items-center gap-3 text-base font-semibold tracking-tight text-white">
                         <span className="flex size-10 items-center justify-center rounded-2xl border border-emerald-300/20 bg-emerald-300/10 text-emerald-200">
                             <ShieldCheck className="size-5" aria-hidden="true" />
                         </span>
@@ -41,14 +41,14 @@ export function AccountFrame({
                     <div className="flex items-center gap-3">
                         <Link
                             href="https://chefuinc.com/contact"
-                            className="hidden size-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-slate-200 transition hover:bg-white/10 sm:flex"
+                            className="hidden size-10 items-center justify-center rounded-full border border-white/10 bg-white/3 text-slate-200 transition hover:bg-white/10 sm:flex"
                             aria-label="Help"
                         >
                             <CircleHelp className="size-5" aria-hidden="true" />
                         </Link>
                         <Link
                             href="https://chefuinc.com/portfolio"
-                            className="hidden size-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-slate-200 transition hover:bg-white/10 sm:flex"
+                            className="hidden size-10 items-center justify-center rounded-full border border-white/10 bg-white/3 text-slate-200 transition hover:bg-white/10 sm:flex"
                             aria-label="CheFu Apps"
                         >
                             <Grid3X3 className="size-5" aria-hidden="true" />
@@ -56,7 +56,7 @@ export function AccountFrame({
                         <CheFuUserDropdown
                             onSignOut={onSignOut}
                             pendingSignOut={isSigningOut}
-                            triggerClassName="rounded-full border-white/12 bg-white/[0.03]"
+                            triggerClassName="rounded-full border-white/12 bg-white/3"
                             user={user}
                             variant="cyan"
                         />
@@ -64,14 +64,14 @@ export function AccountFrame({
                 </div>
             </header>
 
-            <div className="relative mx-auto grid w-full max-w-[1480px] gap-6 px-4 py-6 lg:grid-cols-[310px_minmax(0,1fr)] lg:px-8">
+            <div className="relative mx-auto grid w-full max-w-370 gap-6 px-4 py-6 lg:grid-cols-[310px_minmax(0,1fr)] lg:px-8">
                 <aside className="hidden lg:block">
-                    <nav className="sticky top-24 overflow-hidden rounded-3xl border border-white/10 bg-[#191b20]/80 p-3 shadow-2xl shadow-black/20" aria-label="Account sections">
-                        <div className="mb-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200">
+                    <nav className="sticky top-24 overflow-hidden rounded-3xl border border-white/10 bg-[#14151b]/95 p-4 shadow-2xl shadow-black/20" aria-label="Account sections">
+                        <div className="mb-3 rounded-2xl border border-white/10 bg-white/3.5 p-4">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-emerald-200">
                                 Manage
                             </p>
-                            <h2 className="mt-2 text-lg font-semibold text-white">{activeItem.label}</h2>
+                            <h2 className="mt-2 text-base font-semibold text-white">{activeItem.label}</h2>
                             <p className="mt-1 text-sm leading-5 text-slate-400">
                                 {activeItem.description}
                             </p>
@@ -88,7 +88,7 @@ export function AccountFrame({
                 </aside>
 
                 <div className="min-w-0">
-                    <div className="mb-5 flex gap-3 overflow-x-auto pb-2 lg:hidden">
+                    <div className="mb-4 flex gap-2 overflow-x-auto pb-2 lg:hidden">
                         {navItems.map((item) => (
                             <button
                                 key={item.id}
@@ -97,7 +97,7 @@ export function AccountFrame({
                                 className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold text-slate-100 ${
                                     activeSection === item.id
                                         ? "border-emerald-200/30 bg-emerald-300/10"
-                                        : "border-white/12 bg-white/[0.03]"
+                                        : "border-white/12 bg-white/3"
                                 }`}
                                 aria-current={activeSection === item.id ? "page" : undefined}
                             >
