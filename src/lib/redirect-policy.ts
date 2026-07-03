@@ -1,4 +1,4 @@
-export type ChefuAppId = "academy" | "admin" | "flow" | "muzalo" | "quantum" | "synapse";
+export type ChefuAppId = "academy" | "admin" | "flow" | "muzalo" | "quantum" | "synapse" | "drippybanks";
 
 export type RedirectTargetKind = "relative" | "app-origin" | "oauth-authorize";
 
@@ -84,6 +84,15 @@ const CHEFU_APP_RETURN_TO_POLICY: Record<ChefuAppId, AppRedirectPolicy> = {
             "https://synapse.chefuinc.com",
             "http://localhost:3005",
             "http://127.0.0.1:3005",
+        ],
+        oauthClientIds: [],
+    },
+    drippybanks: {
+        allowedOrigins: [
+            "https://drippybanks.chefuinc.com",
+            "https://drippybanks.vercel.app",
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
         ],
         oauthClientIds: [],
     },
@@ -173,6 +182,7 @@ export function resolveChefuAppId(value?: string | null): ChefuAppId {
     if (normalized === "muzalo" || normalized === "music") return "muzalo";
     if (normalized === "quantum") return "quantum";
     if (normalized === "synapse") return "synapse";
+    if (normalized === "drippybanks") return "drippybanks";
     return "academy";
 }
 
@@ -188,6 +198,7 @@ export function isKnownChefuAppParam(value?: string | null) {
         normalized === "music" ||
         normalized === "quantum" ||
         normalized === "synapse" ||
+        normalized === "drippybanks" ||
         normalized === "academy"
     );
 }

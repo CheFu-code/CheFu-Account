@@ -15,6 +15,7 @@ const appLabels: Record<ChefuAppId, string> = {
     muzalo: "Muzalo",
     quantum: "Quantum",
     synapse: "Synapse",
+    drippybanks: "Drippy Banks",
 };
 
 export function apiUrl(path: string) {
@@ -66,7 +67,9 @@ function isChefuAppId(value: string): value is ChefuAppId {
         value === "admin" ||
         value === "flow" ||
         value === "muzalo" ||
-        value === "quantum"
+        value === "quantum" ||
+        value === "synapse" ||
+        value === "drippybanks"
     );
 }
 
