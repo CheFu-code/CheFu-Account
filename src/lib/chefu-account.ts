@@ -14,6 +14,7 @@ const appLabels: Record<ChefuAppId, string> = {
     flow: "Flow Mail",
     muzalo: "Muzalo",
     quantum: "Quantum",
+    synapse: "Synapse",
 };
 
 export function apiUrl(path: string) {

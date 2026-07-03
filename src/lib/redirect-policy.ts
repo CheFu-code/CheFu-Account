@@ -1,4 +1,4 @@
-export type ChefuAppId = "academy" | "admin" | "flow" | "muzalo" | "quantum";
+export type ChefuAppId = "academy" | "admin" | "flow" | "muzalo" | "quantum" | "synapse";
 
 export type RedirectTargetKind = "relative" | "app-origin" | "oauth-authorize";
 
@@ -78,6 +78,14 @@ const CHEFU_APP_RETURN_TO_POLICY: Record<ChefuAppId, AppRedirectPolicy> = {
             "http://127.0.0.1:3003",
         ],
         oauthClientIds: ["quantum-mobile", "quantum-web"],
+    },
+    synapse: {
+        allowedOrigins: [
+            "https://synapse.chefuinc.com",
+            "http://localhost:3005",
+            "http://127.0.0.1:3005",
+        ],
+        oauthClientIds: [],
     },
 };
 
@@ -164,6 +172,7 @@ export function resolveChefuAppId(value?: string | null): ChefuAppId {
     if (normalized === "flow") return "flow";
     if (normalized === "muzalo" || normalized === "music") return "muzalo";
     if (normalized === "quantum") return "quantum";
+    if (normalized === "synapse") return "synapse";
     return "academy";
 }
 
@@ -178,6 +187,7 @@ export function isKnownChefuAppParam(value?: string | null) {
         normalized === "muzalo" ||
         normalized === "music" ||
         normalized === "quantum" ||
+        normalized === "synapse" ||
         normalized === "academy"
     );
 }

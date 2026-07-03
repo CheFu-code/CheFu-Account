@@ -4,6 +4,8 @@ import {
     ArrowRight,
     Building2,
     ChevronRight,
+    Eye,
+    EyeOff,
     KeyRound,
     Loader2,
     Lock,
@@ -11,7 +13,7 @@ import {
     ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
-import type { FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 
 type AccountAuthBaseProps = {
     alternateHref: string;
@@ -24,23 +26,23 @@ type AccountAuthBaseProps = {
 
 type AccountAuthScreenProps =
     | (AccountAuthBaseProps & {
-          forgotPasswordHref: string;
-          mode: "login";
-          password: string;
-          setPassword: (password: string) => void;
-      })
+        forgotPasswordHref: string;
+        mode: "login";
+        password: string;
+        setPassword: (password: string) => void;
+    })
     | (AccountAuthBaseProps & {
-          forgotPasswordHref?: never;
-          mode: "register";
-          password: string;
-          setPassword: (password: string) => void;
-      })
+        forgotPasswordHref?: never;
+        mode: "register";
+        password: string;
+        setPassword: (password: string) => void;
+    })
     | (AccountAuthBaseProps & {
-          forgotPasswordHref?: never;
-          mode: "forgot-password";
-          password?: never;
-          setPassword?: never;
-      });
+        forgotPasswordHref?: never;
+        mode: "forgot-password";
+        password?: never;
+        setPassword?: never;
+    });
 
 const modeCopy = {
     login: {
@@ -77,8 +79,16 @@ const modeCopy = {
 } as const;
 
 export function AccountAuthScreen(props: AccountAuthScreenProps) {
-    const { alternateHref, appName, email, isSubmitting, mode, onSubmit, setEmail } =
-        props;
+    const {
+        alternateHref,
+        appName,
+        email,
+        isSubmitting,
+        mode,
+        onSubmit,
+        setEmail,
+    } = props;
+    const [showPassword, setShowPassword] = useState(false);
     const copy = modeCopy[mode];
 
     return (
@@ -109,14 +119,14 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                                     One secure account for every CheFu product.
                                 </h1>
                                 <p className="mt-4 max-w-md text-base leading-7 text-slate-300">
-                                    Continue to {appName} with the same identity you use
-                                    across CheFu Ecosystem.
+                                    Continue to {appName} with the same identity you use across
+                                    CheFu Ecosystem.
                                 </p>
                             </div>
                         </div>
                     </aside>
 
-                    <div className="mx-auto w-full max-w-[520px]">
+                    <div className="mx-auto w-full max-w-130">
                         <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-[0_24px_80px_rgba(15,23,42,0.14)] sm:p-7">
                             <div className="inline-flex items-center gap-2 rounded-md bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800">
                                 <ShieldCheck className="size-4" aria-hidden="true" />
@@ -162,10 +172,7 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                                                     href={props.forgotPasswordHref}
                                                     className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 transition hover:text-emerald-900"
                                                 >
-                                                    <KeyRound
-                                                        className="size-3.5"
-                                                        aria-hidden="true"
-                                                    />
+                                                    <KeyRound className="size-3.5" aria-hidden="true" />
                                                     Forgot password?
                                                 </Link>
                                             ) : copy.passwordHelp ? (
@@ -176,9 +183,16 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                                         </span>
                                         <span className="relative block">
                                             <Lock className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2"
+                                            >
+                                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                            </button>
                                             <input
                                                 id="password"
-                                                type="password"
+                                                type={showPassword ? 'text' : "password"}
                                                 value={props.password}
                                                 onChange={(event) =>
                                                     props.setPassword(event.target.value)
@@ -194,7 +208,7 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-slate-950 px-4 text-base font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:opacity-60"
+                                    className="inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-slate-950 px-4 text-base font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:opacity-60"
                                 >
                                     {isSubmitting ? (
                                         <>
@@ -226,13 +240,22 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                         </div>
 
                         <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs font-medium text-slate-500">
-                            <Link href="https://chefuinc.com/privacy" className="hover:text-slate-900">
+                            <Link
+                                href="https://chefuinc.com/privacy"
+                                className="hover:text-slate-900"
+                            >
                                 Privacy
                             </Link>
-                            <Link href="https://chefuinc.com/terms" className="hover:text-slate-900">
+                            <Link
+                                href="https://chefuinc.com/terms"
+                                className="hover:text-slate-900"
+                            >
                                 Terms
                             </Link>
-                            <Link href="https://chefuinc.com/contact" className="hover:text-slate-900">
+                            <Link
+                                href="https://chefuinc.com/contact"
+                                className="hover:text-slate-900"
+                            >
                                 Contact
                             </Link>
                         </div>
