@@ -1,8 +1,6 @@
 "use client";
 
-import { AcademySection } from "./sections/AcademySection";
 import { DeveloperSection } from "./sections/DeveloperSection";
-import { NotificationsSection } from "./sections/NotificationsSection";
 import { PersonalInfoSection } from "./sections/PersonalInfoSection";
 import { PrivacySection } from "./sections/PrivacySection";
 import { SecuritySection } from "./sections/SecuritySection";
@@ -16,10 +14,7 @@ export function AccountSettingsForm(props: AccountSettingsFormProps) {
             ) : null}
             {props.activeSection === "security" ? <SecuritySection {...props} /> : null}
             {props.activeSection === "privacy" ? <PrivacySection {...props} /> : null}
-            {props.activeSection === "academy" ? <AcademySection {...props} /> : null}
-            {props.activeSection === "notifications" ? (
-                <NotificationsSection {...props} />
-            ) : null}
+
             {props.activeSection === "developer" ? <DeveloperSection {...props} /> : null}
         </form>
     );

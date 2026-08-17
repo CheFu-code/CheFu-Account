@@ -59,7 +59,7 @@ const modeCopy = {
         alternateAction: "Sign in",
         alternateLead: "Already have an account?",
         buttonIdle: "Create account",
-        heading: "Create your CheFu Account",
+        heading: "Create your CHEFU Account",
         passwordAutoComplete: "new-password",
         passwordHelp: "Use at least 6 characters.",
         supporting: "",
@@ -73,7 +73,7 @@ const modeCopy = {
         passwordAutoComplete: "off",
         passwordHelp: "",
         supporting:
-            "Enter the email for your CheFu Account and we will send a secure reset link.",
+            "Enter the email for your CHEFU Account and we will send a secure reset link.",
         submitting: "Sending reset email...",
     },
 } as const;
@@ -113,7 +113,7 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                                         className="size-4 text-emerald-300"
                                         aria-hidden="true"
                                     />
-                                    CheFu Account
+                                    CHEFU Account
                                 </div>
                                 <h1 className="mt-8 max-w-md text-4xl font-semibold leading-tight tracking-tight text-white">
                                     One secure account for every CheFu product.

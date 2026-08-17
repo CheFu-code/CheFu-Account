@@ -82,7 +82,7 @@ export function useAccountController() {
                 if (!cancelled) hydrateAccount(data);
             } catch (error) {
                 if (cancelled) return;
-                toast.error("Unable to load your CheFu Account.", {
+                toast.error("Unable to load your CHEFU Account.", {
                     description:
                         error instanceof Error ? error.message : "Please refresh and try again.",
                 });
@@ -104,7 +104,7 @@ export function useAccountController() {
     }, [sectionParam]);
 
     const initials = useMemo(() => {
-        const label = name || account?.user.email || "CheFu Account";
+        const label = name || account?.user.email || "CHEFU Account";
         return label
             .split(/\s|@/)
             .filter(Boolean)

@@ -96,13 +96,7 @@ export const navItems: AccountNavItem[] = [
         icon: ShieldCheck,
         color: "bg-violet-300 text-violet-950",
     },
-    {
-        id: "academy",
-        label: "Academy learning",
-        description: "Learning goals and recommendation settings",
-        icon: BookOpenCheck,
-        color: "bg-amber-300 text-amber-950",
-    },
+    
     {
         id: "notifications",
         label: "Notifications",

@@ -1,4 +1,4 @@
-# CheFu Account
+# CHEFU Account
 
 Standalone Next.js account and authentication app for CheFu products.
 

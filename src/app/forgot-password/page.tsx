@@ -4,7 +4,7 @@ import { ForgotPasswordClient } from "./ForgotPasswordClient";
 
 export const metadata: Metadata = {
     title: "Reset password",
-    description: "Reset your CheFu Account password.",
+    description: "Reset your CHEFU Account password.",
 };
 
 export default function ForgotPasswordPage() {

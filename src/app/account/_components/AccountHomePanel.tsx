@@ -59,7 +59,7 @@ export function AccountHomePanel({
                         </div>
 
                         <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.28em] text-emerald-200">
-                            CheFu Account
+                            CHEFU Account
                         </p>
                         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
                             {name || "Your profile"}
@@ -79,7 +79,7 @@ export function AccountHomePanel({
                                 onChange={(event) => onSearchChange(event.target.value)}
                                 placeholder="Search settings, apps, privacy, security"
                                 className="h-14 w-full rounded-2xl border border-white/10 bg-[#111318] pl-12 pr-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-300 focus:ring-4 focus:ring-emerald-300/10"
-                                aria-label="Search CheFu Account sections"
+                                aria-label="Search CHEFU Account sections"
                             />
                             {filteredSections.length > 0 ? (
                                 <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-20 overflow-hidden rounded-2xl border border-white/10 bg-[#111318] text-left shadow-2xl shadow-black/20">

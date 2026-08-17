@@ -170,7 +170,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         try {
             const session = await multiFactor(user).getSession();
             const secret = await TotpMultiFactorGenerator.generateSecret(session);
-            const qrUrl = secret.generateQrCodeUrl(user.email, "CheFu Account");
+            const qrUrl = secret.generateQrCodeUrl(user.email, "CHEFU Account");
             const dataUrl = await QRCode.toDataURL(qrUrl, { margin: 1, width: 220 });
 
             setTotpSecret(secret);
@@ -211,7 +211,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
                 totpCode,
             );
 
-            await multiFactor(user).enroll(assertion, "CheFu Account TOTP");
+            await multiFactor(user).enroll(assertion, "CHEFU Account TOTP");
             const refreshedUser = await refreshFirebaseUser();
             const enrolledUser = refreshedUser ?? auth.currentUser ?? user;
             const idToken = await enrolledUser.getIdToken(true);

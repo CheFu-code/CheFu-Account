@@ -7,21 +7,21 @@ const appUrl = process.env.NEXT_PUBLIC_ACCOUNT_APP_URL || "https://myaccount.che
 export const metadata: Metadata = {
     metadataBase: new URL(appUrl),
     title: {
-        default: "CheFu Account",
-        template: "%s | CheFu Account",
+        default: "CHEFU Account",
+        template: "%s | CHEFU Account",
     },
     description:
-        "Sign in, manage profile settings, review connected apps, and control CheFu Account preferences.",
+        "Sign in, manage profile settings, review connected apps, and control CHEFU Account preferences.",
     robots: {
         index: false,
         follow: false,
     },
     openGraph: {
-        title: "CheFu Account",
+        title: "CHEFU Account",
         description:
             "One secure account for CheFu products.",
         url: appUrl,
-        siteName: "CheFu Account",
+        siteName: "CHEFU Account",
         type: "website",
     },
 };

@@ -4,7 +4,7 @@ import { LogoutClient } from "./LogoutClient";
 
 export const metadata: Metadata = {
     title: "Sign out",
-    description: "Sign out of your CheFu Account.",
+    description: "Sign out of your CHEFU Account.",
 };
 
 export default function LogoutPage() {

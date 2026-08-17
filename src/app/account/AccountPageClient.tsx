@@ -15,7 +15,7 @@ export function AccountPageClient() {
             <section className="flex min-h-dvh items-center justify-center bg-[#101216] px-5 text-white">
                 <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-[#191b20] px-5 py-4 text-sm font-semibold shadow-2xl shadow-black/20">
                     <Loader2 className="size-4 animate-spin text-emerald-300" aria-hidden="true" />
-                    Loading your CheFu Account
+                    Loading your CHEFU Account
                 </div>
             </section>
         );
@@ -27,7 +27,7 @@ export function AccountPageClient() {
                 <div className="max-w-md rounded-3xl border border-white/10 bg-[#191b20] p-6 text-center shadow-2xl shadow-black/20">
                     <h1 className="text-2xl font-semibold">Account unavailable</h1>
                     <p className="mt-2 text-sm leading-6 text-slate-300">
-                        We could not load your CheFu Account session.
+                        We could not load your CHEFU Account session.
                     </p>
                     <Link
                         href="/login?returnTo=/account"
