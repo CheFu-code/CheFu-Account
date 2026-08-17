@@ -1,11 +1,9 @@
 import {
-    BellRing,
-    BookOpenCheck,
     Code2,
     Home,
     IdCard,
     LockKeyhole,
-    ShieldCheck,
+    ShieldCheck
 } from "lucide-react";
 import type {
     AccountNavItem,
@@ -95,14 +93,6 @@ export const navItems: AccountNavItem[] = [
         description: "Public profile and personalization controls",
         icon: ShieldCheck,
         color: "bg-violet-300 text-violet-950",
-    },
-    
-    {
-        id: "notifications",
-        label: "Notifications",
-        description: "Course and product email settings",
-        icon: BellRing,
-        color: "bg-pink-300 text-pink-950",
     },
     {
         id: "developer",
