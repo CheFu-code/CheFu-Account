@@ -25,10 +25,11 @@ export function LogoutClient() {
     }, [appId, searchParams]);
 
     return (
-        <main className="flex min-h-dvh items-center justify-center bg-[#202124] px-6 text-white">
-            <div className="rounded-lg border border-white/10 bg-[#2b2c2f] p-6 text-center shadow-xl">
-                <p className="text-lg font-semibold">Signing out of {appName} Account...</p>
-                <p className="mt-2 text-sm text-slate-400">
+        <main className="flex min-h-dvh items-center justify-center bg-[#11110f] px-6 text-[#f4f0e8]">
+            <div className="rounded-[2rem] border border-white/10 bg-[#1a1916] p-7 text-center shadow-2xl shadow-black/30">
+                <span className="mx-auto mb-4 block size-2 animate-pulse rounded-full bg-[#e5ad5b]" />
+                <p className="text-lg font-semibold tracking-[-0.02em]">Signing out of {appName}...</p>
+                <p className="mt-2 text-sm text-[#8f887d]">
                     We are closing your shared CheFu session.
                 </p>
             </div>

@@ -12,10 +12,10 @@ export function AccountPageClient() {
 
     if (account.isLoading) {
         return (
-            <section className="flex min-h-dvh items-center justify-center bg-[#101216] px-5 text-white">
-                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-[#191b20] px-5 py-4 text-sm font-semibold shadow-2xl shadow-black/20">
-                    <Loader2 className="size-4 animate-spin text-emerald-300" aria-hidden="true" />
-                    Loading your CHEFU Account
+            <section className="flex min-h-dvh items-center justify-center bg-[#11110f] px-5 text-[#f4f0e8]">
+                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-[#1a1916] px-5 py-4 text-sm font-semibold shadow-2xl shadow-black/30">
+                    <Loader2 className="size-4 animate-spin text-[#e5ad5b]" aria-hidden="true" />
+                    Opening your account
                 </div>
             </section>
         );
@@ -23,15 +23,15 @@ export function AccountPageClient() {
 
     if (!account.account) {
         return (
-            <section className="flex min-h-dvh items-center justify-center bg-[#101216] px-5 text-white">
-                <div className="max-w-md rounded-3xl border border-white/10 bg-[#191b20] p-6 text-center shadow-2xl shadow-black/20">
-                    <h1 className="text-2xl font-semibold">Account unavailable</h1>
-                    <p className="mt-2 text-sm leading-6 text-slate-300">
+            <section className="flex min-h-dvh items-center justify-center bg-[#11110f] px-5 text-[#f4f0e8]">
+                <div className="max-w-md rounded-[2rem] border border-white/10 bg-[#1a1916] p-7 text-center shadow-2xl shadow-black/30">
+                    <h1 className="text-2xl font-semibold tracking-[-0.03em]">Account unavailable</h1>
+                    <p className="mt-2 text-sm leading-6 text-[#9e968a]">
                         We could not load your CHEFU Account session.
                     </p>
                     <Link
                         href="/login?returnTo=/account"
-                        className="mt-5 inline-flex items-center gap-2 rounded-full bg-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-200"
+                        className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#e5ad5b] px-4 py-2.5 text-sm font-bold text-[#26190a] transition hover:bg-[#ffd18a]"
                     >
                         Sign in
                         <ArrowRight className="size-4" aria-hidden="true" />

@@ -39,13 +39,13 @@ export function TotpSetupPanel({
                 if (event.key === "Escape" && !isVerifying) onCancel();
             }}
         >
-            <div className="max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-2xl border border-white/10 bg-[#191b20] p-5 text-white shadow-2xl">
+            <div className="max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-[2rem] border border-white/12 bg-[#1a1916] p-6 text-[#f4f0e8] shadow-2xl shadow-black/50">
                 <div className="flex items-start justify-between gap-4">
                     <div>
-                        <h3 id="totp-setup-title" className="text-xl font-semibold">
+                        <h3 id="totp-setup-title" className="text-xl font-semibold tracking-[-0.03em]">
                             Set up authenticator 2FA
                         </h3>
-                        <p className="mt-1 text-sm leading-6 text-slate-300">
+                        <p className="mt-1 text-sm leading-6 text-[#8f887d]">
                             Scan the QR code, then enter the current 6-digit code from
                             your authenticator app.
                         </p>
@@ -54,7 +54,7 @@ export function TotpSetupPanel({
                         type="button"
                         onClick={onCancel}
                         disabled={isVerifying}
-                        className="rounded-full border border-white/10 p-2 text-slate-300 transition hover:bg-white/10 disabled:opacity-60"
+                        className="rounded-full border border-white/10 p-2 text-[#bdb5a8] transition hover:bg-white/8 disabled:opacity-60"
                         aria-label="Cancel 2FA setup"
                     >
                         <X className="size-4" aria-hidden="true" />
@@ -62,7 +62,7 @@ export function TotpSetupPanel({
                 </div>
 
                 <div className="mt-5 grid gap-5 md:grid-cols-[220px_1fr]">
-                    <div className="rounded-xl bg-white p-3">
+                    <div className="rounded-2xl bg-[#f4f0e8] p-3">
                         <Image
                             src={qrDataUrl}
                             alt="Authenticator setup QR code"
@@ -73,15 +73,15 @@ export function TotpSetupPanel({
                     </div>
                     <div className="space-y-4">
                         <div>
-                            <p className="text-sm font-semibold text-slate-200">
+                            <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#bdb5a8]">
                                 Manual setup key
                             </p>
-                            <code className="mt-2 block break-all rounded-lg border border-white/10 bg-black/20 p-3 text-sm font-semibold text-white">
+                            <code className="mt-2 block break-all rounded-xl border border-white/10 bg-[#11110f] p-3 text-sm font-semibold text-[#f4f0e8]">
                                 {secretText}
                             </code>
                         </div>
                         <label className="block space-y-2" htmlFor="totp-setup-code">
-                            <span className="text-sm font-semibold text-slate-200">
+                            <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#bdb5a8]">
                                 6-digit code
                             </span>
                             <input
@@ -96,7 +96,7 @@ export function TotpSetupPanel({
                                     )
                                 }
                                 onKeyDown={handleCodeKeyDown}
-                                className="h-12 w-full rounded-xl border border-white/10 bg-[#111318] px-4 text-center text-lg font-semibold tracking-[0.35em] text-white outline-none focus:border-emerald-300 focus:ring-4 focus:ring-emerald-300/10"
+                                className="h-12 w-full rounded-2xl border border-white/12 bg-[#11110f] px-4 text-center text-lg font-semibold tracking-[0.35em] text-[#f4f0e8] outline-none focus:border-[#e5ad5b]/70 focus:ring-4 focus:ring-[#e5ad5b]/10"
                                 autoComplete="one-time-code"
                                 autoFocus
                             />
@@ -105,7 +105,7 @@ export function TotpSetupPanel({
                             type="button"
                             onClick={onVerify}
                             disabled={!canVerify}
-                            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-200 disabled:opacity-60"
+                            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#e5ad5b] px-4 py-3 text-sm font-bold text-[#26190a] transition hover:bg-[#ffd18a] disabled:opacity-60"
                         >
                             {isVerifying ? (
                                 <Loader2 className="size-4 animate-spin" aria-hidden="true" />

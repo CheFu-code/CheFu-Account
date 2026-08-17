@@ -1,7 +1,7 @@
 "use client";
 
 import { CheFuUserDropdown, type CheFuUserDropdownUser } from "chefu-ui";
-import { CircleHelp, Grid3X3, ShieldCheck } from "lucide-react";
+import { CircleHelp, Grid3X3, Sparkles } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { navItems } from "./account-data";
@@ -26,37 +26,44 @@ export function AccountFrame({
     const activeItem = navItems.find((item) => item.id === activeSection) ?? navItems[0];
 
     return (
-        <section className="min-h-dvh bg-[#0b0d13] text-white">
-            <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(52,211,153,0.14),transparent_34%),radial-gradient(circle_at_80%_20%,rgba(56,189,248,0.12),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.03),transparent_30%)]" />
-            <header className="sticky top-0 z-30 border-b border-white/10 bg-[#111318]/90 backdrop-blur-xl">
-                <div className="flex min-h-16 items-center justify-between gap-4 px-4 py-3 lg:px-8">
-                    <Link href="/account" className="flex items-center gap-3 text-base font-semibold tracking-tight text-white">
-                        <span className="flex size-10 items-center justify-center rounded-2xl border border-emerald-300/20 bg-emerald-300/10 text-emerald-200">
-                            <ShieldCheck className="size-5" aria-hidden="true" />
+        <section className="min-h-dvh bg-[#11110f] text-[#f4f0e8]">
+            <div className="pointer-events-none fixed inset-0 -z-0 opacity-50 [background-image:linear-gradient(rgba(244,240,232,0.027)_1px,transparent_1px),linear-gradient(90deg,rgba(244,240,232,0.027)_1px,transparent_1px)] [background-size:52px_52px]" />
+            <div className="pointer-events-none fixed -left-40 top-20 -z-0 size-150 rounded-full bg-[#e5ad5b]/5 blur-3xl" />
+
+            <header className="sticky top-0 z-30 border-b border-white/10 bg-[#11110f]/86 backdrop-blur-xl">
+                <div className="relative mx-auto flex min-h-18 max-w-[1540px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-10">
+                    <Link href="/account" className="inline-flex items-center gap-3">
+                        <span className="grid size-9 place-items-center rounded-full bg-[#e5ad5b] text-[#26190a] shadow-[0_0_0_5px_rgba(229,173,91,0.08)]">
+                            <Sparkles className="size-4" aria-hidden="true" />
                         </span>
-                        <span>
-                            CheFu <span className="text-emerald-300">Account</span>
+                        <span className="hidden text-sm font-semibold tracking-[0.16em] text-[#f4f0e8] sm:block">
+                            CHEFU<span className="text-[#e5ad5b]">/</span>ACCOUNT
                         </span>
                     </Link>
-                    <div className="flex items-center gap-3">
+
+                    <p className="hidden absolute left-1/2 -translate-x-1/2 text-[11px] font-bold uppercase tracking-[0.18em] text-[#8f887d] md:block">
+                        Personal workspace
+                    </p>
+
+                    <div className="flex items-center gap-2 sm:gap-3">
                         <Link
                             href="https://chefuinc.com/contact"
-                            className="hidden size-10 items-center justify-center rounded-full border border-white/10 bg-white/3 text-slate-200 transition hover:bg-white/10 sm:flex"
-                            aria-label="Help"
+                            className="hidden size-9 items-center justify-center rounded-full border border-white/12 text-[#bdb5a8] transition hover:border-[#e5ad5b]/45 hover:bg-white/5 hover:text-[#f4f0e8] sm:flex"
+                            aria-label="Contact CheFu support"
                         >
-                            <CircleHelp className="size-5" aria-hidden="true" />
+                            <CircleHelp className="size-4" aria-hidden="true" />
                         </Link>
                         <Link
                             href="https://chefuinc.com/portfolio"
-                            className="hidden size-10 items-center justify-center rounded-full border border-white/10 bg-white/3 text-slate-200 transition hover:bg-white/10 sm:flex"
-                            aria-label="CheFu Apps"
+                            className="hidden size-9 items-center justify-center rounded-full border border-white/12 text-[#bdb5a8] transition hover:border-[#e5ad5b]/45 hover:bg-white/5 hover:text-[#f4f0e8] sm:flex"
+                            aria-label="Explore CheFu apps"
                         >
-                            <Grid3X3 className="size-5" aria-hidden="true" />
+                            <Grid3X3 className="size-4" aria-hidden="true" />
                         </Link>
                         <CheFuUserDropdown
                             onSignOut={onSignOut}
                             pendingSignOut={isSigningOut}
-                            triggerClassName="rounded-full border-white/12 bg-white/3"
+                            triggerClassName="rounded-full border-white/14 bg-white/4 hover:bg-white/8"
                             user={user}
                             variant="cyan"
                         />
@@ -64,51 +71,53 @@ export function AccountFrame({
                 </div>
             </header>
 
-            <div className="relative mx-auto grid w-full max-w-370 gap-6 px-4 py-6 lg:grid-cols-[310px_minmax(0,1fr)] lg:px-8">
-                <aside className="hidden lg:block">
-                    <nav className="sticky top-24 overflow-hidden rounded-3xl border border-white/10 bg-[#14151b]/95 p-4 shadow-2xl shadow-black/20" aria-label="Account sections">
-                        <div className="mb-3 rounded-2xl border border-white/10 bg-white/3.5 p-4">
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-emerald-200">
-                                Manage
-                            </p>
-                            <h2 className="mt-2 text-base font-semibold text-white">{activeItem.label}</h2>
-                            <p className="mt-1 text-sm leading-5 text-slate-400">
-                                {activeItem.description}
-                            </p>
-                        </div>
-                        {navItems.map((item) => (
-                            <NavButton
-                                key={item.id}
-                                active={activeSection === item.id}
-                                item={item}
-                                onClick={() => onSelectSection(item.id)}
-                            />
-                        ))}
-                    </nav>
-                </aside>
+            <div className="relative z-10 mx-auto w-full max-w-[1540px] px-4 pb-8 pt-5 sm:px-6 lg:px-10 lg:py-8">
+                <div className="mb-5 flex gap-2 overflow-x-auto pb-1 lg:hidden" aria-label="Account sections">
+                    {navItems.map((item) => (
+                        <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => onSelectSection(item.id)}
+                            className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition ${
+                                activeSection === item.id
+                                    ? "border-[#e5ad5b]/55 bg-[#e5ad5b]/12 text-[#ffd18a]"
+                                    : "border-white/10 bg-white/3 text-[#bdb5a8] hover:bg-white/7"
+                            }`}
+                            aria-current={activeSection === item.id ? "page" : undefined}
+                        >
+                            <item.icon className="size-3.5" aria-hidden="true" />
+                            {item.label}
+                        </button>
+                    ))}
+                </div>
 
-                <div className="min-w-0">
-                    <div className="mb-4 flex gap-2 overflow-x-auto pb-2 lg:hidden">
-                        {navItems.map((item) => (
-                            <button
-                                key={item.id}
-                                type="button"
-                                onClick={() => onSelectSection(item.id)}
-                                className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold text-slate-100 ${
-                                    activeSection === item.id
-                                        ? "border-emerald-200/30 bg-emerald-300/10"
-                                        : "border-white/12 bg-white/3"
-                                }`}
-                                aria-current={activeSection === item.id ? "page" : undefined}
-                            >
-                                <span className={`flex size-7 items-center justify-center rounded-full ${item.color}`}>
-                                    <item.icon className="size-4" aria-hidden="true" />
-                                </span>
-                                {item.label}
-                            </button>
-                        ))}
-                    </div>
-                    {children}
+                <div className="grid gap-8 lg:grid-cols-[250px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)]">
+                    <aside className="hidden lg:block">
+                        <nav className="sticky top-26" aria-label="Account sections">
+                            <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.22em] text-[#797267]">
+                                Account settings
+                            </p>
+                            <div className="space-y-1">
+                                {navItems.map((item, index) => (
+                                    <NavButton
+                                        key={item.id}
+                                        active={activeSection === item.id}
+                                        index={index + 1}
+                                        item={item}
+                                        onClick={() => onSelectSection(item.id)}
+                                    />
+                                ))}
+                            </div>
+                            <div className="mt-8 border-t border-white/10 pt-5">
+                                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#797267]">
+                                    Currently viewing
+                                </p>
+                                <p className="mt-2 text-sm font-semibold text-[#f4f0e8]">{activeItem.label}</p>
+                                <p className="mt-1 text-xs leading-5 text-[#8f887d]">{activeItem.description}</p>
+                            </div>
+                        </nav>
+                    </aside>
+                    <main className="min-w-0">{children}</main>
                 </div>
             </div>
         </section>
@@ -117,10 +126,12 @@ export function AccountFrame({
 
 function NavButton({
     active,
+    index,
     item,
     onClick,
 }: {
     active: boolean;
+    index: number;
     item: (typeof navItems)[number];
     onClick: () => void;
 }) {
@@ -128,18 +139,19 @@ function NavButton({
         <button
             type="button"
             onClick={onClick}
-            className={`group flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition hover:bg-white/10 ${
-                active ? "bg-emerald-300/10 ring-1 ring-emerald-200/20" : ""
+            className={`group flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition ${
+                active
+                    ? "bg-[#e5ad5b]/12 text-[#f4f0e8]"
+                    : "text-[#9e968a] hover:bg-white/5 hover:text-[#f4f0e8]"
             }`}
             aria-current={active ? "page" : undefined}
         >
-            <span className={`flex size-11 shrink-0 items-center justify-center rounded-2xl ${item.color}`}>
-                <item.icon className="size-6" aria-hidden="true" />
+            <span className={`text-[10px] font-bold tabular-nums ${active ? "text-[#e5ad5b]" : "text-[#635d54]"}`}>
+                {String(index).padStart(2, "0")}
             </span>
-            <span className="min-w-0">
-                <span className="block truncate text-sm font-semibold text-white">{item.label}</span>
-                <span className="block truncate text-xs text-slate-400">{item.description}</span>
-            </span>
+            <item.icon className={`size-4 ${active ? "text-[#ffd18a]" : "text-[#8f887d] group-hover:text-[#d7d0c5]"}`} aria-hidden="true" />
+            <span className="text-sm font-semibold">{item.label}</span>
+            {active ? <span className="ml-auto size-1.5 rounded-full bg-[#e5ad5b]" /> : null}
         </button>
     );
 }

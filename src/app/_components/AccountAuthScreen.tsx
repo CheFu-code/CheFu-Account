@@ -2,15 +2,14 @@
 
 import {
     ArrowRight,
-    Building2,
     ChevronRight,
     Eye,
     EyeOff,
-    KeyRound,
     Loader2,
-    Lock,
+    LockKeyhole,
     Mail,
     ShieldCheck,
+    Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
@@ -46,222 +45,206 @@ type AccountAuthScreenProps =
 
 const modeCopy = {
     login: {
-        alternateAction: "Create account",
+        alternateAction: "Create an account",
         alternateLead: "New to CheFu?",
-        buttonIdle: "Continue",
-        heading: "Sign in",
+        buttonIdle: "Enter your account",
+        eyebrow: "Welcome back",
+        heading: "Your work, held in one place.",
         passwordAutoComplete: "current-password",
         passwordHelp: "",
-        supporting: "",
-        submitting: "Signing in...",
+        supporting: "Use the identity that moves with you across every CheFu product.",
+        submitting: "Opening your account...",
     },
     register: {
-        alternateAction: "Sign in",
+        alternateAction: "Sign in instead",
         alternateLead: "Already have an account?",
-        buttonIdle: "Create account",
-        heading: "Create your CHEFU Account",
+        buttonIdle: "Create your account",
+        eyebrow: "A shared CheFu identity",
+        heading: "Start with one thoughtful sign-in.",
         passwordAutoComplete: "new-password",
-        passwordHelp: "Use at least 6 characters.",
-        supporting: "",
-        submitting: "Creating account...",
+        passwordHelp: "At least 6 characters",
+        supporting: "Your account is the secure home for every CheFu product you use.",
+        submitting: "Creating your account...",
     },
     "forgot-password": {
         alternateAction: "Back to sign in",
-        alternateLead: "Remember your password?",
-        buttonIdle: "Send reset email",
-        heading: "Reset your password",
+        alternateLead: "Remembered your password?",
+        buttonIdle: "Send a reset link",
+        eyebrow: "Account recovery",
+        heading: "Let’s get you back in.",
         passwordAutoComplete: "off",
         passwordHelp: "",
-        supporting:
-            "Enter the email for your CHEFU Account and we will send a secure reset link.",
-        submitting: "Sending reset email...",
+        supporting: "Enter your account email and we’ll send a private reset link right away.",
+        submitting: "Sending your reset link...",
     },
 } as const;
 
 export function AccountAuthScreen(props: AccountAuthScreenProps) {
-    const {
-        alternateHref,
-        appName,
-        email,
-        isSubmitting,
-        mode,
-        onSubmit,
-        setEmail,
-    } = props;
+    const { alternateHref, appName, email, isSubmitting, mode, onSubmit, setEmail } = props;
     const [showPassword, setShowPassword] = useState(false);
     const copy = modeCopy[mode];
 
     return (
-        <main className="min-h-dvh overflow-y-auto bg-[#f7f8fb] text-slate-950">
-            <div className="grid min-h-dvh grid-rows-[auto_1fr] bg-[linear-gradient(180deg,#ffffff_0%,#f7f8fb_48%,#eef6f4_100%)]">
-                <header className="mx-auto flex w-full max-w-6xl items-center justify-end px-5 py-4 sm:px-8">
-                    <Link
-                        href="https://chefuinc.com/contact"
-                        className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-950"
-                    >
-                        Help
-                        <ChevronRight className="size-4" aria-hidden="true" />
-                    </Link>
-                </header>
+        <main className="relative min-h-dvh overflow-hidden bg-[#11110f] text-[#f4f0e8]">
+            <div className="pointer-events-none absolute inset-0 opacity-60 [background-image:linear-gradient(rgba(244,240,232,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(244,240,232,0.035)_1px,transparent_1px)] [background-size:48px_48px]" />
+            <div className="pointer-events-none absolute -right-44 top-20 size-125 rounded-full border border-[#e5ad5b]/18" />
+            <div className="pointer-events-none absolute -right-20 top-44 size-90 rounded-full border border-[#e5ad5b]/10" />
 
-                <div className="mx-auto grid min-h-0 w-full max-w-6xl items-center gap-6 px-5 pb-4 sm:px-8 sm:pb-6 lg:grid-cols-[0.92fr_1.08fr]">
-                    <aside className="hidden lg:block">
-                        <div className="overflow-hidden rounded-4xl border border-slate-900 bg-[#0f1116] text-white shadow-[0_30px_80px_rgba(0,0,0,0.25)]">
-                            <div className="border-b border-white/10 bg-[linear-gradient(135deg,rgba(20,184,166,0.18),rgba(255,255,255,0)_48%,rgba(245,158,11,0.12))] p-7">
-                                <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-slate-200">
-                                    <Building2
-                                        className="size-4 text-emerald-300"
-                                        aria-hidden="true"
-                                    />
-                                    CHEFU Account
-                                </div>
-                                <h1 className="mt-8 max-w-md text-4xl font-semibold leading-tight tracking-tight text-white">
-                                    One secure account for every CheFu product.
-                                </h1>
-                                <p className="mt-4 max-w-md text-base leading-7 text-slate-300">
-                                    Continue to {appName} with the same identity you use across the CheFu ecosystem.
+            <header className="relative mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-5 sm:px-8 lg:px-10">
+                <Link href="/account" className="group inline-flex items-center gap-3">
+                    <span className="grid size-9 place-items-center rounded-full border border-[#e5ad5b]/35 bg-[#e5ad5b] text-[#26190a] shadow-[0_0_0_5px_rgba(229,173,91,0.08)]">
+                        <Sparkles className="size-4" aria-hidden="true" />
+                    </span>
+                    <span className="text-sm font-semibold tracking-[0.16em] text-[#f4f0e8]">
+                        CHEFU<span className="text-[#e5ad5b]">/</span>ACCOUNT
+                    </span>
+                </Link>
+                <Link
+                    href="https://chefuinc.com/contact"
+                    className="inline-flex items-center gap-2 rounded-full border border-white/14 px-3.5 py-2 text-xs font-semibold text-[#d7d0c5] transition hover:border-[#e5ad5b]/45 hover:bg-white/5 hover:text-[#f4f0e8]"
+                >
+                    Need a hand?
+                    <ChevronRight className="size-3.5" aria-hidden="true" />
+                </Link>
+            </header>
+
+            <div className="relative mx-auto grid w-full max-w-7xl items-center gap-10 px-5 pb-10 pt-7 sm:px-8 sm:pb-14 lg:min-h-[calc(100dvh-84px)] lg:grid-cols-[minmax(0,0.9fr)_minmax(420px,0.72fr)] lg:px-10 lg:py-16">
+                <aside className="hidden max-w-xl self-center lg:block">
+                    <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-[#e5ad5b]">
+                        <span className="h-px w-9 bg-[#e5ad5b]/70" />
+                        The CheFu passport
+                    </p>
+                    <h1 className="mt-7 text-5xl font-medium leading-[1.04] tracking-[-0.055em] text-[#f4f0e8] xl:text-6xl">
+                        One considered identity for your whole digital life.
+                    </h1>
+                    <p className="mt-7 max-w-lg text-base leading-7 text-[#bdb5a8]">
+                        Sign in once, then move seamlessly between the tools, learning, and
+                        conversations that make up your CheFu world.
+                    </p>
+                    <div className="mt-12 grid max-w-md grid-cols-3 gap-3 border-t border-white/10 pt-5">
+                        <Proof label="One identity" value="Every app" />
+                        <Proof label="Built around" value="You" />
+                        <Proof label="Protected by" value="Design" />
+                    </div>
+                </aside>
+
+                <section className="w-full max-w-xl justify-self-center lg:justify-self-end">
+                    <div className="rounded-[2rem] border border-white/12 bg-[#1a1916]/92 p-5 shadow-[0_32px_100px_rgba(0,0,0,0.38)] backdrop-blur sm:p-8">
+                        <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-6">
+                            <div>
+                                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#e5ad5b]">
+                                    {copy.eyebrow}
                                 </p>
+                                <h2 className="mt-3 max-w-sm text-3xl font-medium leading-tight tracking-[-0.04em] text-[#f4f0e8] sm:text-[2.15rem]">
+                                    {copy.heading}
+                                </h2>
                             </div>
+                            <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-[#e5ad5b]/22 bg-[#e5ad5b]/10 text-[#ffd18a]">
+                                <ShieldCheck className="size-5" aria-hidden="true" />
+                            </span>
                         </div>
-                    </aside>
 
-                    <div className="mx-auto w-full max-w-130">
-                        <div className="rounded-4xl border border-slate-200/50 bg-white p-6 shadow-[0_28px_60px_rgba(15,23,42,0.12)] sm:p-7">
-                            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800">
-                                <ShieldCheck className="size-4" aria-hidden="true" />
-                                {appName}
-                            </div>
-                            <h2 className="mt-5 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-                                {copy.heading}
-                            </h2>
-                            {copy.supporting ? (
-                                <p className="mt-3 text-sm leading-6 text-slate-600">
-                                    {copy.supporting}
-                                </p>
-                            ) : null}
+                        <p className="mt-5 text-sm leading-6 text-[#bdb5a8]">{copy.supporting}</p>
+                        <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/4 px-3 py-1.5 text-xs font-medium text-[#d7d0c5]">
+                            <span className="size-1.5 rounded-full bg-[#e5ad5b]" />
+                            Continuing to {appName}
+                        </div>
 
-                            <form onSubmit={onSubmit} className="mt-6 space-y-4">
-                                <label className="block space-y-2" htmlFor="email">
-                                    <span className="text-sm font-semibold text-slate-800">
-                                        Email
+                        <form onSubmit={onSubmit} className="mt-7 space-y-5">
+                            <label className="block" htmlFor="email">
+                                <span className="mb-2 block text-xs font-bold uppercase tracking-[0.14em] text-[#d7d0c5]">
+                                    Email address
+                                </span>
+                                <span className="relative block">
+                                    <Mail className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#8f887d]" />
+                                    <input
+                                        id="email"
+                                        type="email"
+                                        value={email}
+                                        onChange={(event) => setEmail(event.target.value)}
+                                        placeholder="you@example.com"
+                                        className="h-13 w-full rounded-2xl border border-white/12 bg-[#11110f] pl-11 pr-4 text-sm text-[#f4f0e8] outline-none transition placeholder:text-[#736c63] hover:border-white/20 focus:border-[#e5ad5b]/70 focus:ring-4 focus:ring-[#e5ad5b]/10"
+                                        autoComplete="email"
+                                        autoFocus
+                                    />
+                                </span>
+                            </label>
+
+                            {mode !== "forgot-password" ? (
+                                <label className="block" htmlFor="password">
+                                    <span className="mb-2 flex items-center justify-between gap-3">
+                                        <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#d7d0c5]">
+                                            Password
+                                        </span>
+                                        {mode === "login" ? (
+                                            <Link href={props.forgotPasswordHref} className="text-xs font-semibold text-[#e5ad5b] transition hover:text-[#ffd18a]">
+                                                Forgot it?
+                                            </Link>
+                                        ) : (
+                                            <span className="text-xs text-[#8f887d]">{copy.passwordHelp}</span>
+                                        )}
                                     </span>
                                     <span className="relative block">
-                                        <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+                                        <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#8f887d]" />
                                         <input
-                                            id="email"
-                                            type="email"
-                                            value={email}
-                                            onChange={(event) => setEmail(event.target.value)}
-                                            placeholder="you@example.com"
-                                            className="h-12 w-full rounded-md border border-slate-300 bg-white pl-10 pr-3 text-slate-950 shadow-sm outline-none placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20"
-                                            autoComplete="email"
-                                            autoFocus
+                                            id="password"
+                                            type={showPassword ? "text" : "password"}
+                                            value={props.password}
+                                            onChange={(event) => props.setPassword(event.target.value)}
+                                            placeholder="Enter your password"
+                                            className="h-13 w-full rounded-2xl border border-white/12 bg-[#11110f] pl-11 pr-12 text-sm text-[#f4f0e8] outline-none transition placeholder:text-[#736c63] hover:border-white/20 focus:border-[#e5ad5b]/70 focus:ring-4 focus:ring-[#e5ad5b]/10"
+                                            autoComplete={copy.passwordAutoComplete}
                                         />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-lg text-[#8f887d] transition hover:bg-white/7 hover:text-[#f4f0e8]"
+                                            aria-label={showPassword ? "Hide password" : "Show password"}
+                                        >
+                                            {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                                        </button>
                                     </span>
                                 </label>
+                            ) : null}
 
-                                {mode !== "forgot-password" ? (
-                                    <label className="block space-y-2" htmlFor="password">
-                                        <span className="flex items-center justify-between gap-3">
-                                            <span className="text-sm font-semibold text-slate-800">
-                                                Password
-                                            </span>
-                                            {mode === "login" ? (
-                                                <Link
-                                                    href={props.forgotPasswordHref}
-                                                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 transition hover:text-emerald-900"
-                                                >
-                                                    <KeyRound className="size-3.5" aria-hidden="true" />
-                                                    Forgot password?
-                                                </Link>
-                                            ) : copy.passwordHelp ? (
-                                                <span className="text-xs font-medium text-slate-500">
-                                                    {copy.passwordHelp}
-                                                </span>
-                                            ) : null}
-                                        </span>
-                                        <span className="relative block">
-                                            <Lock className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowPassword(!showPassword)}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 transition hover:text-slate-800"
-                                                aria-label={showPassword ? "Hide password" : "Show password"}
-                                            >
-                                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                            </button>
-                                            <input
-                                                id="password"
-                                                type={showPassword ? "text" : "password"}
-                                                value={props.password}
-                                                onChange={(event) =>
-                                                    props.setPassword(event.target.value)
-                                                }
-                                                placeholder="Your password"
-                                                className="h-12 w-full rounded-xl border border-slate-300 bg-white pl-10 pr-3 text-slate-950 shadow-sm outline-none placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20"
-                                                autoComplete={copy.passwordAutoComplete}
-                                            />
-                                        </span>
-                                    </label>
-                                ) : null}
-
-                                <button
-                                    type="submit"
-                                    disabled={isSubmitting}
-                                    className="inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-slate-950 px-4 text-base font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:opacity-60"
-                                >
-                                    {isSubmitting ? (
-                                        <>
-                                            <Loader2
-                                                className="size-4 animate-spin"
-                                                aria-hidden="true"
-                                            />
-                                            {copy.submitting}
-                                        </>
-                                    ) : (
-                                        <>
-                                            {copy.buttonIdle}
-                                            <ArrowRight className="size-4" aria-hidden="true" />
-                                        </>
-                                    )}
-                                </button>
-                            </form>
-
-                            <div className="mt-6 flex flex-col gap-3 border-t border-slate-200 pt-4 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
-                                <p>{copy.alternateLead}</p>
-                                <Link
-                                    href={alternateHref}
-                                    className="inline-flex items-center gap-2 font-semibold text-emerald-700 transition hover:text-emerald-900"
-                                >
-                                    {copy.alternateAction}
-                                    <ArrowRight className="size-4" aria-hidden="true" />
-                                </Link>
-                            </div>
-                        </div>
-
-                        <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs font-medium text-slate-500">
-                            <Link
-                                href="https://chefuinc.com/privacy"
-                                className="hover:text-slate-900"
+                            <button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="inline-flex h-13 w-full items-center justify-center gap-2 rounded-2xl bg-[#e5ad5b] px-5 text-sm font-bold text-[#26190a] transition hover:bg-[#ffd18a] disabled:cursor-not-allowed disabled:opacity-60"
                             >
-                                Privacy
-                            </Link>
-                            <Link
-                                href="https://chefuinc.com/terms"
-                                className="hover:text-slate-900"
-                            >
-                                Terms
-                            </Link>
-                            <Link
-                                href="https://chefuinc.com/contact"
-                                className="hover:text-slate-900"
-                            >
-                                Contact
+                                {isSubmitting ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <ArrowRight className="size-4" aria-hidden="true" />}
+                                {isSubmitting ? copy.submitting : copy.buttonIdle}
+                            </button>
+                        </form>
+
+                        <div className="mt-7 flex flex-col gap-3 border-t border-white/10 pt-5 text-sm sm:flex-row sm:items-center sm:justify-between">
+                            <p className="text-[#8f887d]">{copy.alternateLead}</p>
+                            <Link href={alternateHref} className="inline-flex items-center gap-2 font-semibold text-[#e5ad5b] transition hover:text-[#ffd18a]">
+                                {copy.alternateAction}
+                                <ArrowRight className="size-4" aria-hidden="true" />
                             </Link>
                         </div>
                     </div>
-                </div>
+
+                    <footer className="mt-5 flex flex-wrap items-center justify-between gap-3 px-2 text-[11px] font-medium text-[#8f887d]">
+                        <span className="inline-flex items-center gap-1.5"><ShieldCheck className="size-3.5" /> Private by design</span>
+                        <span className="flex gap-3">
+                            <Link href="https://chefuinc.com/privacy" className="transition hover:text-[#f4f0e8]">Privacy</Link>
+                            <Link href="https://chefuinc.com/terms" className="transition hover:text-[#f4f0e8]">Terms</Link>
+                            <Link href="https://chefuinc.com/contact" className="transition hover:text-[#f4f0e8]">Contact</Link>
+                        </span>
+                    </footer>
+                </section>
             </div>
         </main>
+    );
+}
+
+function Proof({ label, value }: { label: string; value: string }) {
+    return (
+        <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#797267]">{label}</p>
+            <p className="mt-1.5 text-sm font-semibold text-[#f4f0e8]">{value}</p>
+        </div>
     );
 }

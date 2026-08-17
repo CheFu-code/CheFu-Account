@@ -3,6 +3,16 @@
 
 :root {
     color-scheme: dark;
+    --ink: #11110f;
+    --ink-raised: #1a1916;
+    --ink-soft: #24221e;
+    --paper: #f4f0e8;
+    --paper-muted: #bdb5a8;
+    --line: rgba(244, 240, 232, 0.12);
+    --line-strong: rgba(244, 240, 232, 0.2);
+    --accent: #e5ad5b;
+    --accent-bright: #ffd18a;
+    --accent-ink: #26190a;
 }
 
 * {
@@ -15,12 +25,19 @@ html {
 
 body {
     margin: 0;
-    background: #101216;
-    color: #fff;
+    min-width: 320px;
+    background: var(--ink);
+    color: var(--paper);
     font-family:
-        Arial,
-        Helvetica,
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
         sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
 }
 
 button,
@@ -31,7 +48,25 @@ textarea {
 }
 
 ::selection {
-    background: rgba(110, 231, 183, 0.32);
+    background: rgba(229, 173, 91, 0.38);
+    color: #fff;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+    -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--accent-bright);
+    outline-offset: 3px;
 }
 
 * {
@@ -49,6 +84,6 @@ textarea {
 }
 
 *::-webkit-scrollbar-thumb {
-    background: rgba(148, 163, 184, 0.35);
+    background: rgba(244, 240, 232, 0.22);
     border-radius: 999px;
 }

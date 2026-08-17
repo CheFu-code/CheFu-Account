@@ -20,25 +20,25 @@ export function SectionCard({
     title: string;
 }) {
     return (
-        <section className="overflow-hidden rounded-4xl border border-white/10 bg-[#191b20]/95 shadow-[0_20px_50px_rgba(0,0,0,0.22)]">
-            <div className="border-b border-white/10 bg-white/2.5 p-4 sm:p-5">
+        <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[#1a1916]/95 shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
+            <div className="border-b border-white/10 bg-white/[0.025] p-5 sm:p-6">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex items-start gap-3">
-                        <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-emerald-300/20 bg-emerald-300/10 text-emerald-200">
+                        <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-[#e5ad5b]/22 bg-[#e5ad5b]/10 text-[#ffd18a]">
                             <Icon className="size-5" aria-hidden="true" />
                         </span>
                         <div>
-                            <h2 className="text-lg font-semibold tracking-tight text-white">
+                            <h2 className="text-xl font-semibold tracking-[-0.03em] text-[#f4f0e8]">
                                 {title}
                             </h2>
-                            <p className="mt-1 text-sm leading-6 text-slate-400">
+                            <p className="mt-1 text-sm leading-6 text-[#8f887d]">
                                 {description}
                             </p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
                         {aside ? (
-                            <span className="rounded-full bg-white/8 px-2.5 py-1 text-[11px] font-semibold text-slate-200">
+                            <span className="rounded-full border border-[#e5ad5b]/18 bg-[#e5ad5b]/9 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-[#ffd18a]">
                                 {aside}
                             </span>
                         ) : null}
@@ -46,7 +46,7 @@ export function SectionCard({
                     </div>
                 </div>
             </div>
-            <div className="p-4 sm:p-5">{children}</div>
+            <div className="p-5 sm:p-6">{children}</div>
         </section>
     );
 }
@@ -64,7 +64,7 @@ export function QuickLink({
         <button
             type="button"
             onClick={onClick}
-            className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/5 px-3 py-2 text-xs font-semibold text-white transition hover:border-emerald-200/30 hover:bg-white/10"
+            className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/4 px-3 py-2 text-xs font-semibold text-[#d7d0c5] transition hover:border-[#e5ad5b]/35 hover:bg-white/8 hover:text-[#f4f0e8]"
         >
             <Icon className="size-4" aria-hidden="true" />
             {label}
@@ -84,14 +84,14 @@ export function ActionRow({
     title: string;
 }) {
     return (
-        <div className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">
-                <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-white/4 text-slate-300">
+                <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-white/5 text-[#bdb5a8]">
                     <Icon className="size-4" aria-hidden="true" />
                 </span>
                 <div>
-                    <p className="font-semibold text-white">{title}</p>
-                    <p className="mt-1 text-sm leading-6 text-slate-400">{description}</p>
+                    <p className="font-semibold text-[#f4f0e8]">{title}</p>
+                    <p className="mt-1 text-sm leading-6 text-[#8f887d]">{description}</p>
                 </div>
             </div>
             {action}
@@ -111,16 +111,16 @@ export function ToggleRow({
     title: string;
 }) {
     return (
-        <div className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <p className="font-semibold text-white">{title}</p>
-                <p className="mt-1 text-sm leading-6 text-slate-400">{description}</p>
+                <p className="font-semibold text-[#f4f0e8]">{title}</p>
+                <p className="mt-1 text-sm leading-6 text-[#8f887d]">{description}</p>
             </div>
             <button
                 type="button"
                 onClick={onToggle}
                 className={`relative h-6 w-11 shrink-0 rounded-full transition ${
-                    checked ? "bg-emerald-400" : "bg-slate-700"
+                    checked ? "bg-[#e5ad5b]" : "bg-[#4b463e]"
                 }`}
                 aria-pressed={checked}
             >
@@ -155,14 +155,14 @@ export function TextField({
 }) {
     return (
         <label className={`block ${wide ? "md:col-span-2" : ""}`}>
-            <span className="text-sm font-semibold text-slate-200">{label}</span>
+            <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#bdb5a8]">{label}</span>
             <input
                 type={type}
                 min={min}
                 max={max}
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
-                className="mt-2 h-11 w-full rounded-xl border border-white/10 bg-[#111318] px-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-300 focus:ring-4 focus:ring-emerald-300/10"
+                className="mt-2 h-12 w-full rounded-2xl border border-white/12 bg-[#11110f] px-4 text-sm text-[#f4f0e8] outline-none transition placeholder:text-[#736c63] hover:border-white/20 focus:border-[#e5ad5b]/70 focus:ring-4 focus:ring-[#e5ad5b]/10"
                 placeholder={placeholder}
             />
         </label>
@@ -179,13 +179,13 @@ export function LockedInfo({
     value: string;
 }) {
     return (
-        <div className="rounded-2xl border border-white/10 bg-[#111318] p-3">
+        <div className="rounded-2xl border border-white/10 bg-[#11110f] p-4">
             <div className="flex items-start gap-3">
-                <LockKeyhole className="mt-0.5 size-4 text-slate-400" aria-hidden="true" />
+                <LockKeyhole className="mt-0.5 size-4 text-[#8f887d]" aria-hidden="true" />
                 <div className="min-w-0">
-                    <p className="text-sm font-semibold text-slate-200">{label}</p>
-                    <p className="mt-1 truncate text-sm text-white">{value}</p>
-                    <p className="mt-1 text-xs leading-5 text-slate-400">{description}</p>
+                    <p className="text-xs font-bold uppercase tracking-[0.1em] text-[#8f887d]">{label}</p>
+                    <p className="mt-1.5 truncate text-sm font-medium text-[#f4f0e8]">{value}</p>
+                    {description ? <p className="mt-1 text-xs leading-5 text-[#797267]">{description}</p> : null}
                 </div>
             </div>
         </div>
@@ -205,11 +205,11 @@ export function SelectField({
 }) {
     return (
         <label className="block">
-            <span className="text-sm font-semibold text-slate-200">{label}</span>
+            <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#bdb5a8]">{label}</span>
             <select
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
-                className="mt-2 h-11 w-full rounded-xl border border-white/10 bg-[#111318] px-3 text-sm text-white outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-300/10"
+                className="mt-2 h-12 w-full rounded-2xl border border-white/12 bg-[#11110f] px-4 text-sm text-[#f4f0e8] outline-none transition hover:border-white/20 focus:border-[#e5ad5b]/70 focus:ring-4 focus:ring-[#e5ad5b]/10"
             >
                 {options.map((option) => (
                     <option key={option} value={option}>
@@ -226,7 +226,7 @@ export function SaveButton({ isSaving, label }: { isSaving: boolean; label: stri
         <button
             type="submit"
             disabled={isSaving}
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-200 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-[#e5ad5b] px-4 py-2.5 text-sm font-bold text-[#26190a] transition hover:bg-[#ffd18a] disabled:cursor-not-allowed disabled:opacity-60"
         >
             {isSaving ? (
                 <Loader2 className="size-4 animate-spin" aria-hidden="true" />

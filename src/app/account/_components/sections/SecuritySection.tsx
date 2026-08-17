@@ -49,7 +49,7 @@ export function SecuritySection({
                                 type="button"
                                 onClick={onSendResetEmail}
                                 disabled={isSendingReset}
-                                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/14 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:bg-white/10 disabled:opacity-60"
+                                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/14 bg-white/4 px-4 py-2.5 text-sm font-bold text-[#d7d0c5] transition hover:border-[#e5ad5b]/35 hover:bg-white/8 hover:text-[#f4f0e8] disabled:opacity-60"
                             >
                                 {isSendingReset ? (
                                     <Loader2 className="size-4 animate-spin" />
@@ -71,7 +71,7 @@ export function SecuritySection({
                         }
                         action={
                             security.summary?.emailVerified ? (
-                                <span className="inline-flex items-center gap-2 rounded-full bg-emerald-400/15 px-4 py-2 text-sm font-semibold text-emerald-200">
+                                <span className="inline-flex items-center gap-2 rounded-full border border-[#e5ad5b]/20 bg-[#e5ad5b]/10 px-4 py-2.5 text-sm font-bold text-[#ffd18a]">
                                     <CheckCircle2 className="size-4" />
                                     Verified
                                 </span>
@@ -80,7 +80,7 @@ export function SecuritySection({
                                     type="button"
                                     onClick={security.sendVerificationEmail}
                                     disabled={security.isSendingVerification}
-                                    className="inline-flex items-center justify-center gap-2 rounded-full border border-white/14 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:bg-white/10 disabled:opacity-60"
+                                    className="inline-flex items-center justify-center gap-2 rounded-full border border-white/14 bg-white/4 px-4 py-2.5 text-sm font-bold text-[#d7d0c5] transition hover:border-[#e5ad5b]/35 hover:bg-white/8 hover:text-[#f4f0e8] disabled:opacity-60"
                                 >
                                     {security.isSendingVerification ? (
                                         <Loader2 className="size-4 animate-spin" />
@@ -103,7 +103,7 @@ export function SecuritySection({
                                     type="button"
                                     onClick={() => void security.loadSecuritySummary()}
                                     disabled={security.isLoading}
-                                    className="inline-flex items-center justify-center gap-2 rounded-full border border-white/14 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:bg-white/10 disabled:opacity-60"
+                                    className="inline-flex items-center justify-center gap-2 rounded-full border border-white/14 bg-white/4 px-4 py-2.5 text-sm font-bold text-[#d7d0c5] transition hover:border-[#e5ad5b]/35 hover:bg-white/8 hover:text-[#f4f0e8] disabled:opacity-60"
                                 >
                                     <RotateCcw
                                         className={`size-4 ${
@@ -138,7 +138,7 @@ export function SecuritySection({
                                             !security.firebaseReady ||
                                             !security.currentUser
                                         }
-                                        className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-200 disabled:opacity-60"
+                                        className="inline-flex items-center justify-center gap-2 rounded-full bg-[#e5ad5b] px-4 py-2.5 text-sm font-bold text-[#26190a] transition hover:bg-[#ffd18a] disabled:opacity-60"
                                     >
                                         {security.isStartingTotp ? (
                                             <Loader2 className="size-4 animate-spin" />
@@ -155,8 +155,8 @@ export function SecuritySection({
                     <div className="py-4">
                         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                             <div>
-                                <p className="font-semibold text-white">Recovery codes</p>
-                                <p className="mt-1 text-sm leading-6 text-slate-400">
+                                <p className="font-semibold text-[#f4f0e8]">Recovery codes</p>
+                                <p className="mt-1 text-sm leading-6 text-[#8f887d]">
                                     Generate one-time codes for account recovery. We show
                                     them once and store only hashes.
                                 </p>
@@ -165,7 +165,7 @@ export function SecuritySection({
                                 type="button"
                                 onClick={() => void security.generateBackupCodes()}
                                 disabled={security.isGeneratingCodes}
-                                className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
+                                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#f4f0e8] px-4 py-2.5 text-sm font-bold text-[#26190a] transition hover:bg-white disabled:opacity-60"
                             >
                                 {security.isGeneratingCodes ? (
                                     <Loader2 className="size-4 animate-spin" />
@@ -177,7 +177,7 @@ export function SecuritySection({
                         </div>
 
                         {security.summary ? (
-                            <p className="mt-3 text-xs text-slate-500">
+                            <p className="mt-3 text-xs text-[#797267]">
                                 {security.summary.backupCodesRemaining} unused codes
                                 {security.summary.backupCodesGeneratedAt
                                     ? `, generated ${new Date(
@@ -206,7 +206,7 @@ export function SecuritySection({
                                     {security.codes.map((code) => (
                                         <code
                                             key={code}
-                                            className="rounded-md bg-black/25 px-3 py-2 text-sm font-semibold text-white"
+                                            className="rounded-lg bg-black/25 px-3 py-2 text-sm font-semibold text-[#f4f0e8]"
                                         >
                                             {code}
                                         </code>
