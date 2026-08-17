@@ -23,7 +23,6 @@ export function AccountFrame({
     onSignOut,
     user,
 }: AccountFrameProps) {
-    const activeItem = navItems.find((item) => item.id === activeSection) ?? navItems[0];
 
     return (
         <section className="min-h-dvh bg-[#11110f] text-[#f4f0e8]">
@@ -49,14 +48,14 @@ export function AccountFrame({
                         <Link
                             href="https://chefuinc.com/contact"
                             className="hidden size-9 items-center justify-center rounded-full border border-white/12 text-[#bdb5a8] transition hover:border-[#e5ad5b]/45 hover:bg-white/5 hover:text-[#f4f0e8] sm:flex"
-                            aria-label="Contact CheFu support"
+                            aria-label="Contact CHEFU support"
                         >
                             <CircleHelp className="size-4" aria-hidden="true" />
                         </Link>
                         <Link
                             href="https://chefuinc.com/portfolio"
                             className="hidden size-9 items-center justify-center rounded-full border border-white/12 text-[#bdb5a8] transition hover:border-[#e5ad5b]/45 hover:bg-white/5 hover:text-[#f4f0e8] sm:flex"
-                            aria-label="Explore CheFu apps"
+                            aria-label="Explore CHEFU apps"
                         >
                             <Grid3X3 className="size-4" aria-hidden="true" />
                         </Link>
@@ -107,13 +106,6 @@ export function AccountFrame({
                                         onClick={() => onSelectSection(item.id)}
                                     />
                                 ))}
-                            </div>
-                            <div className="mt-8 border-t border-white/10 pt-5">
-                                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#797267]">
-                                    Currently viewing
-                                </p>
-                                <p className="mt-2 text-sm font-semibold text-[#f4f0e8]">{activeItem.label}</p>
-                                <p className="mt-1 text-xs leading-5 text-[#8f887d]">{activeItem.description}</p>
                             </div>
                         </nav>
                     </aside>

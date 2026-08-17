@@ -30,7 +30,7 @@ export function LogoutClient() {
                 <span className="mx-auto mb-4 block size-2 animate-pulse rounded-full bg-[#e5ad5b]" />
                 <p className="text-lg font-semibold tracking-[-0.02em]">Signing out of {appName}...</p>
                 <p className="mt-2 text-sm text-[#8f887d]">
-                    We are closing your shared CheFu session.
+                    We are closing your shared CHEFU session.
                 </p>
             </div>
         </main>

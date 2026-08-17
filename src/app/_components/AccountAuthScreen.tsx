@@ -46,24 +46,24 @@ type AccountAuthScreenProps =
 const modeCopy = {
     login: {
         alternateAction: "Create an account",
-        alternateLead: "New to CheFu?",
+        alternateLead: "New to CHEFU?",
         buttonIdle: "Enter your account",
         eyebrow: "Welcome back",
         heading: "Your work, held in one place.",
         passwordAutoComplete: "current-password",
         passwordHelp: "",
-        supporting: "Use the identity that moves with you across every CheFu product.",
+        supporting: "Use the identity that moves with you across every CHEFU product.",
         submitting: "Opening your account...",
     },
     register: {
         alternateAction: "Sign in instead",
         alternateLead: "Already have an account?",
         buttonIdle: "Create your account",
-        eyebrow: "A shared CheFu identity",
+        eyebrow: "A shared CHEFU identity",
         heading: "Start with one thoughtful sign-in.",
         passwordAutoComplete: "new-password",
         passwordHelp: "At least 6 characters",
-        supporting: "Your account is the secure home for every CheFu product you use.",
+        supporting: "Your account is the secure home for every CHEFU product you use.",
         submitting: "Creating your account...",
     },
     "forgot-password": {
@@ -112,14 +112,14 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                 <aside className="hidden max-w-xl self-center lg:block">
                     <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-[#e5ad5b]">
                         <span className="h-px w-9 bg-[#e5ad5b]/70" />
-                        The CheFu passport
+                        The CHEFU passport
                     </p>
                     <h1 className="mt-7 text-5xl font-medium leading-[1.04] tracking-[-0.055em] text-[#f4f0e8] xl:text-6xl">
                         One considered identity for your whole digital life.
                     </h1>
                     <p className="mt-7 max-w-lg text-base leading-7 text-[#bdb5a8]">
                         Sign in once, then move seamlessly between the tools, learning, and
-                        conversations that make up your CheFu world.
+                        conversations that make up your CHEFU world.
                     </p>
                     <div className="mt-12 grid max-w-md grid-cols-3 gap-3 border-t border-white/10 pt-5">
                         <Proof label="One identity" value="Every app" />

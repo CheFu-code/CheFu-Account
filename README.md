@@ -1,6 +1,6 @@
 # CHEFU Account
 
-Standalone Next.js account and authentication app for CheFu products.
+Standalone Next.js account and authentication app for CHEFU products.
 
 Production target:
 

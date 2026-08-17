@@ -9,8 +9,8 @@ export type { ChefuAppId };
 const CHEFU_APP_HEADER = "x-chefu-app";
 
 const appLabels: Record<ChefuAppId, string> = {
-    academy: "CheFu Academy",
-    admin: "CheFu Admin",
+    academy: "CHEFU Academy",
+    admin: "CHEFU Admin",
     flow: "Flow Mail",
     muzalo: "Muzalo",
     quantum: "Quantum",
@@ -105,7 +105,7 @@ export async function syncChefuAccountSession(idToken: string, appId: ChefuAppId
             requestId?: string;
         };
         const message =
-            data.error || data.message || "Unable to start your CheFu account session.";
+            data.error || data.message || "Unable to start your CHEFU account session.";
         const requestId = data.requestId ? ` Request ID: ${data.requestId}` : "";
 
         throw new Error(`${message}${requestId}`);

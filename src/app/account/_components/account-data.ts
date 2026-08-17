@@ -41,7 +41,7 @@ export const connectedApps: Array<{
 }> = [
     {
         id: "academy",
-        name: "CheFu Academy",
+        name: "CHEFU Academy",
         description: "Courses, videos, SDK keys, and guided learning.",
         href: "https://academy.chefuinc.com",
     },

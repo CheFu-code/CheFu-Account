@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     openGraph: {
         title: "CHEFU Account",
         description:
-            "One secure account for CheFu products.",
+            "One secure account for CHEFU products.",
         url: appUrl,
         siteName: "CHEFU Account",
         type: "website",

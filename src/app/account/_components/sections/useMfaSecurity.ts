@@ -427,7 +427,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         try {
             await syncChefuAccountSession(idToken, appId);
         } catch (error) {
-            toast.warning("2FA changed, but your CheFu session could not refresh.", {
+            toast.warning("2FA changed, but your CHEFU session could not refresh.", {
                 description:
                     error instanceof Error ? error.message : "Sign in again if the page feels stale.",
             });

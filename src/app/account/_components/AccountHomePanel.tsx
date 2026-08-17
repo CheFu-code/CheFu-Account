@@ -10,7 +10,6 @@ import {
     Sparkles,
     type LucideIcon,
 } from "lucide-react";
-import Link from "next/link";
 import { connectedApps } from "./account-data";
 import type { AccountNavItem, AccountResponse } from "./account-types";
 
@@ -79,7 +78,7 @@ export function AccountHomePanel({
             </header>
 
             <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.65fr)]">
-                <section className="relative overflow-hidden rounded-[2rem] border border-[#e5ad5b]/20 bg-[#1a1916] p-5 shadow-[0_24px_70px_rgba(0,0,0,0.22)] sm:p-7">
+                <section className="relative overflow-hidden rounded-4xl border border-[#e5ad5b]/20 bg-[#1a1916] p-5 shadow-[0_24px_70px_rgba(0,0,0,0.22)] sm:p-7">
                     <div className="pointer-events-none absolute -right-12 -top-16 size-60 rounded-full border border-[#e5ad5b]/14" />
                     <div className="pointer-events-none absolute right-8 top-8 size-28 rounded-full border border-[#e5ad5b]/10" />
                     <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
@@ -97,7 +96,7 @@ export function AccountHomePanel({
                                     <Check className="size-3.5" aria-hidden="true" />
                                     Account active
                                 </div>
-                                <h2 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-[#f4f0e8]">{name || "Your CheFu profile"}</h2>
+                                <h2 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-[#f4f0e8]">{name || "Your CHEFU profile"}</h2>
                                 <p className="mt-1 text-sm text-[#9e968a]">{account.user.email}</p>
                             </div>
                         </div>
@@ -117,11 +116,11 @@ export function AccountHomePanel({
                     </div>
                 </section>
 
-                <section className="rounded-[2rem] border border-white/10 bg-[#24221e] p-5 sm:p-6">
+                <section className="rounded-4xl border border-white/10 bg-[#24221e] p-5 sm:p-6">
                     <div className="flex items-center justify-between gap-4">
                         <div>
                             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#8f887d]">Account posture</p>
-                            <h2 className="mt-1.5 text-lg font-semibold tracking-[-0.025em] text-[#f4f0e8]">A few quick checks</h2>
+                            <h2 className="mt-1.5 text-lg font-semibold tracking-tight text-[#f4f0e8]">A few quick checks</h2>
                         </div>
                         <Sparkles className="size-5 text-[#e5ad5b]" aria-hidden="true" />
                     </div>
@@ -133,37 +132,7 @@ export function AccountHomePanel({
                 </section>
             </div>
 
-            <section className="border-t border-white/10 pt-6">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                    <div>
-                        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#8f887d]">Your ecosystem</p>
-                        <h2 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-[#f4f0e8]">Connected CheFu spaces</h2>
-                    </div>
-                    <p className="text-sm text-[#8f887d]">Explore the products attached to this identity.</p>
-                </div>
-                <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                    {connectedApps.map((app) => {
-                        const isConnected = Boolean(account.profile.apps[app.id]?.enabled);
-                        return (
-                            <Link
-                                key={app.id}
-                                href={app.href}
-                                className="group rounded-2xl border border-white/10 bg-[#1a1916]/85 p-4 transition hover:-translate-y-0.5 hover:border-[#e5ad5b]/35 hover:bg-[#24221e]"
-                            >
-                                <div className="flex items-start justify-between gap-3">
-                                    <span className="text-sm font-semibold text-[#f4f0e8]">{app.name}</span>
-                                    <ArrowUpRight className="size-4 text-[#716a60] transition group-hover:text-[#e5ad5b]" aria-hidden="true" />
-                                </div>
-                                <p className="mt-2 text-xs leading-5 text-[#8f887d]">{app.description}</p>
-                                <span className={`mt-4 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em] ${isConnected ? "text-[#e5ad5b]" : "text-[#716a60]"}`}>
-                                    <span className={`size-1.5 rounded-full ${isConnected ? "bg-[#e5ad5b]" : "bg-[#716a60]"}`} />
-                                    {isConnected ? "Connected" : "Available"}
-                                </span>
-                            </Link>
-                        );
-                    })}
-                </div>
-            </section>
+            
         </section>
     );
 }

@@ -12,7 +12,7 @@ export function DeveloperSection({ account }: AccountSettingsFormProps) {
         <SectionCard
             icon={Code2}
             title="Developer access"
-            description="SDK and API key access for CheFu integrations."
+            description="SDK and API key access for CHEFU integrations."
             aside={developerEnabled ? "Enabled" : "Not enabled"}
         >
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -23,7 +23,7 @@ export function DeveloperSection({ account }: AccountSettingsFormProps) {
                             : "Create an SDK account to unlock API keys."}
                     </p>
                     <p className="mt-1 text-sm leading-6 text-[#8f887d]">
-                        Developer keys are managed from the Academy SDK and CheFu Inc API.
+                        Developer keys are managed from the Academy SDK and CHEFU Inc API.
                     </p>
                 </div>
                 <Link
