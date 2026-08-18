@@ -2,14 +2,13 @@
 
 import {
     ArrowRight,
-    ChevronRight,
     Eye,
     EyeOff,
     Loader2,
     LockKeyhole,
     Mail,
     ShieldCheck,
-    Sparkles,
+    Sparkles
 } from "lucide-react";
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
@@ -91,24 +90,6 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
             <div className="pointer-events-none absolute inset-0 opacity-60 [background-image:linear-gradient(rgba(244,240,232,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(244,240,232,0.035)_1px,transparent_1px)] [background-size:48px_48px]" />
             <div className="pointer-events-none absolute -right-44 top-20 size-125 rounded-full border border-[#e5ad5b]/18" />
             <div className="pointer-events-none absolute -right-20 top-44 size-90 rounded-full border border-[#e5ad5b]/10" />
-
-            <header className="relative mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-5 sm:px-8 lg:px-10">
-                <Link href="/account" className="group inline-flex items-center gap-3">
-                    <span className="grid size-9 place-items-center rounded-full border border-[#e5ad5b]/35 bg-[#e5ad5b] text-[#26190a] shadow-[0_0_0_5px_rgba(229,173,91,0.08)]">
-                        <Sparkles className="size-4" aria-hidden="true" />
-                    </span>
-                    <span className="text-sm font-semibold tracking-[0.16em] text-[#f4f0e8]">
-                        CHEFU<span className="text-[#e5ad5b]">/</span>ACCOUNT
-                    </span>
-                </Link>
-                <Link
-                    href="https://chefuinc.com/contact"
-                    className="inline-flex items-center gap-2 rounded-full border border-white/14 px-3.5 py-2 text-xs font-semibold text-[#d7d0c5] transition hover:border-[#e5ad5b]/45 hover:bg-white/5 hover:text-[#f4f0e8]"
-                >
-                    Need a hand?
-                    <ChevronRight className="size-3.5" aria-hidden="true" />
-                </Link>
-            </header>
 
             <div className="relative mx-auto grid w-full max-w-7xl items-center gap-10 px-5 pb-10 pt-7 sm:px-8 sm:pb-14 lg:min-h-[calc(100dvh-84px)] lg:grid-cols-[minmax(0,0.9fr)_minmax(420px,0.72fr)] lg:px-10 lg:py-16">
                 <aside className="hidden max-w-xl self-center lg:block">

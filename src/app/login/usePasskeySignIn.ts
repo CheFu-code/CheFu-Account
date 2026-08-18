@@ -5,14 +5,14 @@ import {
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { startAuthentication } from "@simplewebauthn/browser";
-import { auth } from "../../../lib/firebase";
+import { auth } from "../../lib/firebase";
 
 export type PasskeySignInState = {
   isAuthenticating: boolean;
   error?: string;
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.chefuinc.com";
 
 export function usePasskeySignIn() {
   const [state, setState] = useState<PasskeySignInState>({
