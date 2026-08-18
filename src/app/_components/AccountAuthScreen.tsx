@@ -8,8 +8,7 @@ import {
     Loader2,
     LockKeyhole,
     Mail,
-    ShieldCheck,
-    Sparkles
+    ShieldCheck
 } from "lucide-react";
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
