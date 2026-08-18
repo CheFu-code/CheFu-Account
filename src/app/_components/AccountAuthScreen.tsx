@@ -4,6 +4,7 @@ import {
     ArrowRight,
     Eye,
     EyeOff,
+    Fingerprint,
     Loader2,
     LockKeyhole,
     Mail,
@@ -48,12 +49,10 @@ const modeCopy = {
     login: {
         alternateAction: "Create an account",
         alternateLead: "New to CHEFU?",
-        buttonIdle: "Enter your account",
+        buttonIdle: "Sign in",
         eyebrow: "Welcome back",
-        heading: "Your work, held in one place.",
         passwordAutoComplete: "current-password",
         passwordHelp: "",
-        supporting: "Use the identity that moves with you across every CHEFU product.",
         submitting: "Opening your account...",
     },
     register: {
@@ -61,10 +60,8 @@ const modeCopy = {
         alternateLead: "Already have an account?",
         buttonIdle: "Create your account",
         eyebrow: "A shared CHEFU identity",
-        heading: "Start with one thoughtful sign-in.",
         passwordAutoComplete: "new-password",
         passwordHelp: "At least 6 characters",
-        supporting: "Your account is the secure home for every CHEFU product you use.",
         submitting: "Creating your account...",
     },
     "forgot-password": {
@@ -87,7 +84,7 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
 
     return (
         <main className="relative min-h-dvh overflow-hidden bg-[#11110f] text-[#f4f0e8]">
-            <div className="pointer-events-none absolute inset-0 opacity-60 [background-image:linear-gradient(rgba(244,240,232,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(244,240,232,0.035)_1px,transparent_1px)] [background-size:48px_48px]" />
+            <div className="pointer-events-none absolute inset-0 opacity-60 bg-[linear-gradient(rgba(244,240,232,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(244,240,232,0.035)_1px,transparent_1px)] bg-size-[48px_48px]" />
             <div className="pointer-events-none absolute -right-44 top-20 size-125 rounded-full border border-[#e5ad5b]/18" />
             <div className="pointer-events-none absolute -right-20 top-44 size-90 rounded-full border border-[#e5ad5b]/10" />
 
@@ -112,22 +109,19 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                 </aside>
 
                 <section className="w-full max-w-xl justify-self-center lg:justify-self-end">
-                    <div className="rounded-[2rem] border border-white/12 bg-[#1a1916]/92 p-5 shadow-[0_32px_100px_rgba(0,0,0,0.38)] backdrop-blur sm:p-8">
+                    <div className="rounded-4xl border border-white/12 bg-[#1a1916]/92 p-5 shadow-[0_32px_100px_rgba(0,0,0,0.38)] backdrop-blur sm:p-8">
                         <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-6">
                             <div>
                                 <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#e5ad5b]">
                                     {copy.eyebrow}
                                 </p>
-                                <h2 className="mt-3 max-w-sm text-3xl font-medium leading-tight tracking-[-0.04em] text-[#f4f0e8] sm:text-[2.15rem]">
-                                    {copy.heading}
-                                </h2>
+                               
                             </div>
                             <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-[#e5ad5b]/22 bg-[#e5ad5b]/10 text-[#ffd18a]">
                                 <ShieldCheck className="size-5" aria-hidden="true" />
                             </span>
                         </div>
 
-                        <p className="mt-5 text-sm leading-6 text-[#bdb5a8]">{copy.supporting}</p>
                         <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/4 px-3 py-1.5 text-xs font-medium text-[#d7d0c5]">
                             <span className="size-1.5 rounded-full bg-[#e5ad5b]" />
                             Continuing to {appName}
@@ -209,7 +203,7 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                                     {props.isPasskeySubmitting ? (
                                         <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                                     ) : (
-                                        <Sparkles className="size-4" aria-hidden="true" />
+                                        <Fingerprint className="size-4" aria-hidden="true" />
                                     )}
                                     {props.isPasskeySubmitting ? "Scanning..." : "Sign in with passkey"}
                                 </button>

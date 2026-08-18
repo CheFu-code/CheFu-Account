@@ -6,13 +6,12 @@ import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { startAuthentication } from "@simplewebauthn/browser";
 import { auth } from "../../lib/firebase";
+import { apiUrl } from "../../lib/chefu-account";
 
 export type PasskeySignInState = {
   isAuthenticating: boolean;
   error?: string;
 };
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.chefuinc.com";
 
 export function usePasskeySignIn() {
   const [state, setState] = useState<PasskeySignInState>({
@@ -26,7 +25,7 @@ export function usePasskeySignIn() {
 
         // Step 1: Get authentication options
         const optionsResponse = await fetch(
-          `${API_BASE}/auth/passkey/authenticate/options`,
+          apiUrl("/auth/passkey/authenticate/options"),
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -44,7 +43,7 @@ export function usePasskeySignIn() {
 
         // Step 3: Verify authentication with server
         const verifyResponse = await fetch(
-          `${API_BASE}/auth/passkey/authenticate/verify`,
+          apiUrl("/auth/passkey/authenticate/verify"),
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },

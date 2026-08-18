@@ -3,6 +3,7 @@ import {
 } from "@simplewebauthn/browser";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { apiUrl } from "../../../../lib/chefu-account";
 
 export type PasskeyCredential = {
     credentialId: string;
@@ -19,8 +20,6 @@ export type PasskeySetupState = {
     error?: string;
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.chefuinc.com";
-
 export function usePasskeyManagement() {
     const [state, setState] = useState<PasskeySetupState>({
         isLoadingCredentials: true,
@@ -34,7 +33,7 @@ export function usePasskeyManagement() {
         try {
             setState((prev) => ({ ...prev, isLoadingCredentials: true, error: undefined }));
 
-            const response = await fetch(`${API_BASE}/auth/passkey/credentials`, {
+            const response = await fetch(apiUrl("/auth/passkey/credentials"), {
                 credentials: "include",
             });
 
@@ -70,7 +69,7 @@ export function usePasskeyManagement() {
             setState((prev) => ({ ...prev, isRegistering: true, error: undefined }));
 
             // Step 1: Get registration options
-            const optionsResponse = await fetch(`${API_BASE}/auth/passkey/register/options`, {
+            const optionsResponse = await fetch(apiUrl("/auth/passkey/register/options"), {
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },
@@ -86,7 +85,7 @@ export function usePasskeyManagement() {
             const attResponse = await startRegistration(options);
 
             // Step 3: Verify registration with server
-            const verifyResponse = await fetch(`${API_BASE}/auth/passkey/register/verify`, {
+            const verifyResponse = await fetch(apiUrl("/auth/passkey/register/verify"), {
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },
@@ -125,7 +124,7 @@ export function usePasskeyManagement() {
                 }));
 
                 const response = await fetch(
-                    `${API_BASE}/auth/passkey/credentials/${credentialId}`,
+                    apiUrl(`/auth/passkey/credentials/${credentialId}`),
                     {
                         method: "DELETE",
                         credentials: "include",
