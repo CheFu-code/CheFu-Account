@@ -6,8 +6,8 @@ import { ActionRow, SectionCard } from "../AccountControls";
 import type { AccountSettingsFormProps } from "../account-form-types";
 import { usePasskeyManagement } from "./usePasskeyManagement";
 
-export function PasskeySection({ account }: AccountSettingsFormProps) {
-    const passkey = usePasskeyManagement(account);
+export function PasskeySection(props: AccountSettingsFormProps) {
+    const passkey = usePasskeyManagement();
     const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
     const handleDeleteClick = useCallback((credentialId: string) => {
