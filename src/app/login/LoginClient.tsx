@@ -12,12 +12,7 @@ import {
 } from "firebase/auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { Fingerprint, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { AccountAuthScreen } from "../_components/AccountAuthScreen";
-import { MfaChallengeDialog } from "./MfaChallengeDialog";
-import { usePasskeySignIn } from "./usePasskeySignIn";
-import { auth } from "../../lib/firebase";
 import {
     chefuAppLabel,
     preserveAuthParams,
@@ -25,6 +20,10 @@ import {
     safeReturnTo,
     syncChefuAccountSession,
 } from "../../lib/chefu-account";
+import { auth } from "../../lib/firebase";
+import { AccountAuthScreen } from "../_components/AccountAuthScreen";
+import { MfaChallengeDialog } from "./MfaChallengeDialog";
+import { usePasskeySignIn } from "./usePasskeySignIn";
 
 export function LoginClient() {
     const router = useRouter();
