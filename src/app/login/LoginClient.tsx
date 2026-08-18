@@ -12,9 +12,11 @@ import {
 } from "firebase/auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { Fingerprint, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { AccountAuthScreen } from "../_components/AccountAuthScreen";
 import { MfaChallengeDialog } from "./MfaChallengeDialog";
+import { usePasskeySignIn } from "./usePasskeySignIn";
 import { auth } from "../../lib/firebase";
 import {
     chefuAppLabel,
@@ -34,6 +36,7 @@ export function LoginClient() {
     const [mfaEmail, setMfaEmail] = useState("");
     const [mfaResolver, setMfaResolver] = useState<MultiFactorResolver | null>(null);
     const attemptedExistingSession = useRef(false);
+    const passkey = usePasskeySignIn();
 
     const appId = resolveChefuApp(searchParams.get("app"));
     const appName = chefuAppLabel(appId);
@@ -168,6 +171,29 @@ export function LoginClient() {
         }
     };
 
+    const onPasskeySignIn = async () => {
+        setIsSubmitting(true);
+
+        try {
+            const credential = await passkey.signInWithPasskey();
+            if (!credential) {
+                setIsSubmitting(false);
+                return;
+            }
+
+            const idToken = await credential.user.getIdToken(true);
+            await syncChefuAccountSession(idToken, appId);
+            toast.success(`Signed in to ${appName}.`);
+            completeAuthRedirect(fromPath, router.replace);
+        } catch (error) {
+            toast.error("Passkey sign-in failed.", {
+                description: error instanceof Error ? error.message : "Please try again.",
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     return (
         <>
             <AccountAuthScreen
@@ -178,6 +204,8 @@ export function LoginClient() {
                 isSubmitting={isSubmitting}
                 mode="login"
                 onSubmit={onSubmit}
+                onPasskeyClick={onPasskeySignIn}
+                isPasskeySubmitting={passkey.isAuthenticating}
                 password={password}
                 setEmail={setEmail}
                 setPassword={setPassword}

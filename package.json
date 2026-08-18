@@ -12,6 +12,7 @@
     "smoke": "node scripts/smoke-routes.mjs"
   },
   "dependencies": {
+    "@simplewebauthn/browser": "^13.3.0",
     "chefu-ui": "^0.1.0",
     "firebase": "^12.9.0",
     "lucide-react": "0.487.0",

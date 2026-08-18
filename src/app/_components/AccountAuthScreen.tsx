@@ -21,6 +21,8 @@ type AccountAuthBaseProps = {
     isSubmitting: boolean;
     onSubmit: (event: FormEvent<HTMLFormElement>) => void;
     setEmail: (email: string) => void;
+    onPasskeyClick?: () => void;
+    isPasskeySubmitting?: boolean;
 };
 
 type AccountAuthScreenProps =
@@ -215,6 +217,22 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                                 {isSubmitting ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <ArrowRight className="size-4" aria-hidden="true" />}
                                 {isSubmitting ? copy.submitting : copy.buttonIdle}
                             </button>
+
+                            {mode === "login" && props.onPasskeyClick ? (
+                                <button
+                                    type="button"
+                                    onClick={props.onPasskeyClick}
+                                    disabled={props.isPasskeySubmitting || isSubmitting}
+                                    className="inline-flex h-13 w-full items-center justify-center gap-2 rounded-2xl border border-white/14 bg-white/4 px-5 text-sm font-bold text-[#d7d0c5] transition hover:border-[#e5ad5b]/35 hover:bg-white/8 hover:text-[#f4f0e8] disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                    {props.isPasskeySubmitting ? (
+                                        <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                                    ) : (
+                                        <Sparkles className="size-4" aria-hidden="true" />
+                                    )}
+                                    {props.isPasskeySubmitting ? "Scanning..." : "Sign in with passkey"}
+                                </button>
+                            ) : null}
                         </form>
 
                         <div className="mt-7 flex flex-col gap-3 border-t border-white/10 pt-5 text-sm sm:flex-row sm:items-center sm:justify-between">
