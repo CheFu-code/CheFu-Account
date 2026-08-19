@@ -15,7 +15,7 @@ export function PersonalInfoSection({
         <SectionCard
             icon={IdCard}
             title="Personal info"
-            description="Control the profile details that CHEFU apps use."
+            description="Manage the profile data and permissions shared across all your apps."
             action={<SaveButton isSaving={isSaving} label="Save profile" />}
         >
             <div className="grid gap-4 md:grid-cols-2">
@@ -23,7 +23,7 @@ export function PersonalInfoSection({
                 <LockedInfo
                     label="Email"
                     value={account.user.email}
-                    description="Your account email is used as your CHEFU identity and cannot be changed here."
+                    description="Your email is used as your account identity and cannot be changed."
                 />
                 <LockedInfo
                     label="Detected country"

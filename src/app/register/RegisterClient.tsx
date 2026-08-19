@@ -51,7 +51,7 @@ export function RegisterClient() {
             registered = true;
             const idToken = await credential.user.getIdToken(true);
             await syncChefuAccountSession(idToken, appId);
-            toast.success(`CHEFU Account created for ${appName}.`);
+            toast.success(`Account created for ${appName}.`);
             completeAuthRedirect(fromPath, router.replace);
         } catch (error) {
             if (registered) {

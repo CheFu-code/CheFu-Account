@@ -4,7 +4,8 @@ import {
     Home,
     IdCard,
     LockKeyhole,
-    ShieldCheck
+    ShieldCheck,
+    User
 } from "lucide-react";
 import type {
     AccountNavItem,
@@ -73,6 +74,13 @@ export const navItems: AccountNavItem[] = [
         description: "Overview and quick actions",
         icon: Home,
         color: "bg-sky-300 text-sky-950",
+    },
+    {
+        id: "profile",
+        label: "Profile",
+        description: "Profile picture, display name, and bio",
+        icon: User,
+        color: "bg-rose-300 text-rose-950",
     },
     {
         id: "personal-info",

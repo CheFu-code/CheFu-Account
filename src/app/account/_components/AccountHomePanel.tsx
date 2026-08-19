@@ -96,7 +96,7 @@ export function AccountHomePanel({
                                     <Check className="size-3.5" aria-hidden="true" />
                                     Account active
                                 </div>
-                                <h2 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-[#f4f0e8]">{name || "Your CHEFU profile"}</h2>
+                                <h2 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-[#f4f0e8]">{name || "Your profile"}</h2>
                                 <p className="mt-1 text-sm text-[#9e968a]">{account.user.email}</p>
                             </div>
                         </div>

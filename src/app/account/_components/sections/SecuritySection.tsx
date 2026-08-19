@@ -28,8 +28,8 @@ export function SecuritySection({
               security.summary.enrolledFactors.length === 1 ? "" : "s"
           } enrolled.`
         : security.currentUser || !security.firebaseReady
-          ? "No second factor is enrolled yet. Add an authenticator app to protect CHEFU Account sign-ins."
-          : "Sign in again to CHEFU Account before enrolling an authenticator app.";
+          ? "No second factor is enrolled yet. Add an authenticator app to protect your account sign-ins."
+          : "Sign in again to your account before enrolling an authenticator app.";
 
     return (
         <>

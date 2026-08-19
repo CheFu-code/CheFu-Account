@@ -27,7 +27,7 @@ export function AccountPageClient() {
                 <div className="max-w-md rounded-[2rem] border border-white/10 bg-[#1a1916] p-7 text-center shadow-2xl shadow-black/30">
                     <h1 className="text-2xl font-semibold tracking-[-0.03em]">Account unavailable</h1>
                     <p className="mt-2 text-sm leading-6 text-[#9e968a]">
-                        We could not load your CHEFU Account session.
+                        We could not load your account session.
                     </p>
                     <Link
                         href="/login?returnTo=/account"

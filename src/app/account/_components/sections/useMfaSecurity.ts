@@ -170,7 +170,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         try {
             const session = await multiFactor(user).getSession();
             const secret = await TotpMultiFactorGenerator.generateSecret(session);
-            const qrUrl = secret.generateQrCodeUrl(user.email, "CHEFU Account");
+            const qrUrl = secret.generateQrCodeUrl(user.email, "My Account");
             const dataUrl = await QRCode.toDataURL(qrUrl, { margin: 1, width: 220 });
 
             setTotpSecret(secret);
@@ -211,7 +211,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
                 totpCode,
             );
 
-            await multiFactor(user).enroll(assertion, "CHEFU Account TOTP");
+            await multiFactor(user).enroll(assertion, "My Account TOTP");
             const refreshedUser = await refreshFirebaseUser();
             const enrolledUser = refreshedUser ?? auth.currentUser ?? user;
             const idToken = await enrolledUser.getIdToken(true);
@@ -427,7 +427,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         try {
             await syncChefuAccountSession(idToken, appId);
         } catch (error) {
-            toast.warning("2FA changed, but your CHEFU session could not refresh.", {
+            toast.warning("Two-factor authentication was updated, but your session could not be refreshed. Please sign in again.", {
                 description:
                     error instanceof Error ? error.message : "Sign in again if the page feels stale.",
             });

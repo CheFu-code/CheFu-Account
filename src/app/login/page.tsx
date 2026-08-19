@@ -4,7 +4,7 @@ import { LoginClient } from "./LoginClient";
 
 export const metadata: Metadata = {
     title: "Sign in",
-    description: "Sign in to your CHEFU Account.",
+    description: "Sign in to your account.",
 };
 
 export default function LoginPage() {

@@ -73,7 +73,7 @@ function buildContinueUrl(loginHref: string) {
 }
 
 function readResetSuccessMessage(email: string) {
-    return `If a CHEFU Account exists for ${email}, a reset email is on its way.`;
+    return `If an account exists for ${email}, a reset email is on its way.`;
 }
 
 function isUserNotFoundError(error: unknown) {

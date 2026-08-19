@@ -105,7 +105,7 @@ export async function syncChefuAccountSession(idToken: string, appId: ChefuAppId
             requestId?: string;
         };
         const message =
-            data.error || data.message || "Unable to start your CHEFU account session.";
+            data.error || data.message || "Unable to start your account session. Please try signing in again.";
         const requestId = data.requestId ? ` Request ID: ${data.requestId}` : "";
 
         throw new Error(`${message}${requestId}`);

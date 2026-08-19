@@ -4,7 +4,7 @@ import { RegisterClient } from "./RegisterClient";
 
 export const metadata: Metadata = {
     title: "Create account",
-    description: "Create your CHEFU Account.",
+    description: "Create your account.",
 };
 
 export default function RegisterPage() {

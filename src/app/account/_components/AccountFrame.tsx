@@ -36,7 +36,7 @@ export function AccountFrame({
                             <Sparkles className="size-4" aria-hidden="true" />
                         </span>
                         <span className="hidden text-sm font-semibold tracking-[0.16em] text-[#f4f0e8] sm:block">
-                            CHEFU<span className="text-[#e5ad5b]">/</span>ACCOUNT
+                            My Account
                         </span>
                     </Link>
 

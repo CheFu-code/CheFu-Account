@@ -5,7 +5,7 @@ import { AccountPageClient } from "./AccountPageClient";
 export const metadata: Metadata = {
     title: "Manage account",
     description:
-        "Manage your CHEFU Account profile, security preferences, connected apps, and session.",
+        "Manage your account profile, security preferences, connected apps, and session.",
 };
 
 export default function AccountPage() {

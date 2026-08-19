@@ -47,7 +47,7 @@ type AccountAuthScreenProps =
 const modeCopy = {
     login: {
         alternateAction: "Create an account",
-        alternateLead: "New to CHEFU?",
+        alternateLead: "Don't have an account?",
         buttonIdle: "Sign in",
         eyebrow: "Welcome back",
         passwordAutoComplete: "current-password",
@@ -58,7 +58,7 @@ const modeCopy = {
         alternateAction: "Sign in instead",
         alternateLead: "Already have an account?",
         buttonIdle: "Create your account",
-        eyebrow: "A shared CHEFU identity",
+        eyebrow: "One account for everything",
         passwordAutoComplete: "new-password",
         passwordHelp: "At least 6 characters",
         submitting: "Creating your account...",
@@ -91,14 +91,13 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                 <aside className="hidden max-w-xl self-center lg:block">
                     <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-[#e5ad5b]">
                         <span className="h-px w-9 bg-[#e5ad5b]/70" />
-                        The CHEFU passport
+                        Single Sign-On
                     </p>
                     <h1 className="mt-7 text-5xl font-medium leading-[1.04] tracking-[-0.055em] text-[#f4f0e8] xl:text-6xl">
                         One considered identity for your whole digital life.
                     </h1>
                     <p className="mt-7 max-w-lg text-base leading-7 text-[#bdb5a8]">
-                        Sign in once, then move seamlessly between the tools, learning, and
-                        conversations that make up your CHEFU world.
+                        Sign in once, then move seamlessly between all the tools, resources, and applications in the network.
                     </p>
                     <div className="mt-12 grid max-w-md grid-cols-3 gap-3 border-t border-white/10 pt-5">
                         <Proof label="One identity" value="Every app" />
@@ -114,7 +113,7 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                                 <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#e5ad5b]">
                                     {copy.eyebrow}
                                 </p>
-                               
+
                             </div>
                             <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-[#e5ad5b]/22 bg-[#e5ad5b]/10 text-[#ffd18a]">
                                 <ShieldCheck className="size-5" aria-hidden="true" />
