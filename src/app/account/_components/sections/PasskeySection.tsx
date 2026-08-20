@@ -3,10 +3,9 @@
 import { CheckCircle2, KeyRound, Loader2, Smartphone, Trash2, X } from "lucide-react";
 import { useCallback, useState } from "react";
 import { ActionRow, SectionCard } from "../AccountControls";
-import type { AccountSettingsFormProps } from "../account-form-types";
 import { usePasskeyManagement } from "./usePasskeyManagement";
 
-export function PasskeySection(props: AccountSettingsFormProps) {
+export function PasskeySection() {
     const passkey = usePasskeyManagement();
     const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
