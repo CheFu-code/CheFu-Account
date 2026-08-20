@@ -336,6 +336,7 @@ export function useAccountController() {
 
 function resolveAccountSection(value: string | null) {
     if (value === "profile") return "personal-info";
+    if (value === "passkeys" || value === "passkey") return "security";
     return value && navItems.some((item) => item.id === value) ? value : "home";
 }
 

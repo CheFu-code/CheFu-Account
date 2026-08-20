@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, KeyRound, Loader2, Smartphone, Trash2, X } from "lucide-react";
+import { CheckCircle2, Fingerprint, KeyRound, Loader2, Smartphone, Trash2, X } from "lucide-react";
 import { useCallback, useState } from "react";
 import { ActionRow, SectionCard } from "../AccountControls";
 import { usePasskeyManagement } from "./usePasskeyManagement";
@@ -22,17 +22,16 @@ export function PasskeySection() {
     );
 
     return (
-        <>
-            <SectionCard
-                icon={KeyRound}
-                title="Passkeys"
-                description="Fast, secure sign-in using biometric or device authentication."
-                aside={
-                    passkey.credentials.length > 0
-                        ? `${passkey.credentials.length} passkey${passkey.credentials.length === 1 ? "" : "s"}`
-                        : "None registered"
-                }
-            >
+        <SectionCard
+            icon={Fingerprint}
+            title="Passkeys"
+            description="Fast, secure sign-in using biometric or device authentication."
+            aside={
+                passkey.credentials.length > 0
+                    ? `${passkey.credentials.length} passkey${passkey.credentials.length === 1 ? "" : "s"}`
+                    : "None registered"
+            }
+        >
                 <div className="divide-y divide-white/10">
                     {/* Add Passkey Button */}
                     <ActionRow
@@ -126,6 +125,5 @@ export function PasskeySection() {
                     )}
                 </div>
             </SectionCard>
-        </>
     );
 }

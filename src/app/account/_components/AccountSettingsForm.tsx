@@ -1,7 +1,6 @@
 "use client";
 
 import { DeveloperSection } from "./sections/DeveloperSection";
-import { PasskeySection } from "./sections/PasskeySection";
 import { PersonalInfoSection } from "./sections/PersonalInfoSection";
 import { PrivacySection } from "./sections/PrivacySection";
 import { SecuritySection } from "./sections/SecuritySection";
@@ -14,7 +13,6 @@ export function AccountSettingsForm(props: AccountSettingsFormProps) {
                 <PersonalInfoSection {...props} />
             ) : null}
             {props.activeSection === "security" ? <SecuritySection {...props} /> : null}
-            {props.activeSection === "passkeys" ? <PasskeySection /> : null}
             {props.activeSection === "privacy" ? <PrivacySection {...props} /> : null}
 
             {props.activeSection === "developer" ? <DeveloperSection {...props} /> : null}

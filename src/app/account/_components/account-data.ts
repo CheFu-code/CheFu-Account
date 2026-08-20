@@ -1,6 +1,5 @@
 import {
     Code2,
-    Fingerprint,
     Home,
     IdCard,
     LockKeyhole,
@@ -84,16 +83,9 @@ export const navItems: AccountNavItem[] = [
     {
         id: "security",
         label: "Security & sign-in",
-        description: "Password reset and security alerts",
+        description: "Password reset, passkeys, and two-factor auth",
         icon: LockKeyhole,
         color: "bg-cyan-300 text-cyan-950",
-    },
-    {
-        id: "passkeys",
-        label: "Passkeys",
-        description: "Biometric and device authentication",
-        icon: Fingerprint,
-        color: "bg-indigo-300 text-indigo-950",
     },
     {
         id: "privacy",

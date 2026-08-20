@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { ActionRow, SectionCard } from "../AccountControls";
 import type { AccountSettingsFormProps } from "../account-form-types";
+import { PasskeySection } from "./PasskeySection";
 import { ReauthenticationDialog } from "./ReauthenticationDialog";
 import { TotpSetupPanel } from "./TotpSetupPanel";
 import { useMfaSecurity } from "./useMfaSecurity";
@@ -32,7 +33,7 @@ export function SecuritySection({
           : "Sign in again to your account before enrolling an authenticator app.";
 
     return (
-        <>
+        <div className="space-y-5">
             <SectionCard
                 icon={ShieldCheck}
                 title="Security & sign-in"
@@ -218,6 +219,8 @@ export function SecuritySection({
                 </div>
             </SectionCard>
 
+            <PasskeySection />
+
             {security.totpSetup ? (
                 <TotpSetupPanel
                     code={security.totpCode}
@@ -245,6 +248,6 @@ export function SecuritySection({
                     requiresMfa={security.reauthenticationRequiresMfa}
                 />
             ) : null}
-        </>
+        </div>
     );
 }
