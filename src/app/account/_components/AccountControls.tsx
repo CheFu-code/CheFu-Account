@@ -20,8 +20,8 @@ export function SectionCard({
     title: string;
 }) {
     return (
-        <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[#1a1916]/95 shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
-            <div className="border-b border-white/10 bg-white/[0.025] p-5 sm:p-6">
+        <section className="overflow-hidden rounded-4xl border border-white/10 bg-[#1a1916]/95 shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
+            <div className="border-b border-white/10 bg-white/2.5 p-5 sm:p-6">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex items-start gap-3">
                         <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-[#e5ad5b]/22 bg-[#e5ad5b]/10 text-[#ffd18a]">
@@ -38,7 +38,7 @@ export function SectionCard({
                     </div>
                     <div className="flex items-center gap-2">
                         {aside ? (
-                            <span className="rounded-full border border-[#e5ad5b]/18 bg-[#e5ad5b]/9 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-[#ffd18a]">
+                            <span className="rounded-full border border-[#e5ad5b]/18 bg-[#e5ad5b]/9 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-[#ffd18a]">
                                 {aside}
                             </span>
                         ) : null}
@@ -183,7 +183,7 @@ export function LockedInfo({
             <div className="flex items-start gap-3">
                 <LockKeyhole className="mt-0.5 size-4 text-[#8f887d]" aria-hidden="true" />
                 <div className="min-w-0">
-                    <p className="text-xs font-bold uppercase tracking-[0.1em] text-[#8f887d]">{label}</p>
+                    <p className="text-xs font-bold uppercase tracking-widest text-[#8f887d]">{label}</p>
                     <p className="mt-1.5 truncate text-sm font-medium text-[#f4f0e8]">{value}</p>
                     {description ? <p className="mt-1 text-xs leading-5 text-[#797267]">{description}</p> : null}
                 </div>

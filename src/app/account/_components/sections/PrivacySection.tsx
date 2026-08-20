@@ -25,17 +25,6 @@ export function PrivacySection({ isSaving, onPrivacyChange, privacy }: AccountSe
                     }
                 />
                 <ToggleRow
-                    checked={privacy.showCompletedCourses}
-                    title="Show completed courses"
-                    description="Allow completed-course activity on your profile."
-                    onToggle={() =>
-                        onPrivacyChange((current) => ({
-                            ...current,
-                            showCompletedCourses: !current.showCompletedCourses,
-                        }))
-                    }
-                />
-                <ToggleRow
                     checked={privacy.showCountry}
                     title="Show country"
                     description="Allow your verified country to appear where profiles are shown."
@@ -46,18 +35,7 @@ export function PrivacySection({ isSaving, onPrivacyChange, privacy }: AccountSe
                         }))
                     }
                 />
-                <ToggleRow
-                    checked={privacy.personalizedAiRecommendations}
-                    title="Personalized AI recommendations"
-                    description="Use your Academy activity to improve recommendations."
-                    onToggle={() =>
-                        onPrivacyChange((current) => ({
-                            ...current,
-                            personalizedAiRecommendations:
-                                !current.personalizedAiRecommendations,
-                        }))
-                    }
-                />
+               
             </div>
         </SectionCard>
     );
