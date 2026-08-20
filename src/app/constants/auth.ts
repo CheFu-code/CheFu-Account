@@ -1,0 +1,31 @@
+export const modeCopy = {
+    login: {
+        alternateAction: "Create an account",
+        alternateLead: "Don't have an account?",
+        buttonIdle: "Sign in",
+        eyebrow: "Welcome back",
+        passwordAutoComplete: "current-password",
+        passwordHelp: "",
+        submitting: "Opening your account...",
+    },
+    register: {
+        alternateAction: "Sign in instead",
+        alternateLead: "Already have an account?",
+        buttonIdle: "Create your account",
+        eyebrow: "One account for everything",
+        passwordAutoComplete: "new-password",
+        passwordHelp: "At least 6 characters",
+        submitting: "Creating your account...",
+    },
+    "forgot-password": {
+        alternateAction: "Back to sign in",
+        alternateLead: "Remembered your password?",
+        buttonIdle: "Send a reset link",
+        eyebrow: "Account recovery",
+        heading: "Let’s get you back in.",
+        passwordAutoComplete: "off",
+        passwordHelp: "",
+        supporting: "Enter your account email and we’ll send a private reset link right away.",
+        submitting: "Sending your reset link...",
+    },
+} as const;

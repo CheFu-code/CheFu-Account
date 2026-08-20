@@ -1,5 +1,6 @@
 "use client";
 
+import { AccountAuthScreenProps } from "@/app/types";
 import {
     ArrowRight,
     Eye,
@@ -11,70 +12,9 @@ import {
     ShieldCheck
 } from "lucide-react";
 import Link from "next/link";
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
+import { modeCopy } from "../constants/auth";
 
-type AccountAuthBaseProps = {
-    alternateHref: string;
-    appName: string;
-    email: string;
-    isSubmitting: boolean;
-    onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-    setEmail: (email: string) => void;
-    onPasskeyClick?: () => void;
-    isPasskeySubmitting?: boolean;
-};
-
-type AccountAuthScreenProps =
-    | (AccountAuthBaseProps & {
-        forgotPasswordHref: string;
-        mode: "login";
-        password: string;
-        setPassword: (password: string) => void;
-    })
-    | (AccountAuthBaseProps & {
-        forgotPasswordHref?: never;
-        mode: "register";
-        password: string;
-        setPassword: (password: string) => void;
-    })
-    | (AccountAuthBaseProps & {
-        forgotPasswordHref?: never;
-        mode: "forgot-password";
-        password?: never;
-        setPassword?: never;
-    });
-
-const modeCopy = {
-    login: {
-        alternateAction: "Create an account",
-        alternateLead: "Don't have an account?",
-        buttonIdle: "Sign in",
-        eyebrow: "Welcome back",
-        passwordAutoComplete: "current-password",
-        passwordHelp: "",
-        submitting: "Opening your account...",
-    },
-    register: {
-        alternateAction: "Sign in instead",
-        alternateLead: "Already have an account?",
-        buttonIdle: "Create your account",
-        eyebrow: "One account for everything",
-        passwordAutoComplete: "new-password",
-        passwordHelp: "At least 6 characters",
-        submitting: "Creating your account...",
-    },
-    "forgot-password": {
-        alternateAction: "Back to sign in",
-        alternateLead: "Remembered your password?",
-        buttonIdle: "Send a reset link",
-        eyebrow: "Account recovery",
-        heading: "Let’s get you back in.",
-        passwordAutoComplete: "off",
-        passwordHelp: "",
-        supporting: "Enter your account email and we’ll send a private reset link right away.",
-        submitting: "Sending your reset link...",
-    },
-} as const;
 
 export function AccountAuthScreen(props: AccountAuthScreenProps) {
     const { alternateHref, appName, email, isSubmitting, mode, onSubmit, setEmail } = props;
@@ -108,15 +48,13 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
 
                 <section className="w-full max-w-xl justify-self-center lg:justify-self-end">
                     <div className="rounded-4xl border border-white/12 bg-[#1a1916]/92 p-5 shadow-[0_32px_100px_rgba(0,0,0,0.38)] backdrop-blur sm:p-8">
-                        <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-6">
-                            <div>
-                                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#e5ad5b]">
-                                    {copy.eyebrow}
-                                </p>
+                        <div className="flex w-full items-start justify-between gap-4 border-b border-white/10 pb-2">
+                            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#e5ad5b]">
+                                {copy.eyebrow}
+                            </p>
 
-                            </div>
-                            <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-[#e5ad5b]/22 bg-[#e5ad5b]/10 text-[#ffd18a]">
-                                <ShieldCheck className="size-5" aria-hidden="true" />
+                            <span className="flex size-8 shrink-0 items-center justify-center rounded-2xl border border-[#e5ad5b]/22 bg-[#e5ad5b]/10 text-[#ffd18a]">
+                                <ShieldCheck className="size-4" aria-hidden="true" />
                             </span>
                         </div>
 
@@ -220,9 +158,9 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                     <footer className="mt-5 flex flex-wrap items-center justify-between gap-3 px-2 text-[11px] font-medium text-[#8f887d]">
                         <span className="inline-flex items-center gap-1.5"><ShieldCheck className="size-3.5" /> Private by design</span>
                         <span className="flex gap-3">
-                            <Link href="https://chefuinc.com/privacy" className="transition hover:text-[#f4f0e8]">Privacy</Link>
-                            <Link href="https://chefuinc.com/terms" className="transition hover:text-[#f4f0e8]">Terms</Link>
-                            <Link href="https://chefuinc.com/contact" className="transition hover:text-[#f4f0e8]">Contact</Link>
+                            <Link target="_blank" href="https://chefuinc.com/privacy" className="transition hover:text-[#f4f0e8]">Privacy</Link>
+                            <Link target="_blank" href="https://chefuinc.com/terms" className="transition hover:text-[#f4f0e8]">Terms</Link>
+                            <Link target="_blank" href="https://chefuinc.com/contact" className="transition hover:text-[#f4f0e8]">Contact</Link>
                         </span>
                     </footer>
                 </section>
