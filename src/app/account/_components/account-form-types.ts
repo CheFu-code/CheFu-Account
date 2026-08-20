@@ -31,6 +31,7 @@ export type AccountSettingsFormProps = {
         value: AccountProfile["preferredContentFormat"],
     ) => void;
     onPrivacyChange: Dispatch<SetStateAction<PrivacyPreferences>>;
+    onProfilePictureSuccess?: (imageUrl: string) => void;
     onSendResetEmail: () => void;
     onSkillLevelChange: (value: AccountProfile["skillLevel"]) => void;
     onSubmit: (event: FormEvent<HTMLFormElement>) => void;

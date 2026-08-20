@@ -1,7 +1,8 @@
+"use client";
+
 import { useRef } from "react";
-import { Camera, Loader2, AlertCircle } from "lucide-react";
+import { Camera, Loader2, AlertCircle, UploadCloud } from "lucide-react";
 import { useProfilePictureUpload } from "./useProfilePictureUpload";
-import Image from "next/image";
 
 interface ProfilePictureUploadProps {
     currentImageUrl?: string;
@@ -37,68 +38,99 @@ export function ProfilePictureUpload({
     };
 
     const displayImageUrl = previewUrl || currentImageUrl;
+    const initial = (userName.trim()[0] || "U").toUpperCase();
 
     return (
-        <div className="flex flex-col items-center gap-4">
-            {/* Profile Picture Display */}
-            <div className="relative group">
-                <div className="w-32 h-32 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center border-4 border-gray-200">
-                    {displayImageUrl ? (
-                        <Image
-                            src={displayImageUrl}
-                            alt={userName}
-                            className="w-full h-full object-cover"
-                            width={128}
-                            height={128}
-                        />
-                    ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center text-white text-4xl font-semibold">
-                            {userName.charAt(0).toUpperCase()}
-                        </div>
-                    )}
+        <div className="rounded-3xl border border-white/10 bg-[#11110f] p-5">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
+                {/* Profile Picture Display */}
+                <div className="relative group size-20 shrink-0 sm:size-24">
+                    <div className="size-full overflow-hidden rounded-2xl border-2 border-white/12 bg-[#24221e] shadow-md transition group-hover:border-[#e5ad5b]/60">
+                        {displayImageUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                                src={displayImageUrl}
+                                alt={userName}
+                                className="size-full object-cover"
+                            />
+                        ) : (
+                            <div className="grid size-full place-items-center bg-[#e5ad5b] text-2xl font-bold text-[#26190a] sm:text-3xl">
+                                {initial}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Camera Icon Badge */}
+                    <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploading}
+                        className="absolute -bottom-1 -right-1 flex size-8 items-center justify-center rounded-xl bg-[#e5ad5b] text-[#26190a] shadow-lg transition hover:bg-[#ffd18a] disabled:cursor-not-allowed disabled:opacity-60"
+                        aria-label="Upload profile picture"
+                        title="Upload profile picture"
+                    >
+                        {isUploading ? (
+                            <Loader2 className="size-4 animate-spin" />
+                        ) : (
+                            <Camera className="size-4" />
+                        )}
+                    </button>
                 </div>
 
-                {/* Camera Icon Overlay */}
-                <button
-                    onClick={() => fileInputRef.current?.click()}
+                {/* Hidden File Input */}
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/gif,image/webp"
+                    onChange={handleFileChange}
+                    className="hidden"
                     disabled={isUploading}
-                    className="absolute bottom-0 right-0 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white p-2.5 rounded-full shadow-lg transition-all"
-                >
-                    {isUploading ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                        <Camera className="w-5 h-5" />
-                    )}
-                </button>
-            </div>
+                />
 
-            {/* Hidden File Input */}
-            <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-                disabled={isUploading}
-            />
+                {/* Upload Info & Action Button */}
+                <div className="flex-1 space-y-2">
+                    <div>
+                        <h4 className="text-sm font-semibold text-[#f4f0e8]">
+                            Profile picture
+                        </h4>
+                        <p className="text-xs text-[#8f887d]">
+                            PNG, JPG, GIF, or WEBP up to 5MB.
+                        </p>
+                    </div>
 
-            {/* Upload Text */}
-            <div className="text-center">
-                <p className="text-sm text-gray-600">
-                    {isUploading ? "Uploading..." : "Click the camera icon to update"}
-                </p>
-                <p className="text-xs text-gray-500">JPG, PNG or GIF (Max 5MB)</p>
+                    <div className="flex flex-wrap items-center gap-3">
+                        <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={isUploading}
+                            className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/4 px-3.5 py-1.5 text-xs font-semibold text-[#d7d0c5] transition hover:border-[#e5ad5b]/40 hover:bg-white/8 hover:text-[#f4f0e8] disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                            {isUploading ? (
+                                <>
+                                    <Loader2 className="size-3.5 animate-spin text-[#e5ad5b]" />
+                                    Uploading...
+                                </>
+                            ) : (
+                                <>
+                                    <UploadCloud className="size-3.5 text-[#e5ad5b]" />
+                                    Change photo
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </div>
             </div>
 
             {/* Error Message */}
             {error && (
-                <div className="w-full bg-red-50 border border-red-200 rounded-lg p-3 flex gap-2">
-                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <div className="mt-4 flex items-start gap-2.5 rounded-2xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-200">
+                    <AlertCircle className="mt-0.5 size-4 shrink-0 text-red-400" />
                     <div className="flex-1">
-                        <p className="text-sm text-red-800">{error}</p>
+                        <p>{error}</p>
                         <button
+                            type="button"
                             onClick={clearError}
-                            className="text-xs text-red-600 hover:text-red-800 mt-1 underline"
+                            className="mt-1 text-[11px] text-red-300 underline hover:text-white"
                         >
                             Dismiss
                         </button>

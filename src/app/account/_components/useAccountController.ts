@@ -238,6 +238,28 @@ export function useAccountController() {
         }
     }
 
+    function handleProfilePictureSuccess(imageUrl: string) {
+        setAccount((prev) => {
+            if (!prev) return prev;
+            return {
+                ...prev,
+                user: {
+                    ...prev.user,
+                    photoURL: imageUrl,
+                },
+                profile: {
+                    ...prev.profile,
+                    profilePicture: imageUrl,
+                },
+            };
+        });
+        if (auth.currentUser) {
+            updateProfile(auth.currentUser, { photoURL: imageUrl }).catch(
+                () => undefined,
+            );
+        }
+    }
+
     function hydrateAccount(data: AccountResponse) {
         setAccount(data);
         setName(data.profile.name || data.user.displayName || "");
@@ -275,6 +297,7 @@ export function useAccountController() {
         emailPreferences,
         filteredSections,
         goToSection,
+        handleProfilePictureSuccess,
         handleSignOut,
         initials,
         isLoading,
@@ -312,6 +335,7 @@ export function useAccountController() {
 }
 
 function resolveAccountSection(value: string | null) {
+    if (value === "profile") return "personal-info";
     return value && navItems.some((item) => item.id === value) ? value : "home";
 }
 

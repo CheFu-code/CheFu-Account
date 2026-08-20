@@ -84,6 +84,7 @@ export function AccountPageClient() {
                     onLessonStyleChange={account.setLessonStyle}
                     onPreferredContentFormatChange={account.setPreferredContentFormat}
                     onPrivacyChange={account.setPrivacy}
+                    onProfilePictureSuccess={account.handleProfilePictureSuccess}
                     onSendResetEmail={account.sendResetEmail}
                     onSkillLevelChange={account.setSkillLevel}
                     onSubmit={account.saveProfile}
