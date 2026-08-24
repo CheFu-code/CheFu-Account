@@ -6,6 +6,7 @@ export interface MissingVariable {
   name: string;
   description?: string;
   isClientSide?: boolean;
+  app?: string;
 }
 
 export class ConfigurationError extends Error {
@@ -19,32 +20,35 @@ export class ConfigurationError extends Error {
     Object.setPrototypeOf(this, ConfigurationError.prototype);
   }
 
-  static formatErrorMessage(missing: MissingVariable[]): string {
+  static formatErrorMessage(missing: MissingVariable[], app = 'CheFu-Account'): string {
     if (missing.length === 0) {
-      return 'Configuration Error: An unknown configuration error occurred.';
+      return `[${app}] Configuration Error: An unknown configuration error occurred.`;
     }
+
+    const hint = `Set these in your Vercel project → Settings → Environment Variables for "${app}", then redeploy.`;
 
     if (missing.length === 1) {
       const item = missing[0];
-      const desc = item.description ? ` (${item.description})` : '';
-      return `Configuration Error: ${item.name}${desc} is not configured. Please add it to your environment variables and restart the application.`;
+      const desc = item.description ? ` — ${item.description}` : '';
+      return `[${app}] Configuration Error: ${item.name}${desc} is not configured.\n\n${hint}`;
     }
 
     const lines: string[] = [
-      'Configuration Error: The following required environment variables are missing:\n',
+      `[${app}] Configuration Error: The following required environment variables are missing:\n`,
     ];
 
     for (const item of missing) {
-      const desc = item.description ? ` (${item.description})` : '';
-      lines.push(`  * ${item.name}${desc}`);
+      const desc = item.description ? ` — ${item.description}` : '';
+      const side = item.isClientSide ? ' [client-side: must be set before build]' : '';
+      lines.push(`  * ${item.name}${desc}${side}`);
     }
 
-    lines.push('\nPlease configure the required environment variables and restart the application.');
+    lines.push(`\n${hint}`);
     return lines.join('\n').trim();
   }
 
-  static fromMissing(missing: MissingVariable[]): ConfigurationError {
-    return new ConfigurationError(this.formatErrorMessage(missing), missing);
+  static fromMissing(missing: MissingVariable[], app?: string): ConfigurationError {
+    return new ConfigurationError(this.formatErrorMessage(missing, app), missing);
   }
 }
 
@@ -117,7 +121,7 @@ export function validateFirebaseClientEnv(
     return {
       isValid: false,
       config: null,
-      error: ConfigurationError.fromMissing(missing),
+      error: ConfigurationError.fromMissing(missing, 'CheFu-Account'),
       missing: missing.map(m => m.name),
     };
   }
@@ -143,9 +147,12 @@ export function getFirebaseClientConfig(): FirebaseClientConfig {
   const result = validateFirebaseClientEnv();
   if (!result.isValid || !result.config) {
     if (process.env.NODE_ENV === 'production') {
-      throw result.error || new ConfigurationError('Invalid Firebase client configuration.');
+      throw result.error ||
+        new ConfigurationError(
+          '[CheFu-Account] Invalid Firebase client configuration.',
+        );
     }
-    console.warn(`[Firebase Config Warning] ${result.error?.message}`);
+    console.warn(`[CheFu-Account][Firebase Config Warning] ${result.error?.message}`);
     return {
       apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || 'local-development-key',
       authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || 'chefu-inc.local.firebaseapp.com',
