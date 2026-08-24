@@ -76,24 +76,41 @@ export function validateFirebaseClientEnv(
   const appId = getEnv('NEXT_PUBLIC_FIREBASE_APP_ID', env);
   const measurementId = getEnv('NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID', env);
 
-  // In production, require actual Firebase keys
-  if (!apiKey || (isProduction && apiKey === 'local-development-key')) {
-    missing.push({ name: 'NEXT_PUBLIC_FIREBASE_API_KEY', description: 'Firebase Web API Key', isClientSide: true });
+  // In production, require actual Firebase keys and reject placeholder/dev values
+  if (!apiKey) {
+    missing.push({ name: 'NEXT_PUBLIC_FIREBASE_API_KEY', description: 'not set', isClientSide: true });
+  } else if (isProduction && apiKey === 'local-development-key') {
+    missing.push({ name: 'NEXT_PUBLIC_FIREBASE_API_KEY', description: 'still set to dev placeholder', isClientSide: true });
   }
-  if (!authDomain || (isProduction && authDomain.includes('.local.'))) {
-    missing.push({ name: 'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN', description: 'Firebase Auth Domain', isClientSide: true });
+
+  if (!authDomain) {
+    missing.push({ name: 'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN', description: 'not set', isClientSide: true });
+  } else if (isProduction && authDomain.includes('.local.')) {
+    missing.push({ name: 'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN', description: 'still set to dev placeholder', isClientSide: true });
   }
-  if (!projectId || (isProduction && projectId.includes('-local'))) {
-    missing.push({ name: 'NEXT_PUBLIC_FIREBASE_PROJECT_ID', description: 'Firebase Project ID', isClientSide: true });
+
+  if (!projectId) {
+    missing.push({ name: 'NEXT_PUBLIC_FIREBASE_PROJECT_ID', description: 'not set', isClientSide: true });
+  } else if (isProduction && projectId.includes('-local')) {
+    missing.push({ name: 'NEXT_PUBLIC_FIREBASE_PROJECT_ID', description: 'still set to dev placeholder', isClientSide: true });
   }
-  if (!storageBucket || (isProduction && storageBucket.includes('-local.'))) {
-    missing.push({ name: 'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET', description: 'Firebase Storage Bucket', isClientSide: true });
+
+  if (!storageBucket) {
+    missing.push({ name: 'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET', description: 'not set', isClientSide: true });
+  } else if (isProduction && storageBucket.includes('-local.')) {
+    missing.push({ name: 'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET', description: 'still set to dev placeholder', isClientSide: true });
   }
-  if (!messagingSenderId || (isProduction && messagingSenderId === '000000000000')) {
-    missing.push({ name: 'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID', description: 'Firebase Cloud Messaging Sender ID', isClientSide: true });
+
+  if (!messagingSenderId) {
+    missing.push({ name: 'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID', description: 'not set', isClientSide: true });
+  } else if (isProduction && messagingSenderId === '000000000000') {
+    missing.push({ name: 'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID', description: 'still set to dev placeholder', isClientSide: true });
   }
-  if (!appId || (isProduction && appId.includes(':000000000000:'))) {
-    missing.push({ name: 'NEXT_PUBLIC_FIREBASE_APP_ID', description: 'Firebase Web App ID', isClientSide: true });
+
+  if (!appId) {
+    missing.push({ name: 'NEXT_PUBLIC_FIREBASE_APP_ID', description: 'not set', isClientSide: true });
+  } else if (isProduction && appId.includes(':000000000000:')) {
+    missing.push({ name: 'NEXT_PUBLIC_FIREBASE_APP_ID', description: 'still set to dev placeholder', isClientSide: true });
   }
 
   if (missing.length > 0) {
@@ -106,12 +123,12 @@ export function validateFirebaseClientEnv(
   }
 
   const config: FirebaseClientConfig = {
-    apiKey: apiKey || 'local-development-key',
-    authDomain: authDomain || 'chefu-inc.local.firebaseapp.com',
-    projectId: projectId || 'chefu-inc-local',
-    storageBucket: storageBucket || 'chefu-inc-local.appspot.com',
-    messagingSenderId: messagingSenderId || '000000000000',
-    appId: appId || '1:000000000000:web:0000000000000000000000',
+    apiKey,
+    authDomain,
+    projectId,
+    storageBucket,
+    messagingSenderId,
+    appId,
     measurementId: measurementId || undefined,
   };
 
