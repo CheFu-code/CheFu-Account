@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
     const baseUrl =
-        process.env.NEXT_PUBLIC_ACCOUNT_APP_URL || "https://myaccount.chefuinc.com";
+        process.env.NEXT_PUBLIC_ACCOUNT_APP_URL || "https://myaccount.chefu.co.za";
 
     return [
         {

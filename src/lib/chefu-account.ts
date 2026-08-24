@@ -21,7 +21,7 @@ const appLabels: Record<ChefuAppId, string> = {
 
 export function apiUrl(path: string) {
     const baseUrl =
-        process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.chefuinc.com";
+        process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.chefu.co.za";
 
     return `${baseUrl.replace(/\/$/, "")}${path.startsWith("/") ? path : `/${path}`}`;
 }
@@ -29,7 +29,7 @@ export function apiUrl(path: string) {
 export function accountAppUrl(path = "/account") {
     const baseUrl =
         process.env.NEXT_PUBLIC_ACCOUNT_APP_URL ||
-        "https://myaccount.chefuinc.com";
+        "https://myaccount.chefu.co.za";
 
     return `${baseUrl.replace(/\/$/, "")}${path.startsWith("/") ? path : `/${path}`}`;
 }

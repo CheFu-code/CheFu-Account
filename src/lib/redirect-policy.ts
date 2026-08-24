@@ -4,15 +4,15 @@ export type RedirectTargetKind = "relative" | "app-origin" | "oauth-authorize";
 
 export type RedirectValidationResult =
     | {
-          ok: true;
-          target: string;
-          kind: RedirectTargetKind;
-      }
+        ok: true;
+        target: string;
+        kind: RedirectTargetKind;
+    }
     | {
-          ok: false;
-          reason: RedirectValidationReason;
-          message: string;
-      };
+        ok: false;
+        reason: RedirectValidationReason;
+        message: string;
+    };
 
 export type RedirectValidationReason =
     | "duplicate_param"
@@ -39,40 +39,40 @@ const MAX_RETURN_TO_LENGTH = 2048;
 const CHEFU_APP_RETURN_TO_POLICY: Record<ChefuAppId, AppRedirectPolicy> = {
     academy: {
         allowedOrigins: [
-            "https://academy.chefuinc.com",
-            "https://chefuinc.com",
-            "https://myaccount.chefuinc.com",
+            "https://academy.chefu.co.za",
+            "https://chefu.co.za",
+            "https://myaccount.chefu.co.za",
         ],
         oauthClientIds: ["chefu-academy-mobile", "chefu-academy-web", "chefu-inc-web"],
     },
     admin: {
         allowedOrigins: [
-            "https://internal.chefuinc.com",
+            "https://internal.chefu.co.za",
         ],
         oauthClientIds: ["chefu-admin-web"],
     },
     flow: {
         allowedOrigins: [
-            "https://flow.chefuinc.com",
+            "https://flow.chefu.co.za",
         ],
         oauthClientIds: ["flow-web"],
     },
     muzalo: {
         allowedOrigins: [
-            "https://muzalo.chefuinc.com",
+            "https://muzalo.chefu.co.za",
         ],
         oauthClientIds: ["muzalo-web"],
     },
     quantum: {
         allowedOrigins: [
-            "https://quantum.chefuinc.com",
+            "https://quantum.chefu.co.za",
         ],
         oauthClientIds: ["quantum-mobile", "quantum-web"],
     },
-    
+
     drippybanks: {
         allowedOrigins: [
-            "https://drippybanks.chefuinc.com",
+            "https://drippybanks.chefu.co.za",
         ],
         oauthClientIds: [],
     },
@@ -91,14 +91,14 @@ const CHEFU_APP_RETURN_TO_POLICY: Record<ChefuAppId, AppRedirectPolicy> = {
 };
 
 const OAUTH_AUTHORIZE_ORIGINS = [
-    "https://api.chefuinc.com",
+    "https://api.chefu.co.za",
 ];
 
 const OAUTH_CLIENT_RETURN_TO_POLICY: Record<string, OauthClientRedirectPolicy> = {
     "chefu-academy-web": {
         appId: "academy",
         redirectUris: [
-            "https://academy.chefuinc.com/auth/callback",
+            "https://academy.chefu.co.za/auth/callback",
         ],
     },
     "chefu-academy-mobile": {
@@ -108,26 +108,26 @@ const OAUTH_CLIENT_RETURN_TO_POLICY: Record<string, OauthClientRedirectPolicy> =
     "chefu-admin-web": {
         appId: "admin",
         redirectUris: [
-            "https://internal.chefuinc.com/auth/callback",
+            "https://internal.chefu.co.za/auth/callback",
         ],
     },
     "chefu-inc-web": {
         appId: "academy",
         redirectUris: [
-            "https://chefuinc.com/auth/callback",
-            "https://myaccount.chefuinc.com/auth/callback",
+            "https://chefu.co.za/auth/callback",
+            "https://myaccount.chefu.co.za/auth/callback",
         ],
     },
     "flow-web": {
         appId: "flow",
         redirectUris: [
-            "https://flow.chefuinc.com/auth/callback",
+            "https://flow.chefu.co.za/auth/callback",
         ],
     },
     "muzalo-web": {
         appId: "muzalo",
         redirectUris: [
-            "https://muzalo.chefuinc.com/auth/callback",
+            "https://muzalo.chefu.co.za/auth/callback",
         ],
     },
     "quantum-mobile": {
@@ -137,7 +137,7 @@ const OAUTH_CLIENT_RETURN_TO_POLICY: Record<string, OauthClientRedirectPolicy> =
     "quantum-web": {
         appId: "quantum",
         redirectUris: [
-            "https://quantum.chefuinc.com/auth/callback",
+            "https://quantum.chefu.co.za/auth/callback",
         ],
     },
 };

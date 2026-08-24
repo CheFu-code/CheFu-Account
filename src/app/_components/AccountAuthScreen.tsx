@@ -158,9 +158,9 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                     <footer className="mt-5 flex flex-wrap items-center justify-between gap-3 px-2 text-[11px] font-medium text-[#8f887d]">
                         <span className="inline-flex items-center gap-1.5"><ShieldCheck className="size-3.5" /> Private by design</span>
                         <span className="flex gap-3">
-                            <Link target="_blank" href="https://chefuinc.com/privacy" className="transition hover:text-[#f4f0e8]">Privacy</Link>
-                            <Link target="_blank" href="https://chefuinc.com/terms" className="transition hover:text-[#f4f0e8]">Terms</Link>
-                            <Link target="_blank" href="https://chefuinc.com/contact" className="transition hover:text-[#f4f0e8]">Contact</Link>
+                            <Link target="_blank" href="https://chefu.co.za/privacy" className="transition hover:text-[#f4f0e8]">Privacy</Link>
+                            <Link target="_blank" href="https://chefu.co.za/terms" className="transition hover:text-[#f4f0e8]">Terms</Link>
+                            <Link target="_blank" href="https://chefu.co.za/contact" className="transition hover:text-[#f4f0e8]">Contact</Link>
                         </span>
                     </footer>
                 </section>

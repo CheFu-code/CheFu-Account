@@ -27,7 +27,7 @@ export function DeveloperSection({ account }: AccountSettingsFormProps) {
                     </p>
                 </div>
                 <Link
-                    href="https://academy.chefuinc.com/docs"
+                    href="https://academy.chefu.co.za/docs"
                     className="inline-flex items-center justify-center gap-2 rounded-full border border-white/14 bg-white/4 px-4 py-2.5 text-sm font-bold text-[#d7d0c5] transition hover:border-[#e5ad5b]/35 hover:bg-white/8 hover:text-[#f4f0e8]"
                 >
                     View SDK docs

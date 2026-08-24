@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { ToasterProvider } from "./_components/ToasterProvider";
 import "./globals.css";
 
-const appUrl = process.env.NEXT_PUBLIC_ACCOUNT_APP_URL || "https://myaccount.chefuinc.com";
+const appUrl = process.env.NEXT_PUBLIC_ACCOUNT_APP_URL || "https://myaccount.chefu.co.za";
 
 export const metadata: Metadata = {
     metadataBase: new URL(appUrl),

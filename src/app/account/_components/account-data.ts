@@ -39,31 +39,31 @@ export const connectedApps: Array<{
     description: string;
     href: string;
 }> = [
-    {
-        id: "academy",
-        name: "CHEFU Academy",
-        description: "Courses, videos, SDK keys, and guided learning.",
-        href: "https://academy.chefuinc.com",
-    },
-    {
-        id: "flow",
-        name: "Flow",
-        description: "Private email and campaign workspace.",
-        href: "https://flow.chefuinc.com",
-    },
-    {
-        id: "muzalo",
-        name: "Muzalo",
-        description: "Music discovery and listening experience.",
-        href: "https://muzalo.chefuinc.com",
-    },
-    {
-        id: "quantum",
-        name: "Quantum",
-        description: "AI assistant with saved conversations.",
-        href: "https://quantum.chefuinc.com",
-    },
-];
+        {
+            id: "academy",
+            name: "CHEFU Academy",
+            description: "Courses, videos, SDK keys, and guided learning.",
+            href: "https://academy.chefu.co.za",
+        },
+        {
+            id: "flow",
+            name: "Flow",
+            description: "Private email and campaign workspace.",
+            href: "https://flow.chefu.co.za",
+        },
+        {
+            id: "muzalo",
+            name: "Muzalo",
+            description: "Music discovery and listening experience.",
+            href: "https://muzalo.chefu.co.za",
+        },
+        {
+            id: "quantum",
+            name: "Quantum",
+            description: "AI assistant with saved conversations.",
+            href: "https://quantum.chefu.co.za",
+        },
+    ];
 
 export const navItems: AccountNavItem[] = [
     {

@@ -46,14 +46,14 @@ export function AccountFrame({
 
                     <div className="flex items-center gap-2 sm:gap-3">
                         <Link
-                            href="https://chefuinc.com/contact"
+                            href="https://chefu.co.za/contact"
                             className="hidden size-9 items-center justify-center rounded-full border border-white/12 text-[#bdb5a8] transition hover:border-[#e5ad5b]/45 hover:bg-white/5 hover:text-[#f4f0e8] sm:flex"
                             aria-label="Contact CHEFU support"
                         >
                             <CircleHelp className="size-4" aria-hidden="true" />
                         </Link>
                         <Link
-                            href="https://chefuinc.com/portfolio"
+                            href="https://chefu.co.za/portfolio"
                             className="hidden size-9 items-center justify-center rounded-full border border-white/12 text-[#bdb5a8] transition hover:border-[#e5ad5b]/45 hover:bg-white/5 hover:text-[#f4f0e8] sm:flex"
                             aria-label="Explore CHEFU apps"
                         >
@@ -77,11 +77,10 @@ export function AccountFrame({
                             key={item.id}
                             type="button"
                             onClick={() => onSelectSection(item.id)}
-                            className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition ${
-                                activeSection === item.id
+                            className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition ${activeSection === item.id
                                     ? "border-[#e5ad5b]/55 bg-[#e5ad5b]/12 text-[#ffd18a]"
                                     : "border-white/10 bg-white/3 text-[#bdb5a8] hover:bg-white/7"
-                            }`}
+                                }`}
                             aria-current={activeSection === item.id ? "page" : undefined}
                         >
                             <item.icon className="size-3.5" aria-hidden="true" />
@@ -131,11 +130,10 @@ function NavButton({
         <button
             type="button"
             onClick={onClick}
-            className={`group flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition ${
-                active
+            className={`group flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition ${active
                     ? "bg-[#e5ad5b]/12 text-[#f4f0e8]"
                     : "text-[#9e968a] hover:bg-white/5 hover:text-[#f4f0e8]"
-            }`}
+                }`}
             aria-current={active ? "page" : undefined}
         >
             <span className={`text-[10px] font-bold tabular-nums ${active ? "text-[#e5ad5b]" : "text-[#635d54]"}`}>
