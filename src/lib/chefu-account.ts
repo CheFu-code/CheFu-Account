@@ -14,8 +14,9 @@ const appLabels: Record<ChefuAppId, string> = {
     flow: "Flow Mail",
     muzalo: "Muzalo",
     quantum: "Quantum",
-    synapse: "Synapse",
     drippybanks: "Drippy Banks",
+    logix: "Logix",
+    "logix-dash": "Logix Dashboard",
 };
 
 export function apiUrl(path: string) {
@@ -68,8 +69,9 @@ function isChefuAppId(value: string): value is ChefuAppId {
         value === "flow" ||
         value === "muzalo" ||
         value === "quantum" ||
-        value === "synapse" ||
-        value === "drippybanks"
+        value === "drippybanks" ||
+        value === "logix" ||
+        value === "logix-dash"
     );
 }
 

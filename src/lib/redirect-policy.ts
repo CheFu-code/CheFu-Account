@@ -1,4 +1,4 @@
-export type ChefuAppId = "academy" | "admin" | "flow" | "muzalo" | "quantum" | "synapse" | "drippybanks";
+export type ChefuAppId = "academy" | "admin" | "flow" | "muzalo" | "quantum" | "drippybanks" | "logix" | "logix-dash";
 
 export type RedirectTargetKind = "relative" | "app-origin" | "oauth-authorize";
 
@@ -42,57 +42,49 @@ const CHEFU_APP_RETURN_TO_POLICY: Record<ChefuAppId, AppRedirectPolicy> = {
             "https://academy.chefuinc.com",
             "https://chefuinc.com",
             "https://myaccount.chefuinc.com",
-            "http://localhost:3000",
-            "http://127.0.0.1:3000",
         ],
         oauthClientIds: ["chefu-academy-mobile", "chefu-academy-web", "chefu-inc-web"],
     },
     admin: {
         allowedOrigins: [
             "https://internal.chefuinc.com",
-            "http://localhost:3004",
-            "http://127.0.0.1:3004",
         ],
         oauthClientIds: ["chefu-admin-web"],
     },
     flow: {
         allowedOrigins: [
             "https://flow.chefuinc.com",
-            "http://localhost:3001",
-            "http://127.0.0.1:3001",
         ],
         oauthClientIds: ["flow-web"],
     },
     muzalo: {
         allowedOrigins: [
             "https://muzalo.chefuinc.com",
-            "http://localhost:3002",
-            "http://127.0.0.1:3002",
         ],
         oauthClientIds: ["muzalo-web"],
     },
     quantum: {
         allowedOrigins: [
             "https://quantum.chefuinc.com",
-            "http://localhost:3003",
-            "http://127.0.0.1:3003",
         ],
         oauthClientIds: ["quantum-mobile", "quantum-web"],
     },
-    synapse: {
-        allowedOrigins: [
-            "https://synapse.chefuinc.com",
-            "http://localhost:3005",
-            "http://127.0.0.1:3005",
-        ],
-        oauthClientIds: [],
-    },
+    
     drippybanks: {
         allowedOrigins: [
             "https://drippybanks.chefuinc.com",
-            "https://drippybanks.vercel.app",
-            "http://localhost:3000",
-            "http://127.0.0.1:3000",
+        ],
+        oauthClientIds: [],
+    },
+    logix: {
+        allowedOrigins: [
+            "https://logix.chefu.co.za",
+        ],
+        oauthClientIds: [],
+    },
+    "logix-dash": {
+        allowedOrigins: [
+            "https://dashboard.logix.chefu.co.za",
         ],
         oauthClientIds: [],
     },
@@ -100,8 +92,6 @@ const CHEFU_APP_RETURN_TO_POLICY: Record<ChefuAppId, AppRedirectPolicy> = {
 
 const OAUTH_AUTHORIZE_ORIGINS = [
     "https://api.chefuinc.com",
-    "http://localhost:4000",
-    "http://127.0.0.1:4000",
 ];
 
 const OAUTH_CLIENT_RETURN_TO_POLICY: Record<string, OauthClientRedirectPolicy> = {
@@ -109,7 +99,6 @@ const OAUTH_CLIENT_RETURN_TO_POLICY: Record<string, OauthClientRedirectPolicy> =
         appId: "academy",
         redirectUris: [
             "https://academy.chefuinc.com/auth/callback",
-            "http://localhost:3000/auth/callback",
         ],
     },
     "chefu-academy-mobile": {
@@ -120,7 +109,6 @@ const OAUTH_CLIENT_RETURN_TO_POLICY: Record<string, OauthClientRedirectPolicy> =
         appId: "admin",
         redirectUris: [
             "https://internal.chefuinc.com/auth/callback",
-            "http://localhost:3004/auth/callback",
         ],
     },
     "chefu-inc-web": {
@@ -128,22 +116,18 @@ const OAUTH_CLIENT_RETURN_TO_POLICY: Record<string, OauthClientRedirectPolicy> =
         redirectUris: [
             "https://chefuinc.com/auth/callback",
             "https://myaccount.chefuinc.com/auth/callback",
-            "http://localhost:3000/auth/callback",
         ],
     },
     "flow-web": {
         appId: "flow",
         redirectUris: [
             "https://flow.chefuinc.com/auth/callback",
-            "http://localhost:3001/auth/callback",
         ],
     },
     "muzalo-web": {
         appId: "muzalo",
         redirectUris: [
             "https://muzalo.chefuinc.com/auth/callback",
-            "https://music.chefuinc.com/auth/callback",
-            "http://localhost:3002/auth/callback",
         ],
     },
     "quantum-mobile": {
@@ -154,7 +138,6 @@ const OAUTH_CLIENT_RETURN_TO_POLICY: Record<string, OauthClientRedirectPolicy> =
         appId: "quantum",
         redirectUris: [
             "https://quantum.chefuinc.com/auth/callback",
-            "http://localhost:3003/auth/callback",
         ],
     },
 };
@@ -181,8 +164,9 @@ export function resolveChefuAppId(value?: string | null): ChefuAppId {
     if (normalized === "flow") return "flow";
     if (normalized === "muzalo" || normalized === "music") return "muzalo";
     if (normalized === "quantum") return "quantum";
-    if (normalized === "synapse") return "synapse";
     if (normalized === "drippybanks") return "drippybanks";
+    if (normalized === "logix") return "logix";
+    if (normalized === "logix-dash") return "logix-dash";
     return "academy";
 }
 
@@ -197,8 +181,9 @@ export function isKnownChefuAppParam(value?: string | null) {
         normalized === "muzalo" ||
         normalized === "music" ||
         normalized === "quantum" ||
-        normalized === "synapse" ||
         normalized === "drippybanks" ||
+        normalized === "logix" ||
+        normalized === "logix-dash" ||
         normalized === "academy"
     );
 }
