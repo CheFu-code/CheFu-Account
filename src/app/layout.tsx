@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { ToasterProvider } from "./_components/ToasterProvider";
 import "./globals.css";
+import { Analytics } from '@vercel/analytics/next';
 
 const appUrl = process.env.NEXT_PUBLIC_ACCOUNT_APP_URL || "https://myaccount.chefu.co.za";
 
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <html lang="en">
             <body>
                 {children}
+                <Analytics />
                 <ToasterProvider />
             </body>
         </html>
