@@ -14,6 +14,7 @@ const appLabels: Record<ChefuAppId, string> = {
     flow: "Flow Mail",
     muzalo: "Muzalo",
     quantum: "Quantum",
+    infinity: "Infinity",
     drippybanks: "Drippy Banks",
     logix: "Logix",
     "logix-dash": "Logix Dashboard",
@@ -69,6 +70,7 @@ function isChefuAppId(value: string): value is ChefuAppId {
         value === "flow" ||
         value === "muzalo" ||
         value === "quantum" ||
+        value === "infinity" ||
         value === "drippybanks" ||
         value === "logix" ||
         value === "logix-dash"

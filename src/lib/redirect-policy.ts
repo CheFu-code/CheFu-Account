@@ -1,4 +1,4 @@
-export type ChefuAppId = "academy" | "admin" | "flow" | "muzalo" | "quantum" | "drippybanks" | "logix" | "logix-dash";
+export type ChefuAppId = "academy" | "admin" | "flow" | "muzalo" | "quantum" | "infinity" | "drippybanks" | "logix" | "logix-dash";
 
 export type RedirectTargetKind = "relative" | "app-origin" | "oauth-authorize";
 
@@ -68,6 +68,10 @@ const CHEFU_APP_RETURN_TO_POLICY: Record<ChefuAppId, AppRedirectPolicy> = {
             "https://quantum.chefu.co.za",
         ],
         oauthClientIds: ["quantum-mobile", "quantum-web"],
+    },
+    infinity: {
+        allowedOrigins: ["https://infinity.chefu.co.za"],
+        oauthClientIds: ["infinity-mobile", "infinity-web"],
     },
 
     drippybanks: {
@@ -140,6 +144,14 @@ const OAUTH_CLIENT_RETURN_TO_POLICY: Record<string, OauthClientRedirectPolicy> =
             "https://quantum.chefu.co.za/auth/callback",
         ],
     },
+    "infinity-mobile": {
+        appId: "infinity",
+        redirectUris: ["infinity://auth"],
+    },
+    "infinity-web": {
+        appId: "infinity",
+        redirectUris: ["https://infinity.chefu.co.za/auth/callback"],
+    },
 };
 
 const OAUTH_AUTHORIZE_QUERY_KEYS = new Set([
@@ -164,6 +176,7 @@ export function resolveChefuAppId(value?: string | null): ChefuAppId {
     if (normalized === "flow") return "flow";
     if (normalized === "muzalo" || normalized === "music") return "muzalo";
     if (normalized === "quantum") return "quantum";
+    if (normalized === "infinity") return "infinity";
     if (normalized === "drippybanks") return "drippybanks";
     if (normalized === "logix") return "logix";
     if (normalized === "logix-dash") return "logix-dash";
@@ -181,6 +194,7 @@ export function isKnownChefuAppParam(value?: string | null) {
         normalized === "muzalo" ||
         normalized === "music" ||
         normalized === "quantum" ||
+        normalized === "infinity" ||
         normalized === "drippybanks" ||
         normalized === "logix" ||
         normalized === "logix-dash" ||
