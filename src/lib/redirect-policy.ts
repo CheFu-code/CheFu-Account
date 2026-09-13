@@ -121,6 +121,12 @@ const OAUTH_CLIENT_RETURN_TO_POLICY: Record<string, OauthClientRedirectPolicy> =
             "https://internal.chefu.co.za/auth/callback",
         ],
     },
+    "chefu-merchant-web": {
+        appId: "merchant",
+        redirectUris: [
+            "https://merchant.chefu.co.za/auth/callback",
+        ],
+    },
     "chefu-inc-web": {
         appId: "academy",
         redirectUris: [
