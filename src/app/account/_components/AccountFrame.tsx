@@ -48,14 +48,14 @@ export function AccountFrame({
                         <Link
                             href="https://chefu.co.za/contact"
                             className="hidden size-9 items-center justify-center rounded-full border border-white/12 text-[#bdb5a8] transition hover:border-[#e5ad5b]/45 hover:bg-white/5 hover:text-[#f4f0e8] sm:flex"
-                            aria-label="Contact CHEFU support"
+                            aria-label="Contact our support"
                         >
                             <CircleHelp className="size-4" aria-hidden="true" />
                         </Link>
                         <Link
                             href="https://chefu.co.za/portfolio"
                             className="hidden size-9 items-center justify-center rounded-full border border-white/12 text-[#bdb5a8] transition hover:border-[#e5ad5b]/45 hover:bg-white/5 hover:text-[#f4f0e8] sm:flex"
-                            aria-label="Explore CHEFU apps"
+                            aria-label="Explore our apps"
                         >
                             <Grid3X3 className="size-4" aria-hidden="true" />
                         </Link>

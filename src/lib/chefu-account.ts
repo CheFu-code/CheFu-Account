@@ -9,8 +9,8 @@ export type { ChefuAppId };
 const CHEFU_APP_HEADER = "x-chefu-app";
 
 const appLabels: Record<ChefuAppId, string> = {
-    academy: "CHEFU Academy",
-    admin: "CHEFU Admin",
+    academy: "Chefu Academy",
+    admin: "Chefu Admin",
     flow: "Flow Mail",
     muzalo: "Muzalo",
     quantum: "Quantum",
@@ -18,7 +18,7 @@ const appLabels: Record<ChefuAppId, string> = {
     drippybanks: "Drippy Banks",
     logix: "Logix",
     "logix-dash": "Logix Dashboard",
-    merchant: "CHEFU Merchant",
+    merchant: "Chefu Merchant",
 };
 
 export function apiUrl(path: string) {
