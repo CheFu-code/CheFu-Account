@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth } from "../../lib/firebase";
 
-export default function DeviceAuthPage() {
+function DeviceAuthContent() {
     const searchParams = useSearchParams();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -116,5 +116,13 @@ export default function DeviceAuthPage() {
                 </form>
             </div>
         </main>
+    );
+}
+
+export default function DeviceAuthPage() {
+    return (
+        <Suspense>
+            <DeviceAuthContent />
+        </Suspense>
     );
 }
