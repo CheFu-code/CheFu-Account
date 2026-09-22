@@ -1,4 +1,4 @@
-export type ChefuAppId = "academy" | "admin" | "merchant" | "flow" | "muzalo" | "quantum" | "infinity" | "drippybanks" | "logix" | "logix-dash";
+export type ChefuAppId = "academy" | "admin" | "merchant" | "flow" | "muzalo" | "quantum" | "infinity" | "drippybanks" | "logix" | "logix-dash" | "cloudence";
 
 export type RedirectTargetKind = "relative" | "app-origin" | "oauth-authorize";
 
@@ -98,6 +98,10 @@ const CHEFU_APP_RETURN_TO_POLICY: Record<ChefuAppId, AppRedirectPolicy> = {
         ],
         oauthClientIds: [],
     },
+    cloudence: {
+        allowedOrigins: ["https://cloudence.chefu.co.za"],
+        oauthClientIds: ["cloudence-web"],
+    },
 };
 
 const OAUTH_AUTHORIZE_ORIGINS = [
@@ -192,6 +196,7 @@ export function resolveChefuAppId(value?: string | null): ChefuAppId {
     if (normalized === "drippybanks") return "drippybanks";
     if (normalized === "logix") return "logix";
     if (normalized === "logix-dash") return "logix-dash";
+    if (normalized === "cloudence") return "cloudence";
     if (normalized === "merchant") return "merchant";
     return "academy";
 }
@@ -211,6 +216,7 @@ export function isKnownChefuAppParam(value?: string | null) {
         normalized === "drippybanks" ||
         normalized === "logix" ||
         normalized === "logix-dash" ||
+        normalized === "cloudence" ||
         normalized === "academy" ||
         normalized === "merchant"
     );
