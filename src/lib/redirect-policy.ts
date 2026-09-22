@@ -1,4 +1,4 @@
-export type ChefuAppId = "academy" | "admin" | "merchant" | "flow" | "muzalo" | "quantum" | "infinity" | "drippybanks" | "logix" | "logix-dash" | "cloudence";
+export type ChefuAppId = "academy" | "admin" | "merchant" | "flow" | "muzalo" | "quantum" | "infinity" | "logix" | "logix-dash" | "cloudence";
 
 export type RedirectTargetKind = "relative" | "app-origin" | "oauth-authorize";
 
@@ -80,12 +80,6 @@ const CHEFU_APP_RETURN_TO_POLICY: Record<ChefuAppId, AppRedirectPolicy> = {
         oauthClientIds: ["infinity-mobile", "infinity-web"],
     },
 
-    drippybanks: {
-        allowedOrigins: [
-            "https://drippybanks.chefu.co.za",
-        ],
-        oauthClientIds: [],
-    },
     logix: {
         allowedOrigins: [
             "https://logix.chefu.co.za",
@@ -193,7 +187,6 @@ export function resolveChefuAppId(value?: string | null): ChefuAppId {
     if (normalized === "muzalo" || normalized === "music") return "muzalo";
     if (normalized === "quantum") return "quantum";
     if (normalized === "infinity") return "infinity";
-    if (normalized === "drippybanks") return "drippybanks";
     if (normalized === "logix") return "logix";
     if (normalized === "logix-dash") return "logix-dash";
     if (normalized === "cloudence") return "cloudence";
@@ -213,7 +206,6 @@ export function isKnownChefuAppParam(value?: string | null) {
         normalized === "music" ||
         normalized === "quantum" ||
         normalized === "infinity" ||
-        normalized === "drippybanks" ||
         normalized === "logix" ||
         normalized === "logix-dash" ||
         normalized === "cloudence" ||
