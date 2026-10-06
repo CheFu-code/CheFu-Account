@@ -58,6 +58,7 @@ export function useAccountController() {
     const [isSaving, setIsSaving] = useState(false);
     const [isSendingReset, setIsSendingReset] = useState(false);
     const [isSigningOut, setIsSigningOut] = useState(false);
+    const [isPhonePromptOpen, setIsPhonePromptOpen] = useState(false);
 
     useEffect(() => {
         let cancelled = false;
@@ -79,7 +80,10 @@ export function useAccountController() {
                 if (!response.ok) throw new Error("Could not load your account.");
 
                 const data = (await response.json()) as AccountResponse;
-                if (!cancelled) hydrateAccount(data);
+                if (!cancelled) {
+                    hydrateAccount(data);
+                    setIsPhonePromptOpen(!data.profile.phone?.trim());
+                }
             } catch (error) {
                 if (cancelled) return;
                 toast.error("Unable to load your account.", {
@@ -260,6 +264,21 @@ export function useAccountController() {
         }
     }
 
+    function handlePhoneVerified(phone: string) {
+        setAccount((prev) =>
+            prev
+                ? {
+                      ...prev,
+                      profile: {
+                          ...prev.profile,
+                          phone,
+                      },
+                  }
+                : prev,
+        );
+        setIsPhonePromptOpen(false);
+    }
+
     function hydrateAccount(data: AccountResponse) {
         setAccount(data);
         setName(data.profile.name || data.user.displayName || "");
@@ -304,6 +323,9 @@ export function useAccountController() {
         isSaving,
         isSendingReset,
         isSigningOut,
+        isPhonePromptOpen,
+        setIsPhonePromptOpen,
+        handlePhoneVerified,
         language,
         learningGoal,
         learningInterestsInput,

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AccountFrame } from "./_components/AccountFrame";
 import { AccountHomePanel } from "./_components/AccountHomePanel";
 import { AccountSettingsForm } from "./_components/AccountSettingsForm";
+import { PhoneVerificationModal } from "./_components/PhoneVerificationModal";
 import { useAccountController } from "./_components/useAccountController";
 
 export function AccountPageClient() {
@@ -42,7 +43,8 @@ export function AccountPageClient() {
     }
 
     return (
-        <AccountFrame
+        <>
+            <AccountFrame
             activeSection={account.activeSection}
             isSigningOut={account.isSigningOut}
             onSelectSection={account.goToSection}
@@ -103,6 +105,13 @@ export function AccountPageClient() {
                     weeklyLearningGoal={account.weeklyLearningGoal}
                 />
             )}
-        </AccountFrame>
+            </AccountFrame>
+            {account.isPhonePromptOpen ? (
+                <PhoneVerificationModal
+                    onClose={() => account.setIsPhonePromptOpen(false)}
+                    onVerified={account.handlePhoneVerified}
+                />
+            ) : null}
+        </>
     );
 }
