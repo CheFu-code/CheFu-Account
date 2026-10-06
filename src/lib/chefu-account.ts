@@ -9,7 +9,7 @@ export type { ChefuAppId };
 const CHEFU_APP_HEADER = "x-chefu-app";
 
 const appLabels: Record<ChefuAppId, string> = {
-    academy: "Chefu Academy",
+    academy: "Chefu Technologies",
     admin: "Chefu Admin",
     flow: "Flow Mail",
     muzalo: "Muzalo",
