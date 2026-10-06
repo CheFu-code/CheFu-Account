@@ -118,6 +118,64 @@ export async function syncChefuAccountSession(idToken: string, appId: ChefuAppId
     }
 }
 
+export async function startWhatsappLoginVerification(
+        idToken: string,
+        phone?: string,
+    ) {
+        const response = await fetch(apiUrl("/auth/whatsapp/login/start"), {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${idToken}`,
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify(phone ? { phone } : {}),
+        });
+
+        const data = (await response.json().catch(() => ({}))) as {
+            success?: boolean;
+            requiresPhone?: boolean;
+            phone?: string;
+            message?: string;
+            error?: string;
+        };
+
+        if (!response.ok) {
+            throw new Error(data.message || data.error || "Unable to send your WhatsApp code.");
+        }
+
+        return data;
+    }
+
+export async function verifyWhatsappLogin(
+        idToken: string,
+        phone: string,
+        code: string,
+    ) {
+        const response = await fetch(apiUrl("/auth/whatsapp/login/verify"), {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${idToken}`,
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify({ phone, code }),
+        });
+
+        const data = (await response.json().catch(() => ({}))) as {
+            success?: boolean;
+            verified?: boolean;
+            message?: string;
+            error?: string;
+        };
+
+        if (!response.ok) {
+            throw new Error(data.message || data.error || "Unable to verify your WhatsApp code.");
+        }
+
+        return data;
+    }
+
 export async function clearChefuAccountSession(globalLogout = true) {
     const path = globalLogout ? "/auth/session?global=true" : "/auth/session";
 

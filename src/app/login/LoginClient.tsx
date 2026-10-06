@@ -18,12 +18,15 @@ import {
     preserveAuthParams,
     resolveChefuApp,
     safeReturnTo,
+    startWhatsappLoginVerification,
     syncChefuAccountSession,
+    verifyWhatsappLogin,
 } from "../../lib/chefu-account";
 import { auth } from "../../lib/firebase";
 import { AccountAuthScreen } from "../_components/AccountAuthScreen";
 import { MfaChallengeDialog } from "./MfaChallengeDialog";
 import { usePasskeySignIn } from "./usePasskeySignIn";
+import { WhatsappLoginDialog } from "./WhatsappLoginDialog";
 
 export function LoginClient() {
     const router = useRouter();
@@ -34,6 +37,8 @@ export function LoginClient() {
     const [mfaCode, setMfaCode] = useState("");
     const [mfaEmail, setMfaEmail] = useState("");
     const [mfaResolver, setMfaResolver] = useState<MultiFactorResolver | null>(null);
+    const [whatsappDialogOpen, setWhatsappDialogOpen] = useState(false);
+    const [whatsappPhone, setWhatsappPhone] = useState<string>();
     const attemptedExistingSession = useRef(false);
     const passkey = usePasskeySignIn();
 
@@ -63,9 +68,8 @@ export function LoginClient() {
 
             attemptedExistingSession.current = true;
             setIsSubmitting(true);
-            user.getIdToken(true)
-                .then((idToken) => syncChefuAccountSession(idToken, appId))
-                .then(() => completeAuthRedirect(fromPath, router.replace))
+            beginWhatsappVerification(user)
+                .then(() => setIsSubmitting(false))
                 .catch(async (error) => {
                     await signOut(auth).catch(() => undefined);
                     toast.error(`Unable to continue to ${appName}.`, {
@@ -94,10 +98,7 @@ export function LoginClient() {
         try {
             const credential = await signInWithEmailAndPassword(auth, email, password);
             signedIn = true;
-            const idToken = await credential.user.getIdToken(true);
-            await syncChefuAccountSession(idToken, appId);
-            toast.success(`Signed in to ${appName}.`);
-            completeAuthRedirect(fromPath, router.replace);
+            await beginWhatsappVerification(credential.user);
         } catch (error) {
             if (signedIn) {
                 attemptedExistingSession.current = true;
@@ -154,13 +155,9 @@ export function LoginClient() {
                 mfaCode,
             );
             const credential = await mfaResolver.resolveSignIn(assertion);
-            const idToken = await credential.user.getIdToken(true);
-
-            await syncChefuAccountSession(idToken, appId);
+            await beginWhatsappVerification(credential.user);
             setMfaResolver(null);
             setMfaCode("");
-            toast.success(`Signed in to ${appName}.`);
-            completeAuthRedirect(fromPath, router.replace);
         } catch (error) {
             toast.error("Unable to verify your 2FA code.", {
                 description: readFirebaseMfaError(error),
@@ -180,10 +177,7 @@ export function LoginClient() {
                 return;
             }
 
-            const idToken = await credential.user.getIdToken(true);
-            await syncChefuAccountSession(idToken, appId);
-            toast.success(`Signed in to ${appName}.`);
-            completeAuthRedirect(fromPath, router.replace);
+            await beginWhatsappVerification(credential.user);
         } catch (error) {
             toast.error("Passkey sign-in failed.", {
                 description: error instanceof Error ? error.message : "Please try again.",
@@ -221,8 +215,65 @@ export function LoginClient() {
                 onCodeChange={setMfaCode}
                 onSubmit={onMfaSubmit}
             />
+            {whatsappDialogOpen ? (
+                <WhatsappLoginDialog
+                    isSubmitting={isSubmitting}
+                    phone={whatsappPhone}
+                    onCancel={cancelWhatsappVerification}
+                    onSend={sendWhatsappLoginCode}
+                    onVerify={verifyWhatsappAndCreateSession}
+                />
+            ) : null}
         </>
     );
+
+    async function beginWhatsappVerification(user: NonNullable<typeof auth.currentUser>) {
+        const idToken = await user.getIdToken(true);
+        const result = await startWhatsappLoginVerification(idToken);
+        setWhatsappPhone(result.phone);
+        setWhatsappDialogOpen(true);
+    }
+
+    async function sendWhatsappLoginCode(phone: string) {
+        setIsSubmitting(true);
+        try {
+            const user = auth.currentUser;
+            if (!user) throw new Error("Your sign-in session expired. Please try again.");
+            const idToken = await user.getIdToken(true);
+            const result = await startWhatsappLoginVerification(idToken, phone);
+            setWhatsappPhone(result.phone || phone);
+            toast.success("Verification code sent on WhatsApp.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    }
+
+    async function verifyWhatsappAndCreateSession(phone: string, code: string) {
+        setIsSubmitting(true);
+        try {
+            const user = auth.currentUser;
+            if (!user) throw new Error("Your sign-in session expired. Please try again.");
+            const idToken = await user.getIdToken(true);
+            await verifyWhatsappLogin(idToken, phone, code);
+            await syncChefuAccountSession(idToken, appId);
+            setWhatsappDialogOpen(false);
+            toast.success(`Signed in to ${appName}.`);
+            completeAuthRedirect(fromPath, router.replace);
+        } catch (error) {
+            toast.error("Unable to verify your WhatsApp code.", {
+                description: error instanceof Error ? error.message : "Please try again.",
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+    }
+
+    async function cancelWhatsappVerification() {
+        setWhatsappDialogOpen(false);
+        setWhatsappPhone(undefined);
+        await signOut(auth).catch(() => undefined);
+        setIsSubmitting(false);
+    }
 }
 
 function isMfaRequiredError(error: unknown): error is MultiFactorError {
