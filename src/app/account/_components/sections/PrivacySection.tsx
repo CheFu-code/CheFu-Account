@@ -16,7 +16,7 @@ export function PrivacySection({ isSaving, onPrivacyChange, privacy }: AccountSe
                 <ToggleRow
                     checked={privacy.publicProfile}
                     title="Public profile"
-                    description="Allow your basic Academy profile to be shown publicly."
+                    description="Allow your basic profile to be shown publicly."
                     onToggle={() =>
                         onPrivacyChange((current) => ({
                             ...current,

@@ -1,7 +1,7 @@
 "use client";
 
 import { sendPasswordResetEmail, signOut, updateProfile } from "firebase/auth";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import {
@@ -29,6 +29,7 @@ const isDevPreview =
 
 export function useAccountController() {
     const router = useRouter();
+    const pathname = usePathname();
     const searchParams = useSearchParams();
     const appId = resolveChefuApp(searchParams.get("app"));
     const sectionParam = searchParams.get("section");
@@ -116,7 +117,6 @@ export function useAccountController() {
     }, [appId, router]);
 
     useEffect(() => {
-        if (!sectionParam) return;
         setActiveSection(resolveAccountSection(sectionParam));
     }, [sectionParam]);
 
@@ -418,8 +418,23 @@ export function useAccountController() {
     }
 
     function goToSection(id: string) {
-        setActiveSection(id);
+        const section = resolveAccountSection(id);
+        setActiveSection(section);
         setAccountSearch("");
+
+        const params = new URLSearchParams(searchParams.toString());
+        if (section === "home") {
+            params.delete("section");
+        } else {
+            params.set("section", section);
+        }
+
+        const query = params.toString();
+        const nextUrl = query ? `${pathname}?${query}` : pathname;
+        const currentUrl = `${pathname}${searchParams.size ? `?${searchParams.toString()}` : ""}`;
+        if (nextUrl !== currentUrl) {
+            router.push(nextUrl, { scroll: false });
+        }
     }
 
     return {

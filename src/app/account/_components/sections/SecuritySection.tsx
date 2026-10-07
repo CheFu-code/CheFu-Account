@@ -70,12 +70,12 @@ export function SecuritySection({
                             >
                                 {hasPasswordProvider ? (
                                     <>
-                                        <KeyRound className="size-4" />
+                                        <KeyRound className="size-4 mr-1" />
                                         Change password
                                     </>
                                 ) : (
                                     <>
-                                        <Mail className="size-4" />
+                                        <Mail className="size-4 mr-1" />
                                         Set password
                                     </>
                                 )}
@@ -95,7 +95,7 @@ export function SecuritySection({
                                 {isSendingReset ? (
                                     <Loader2 className="size-4 animate-spin" />
                                 ) : (
-                                    <Mail className="size-4" />
+                                    <Mail className="size-4 mr-1" />
                                 )}
                                 Send reset
                             </AccountButton>
@@ -125,7 +125,7 @@ export function SecuritySection({
                                     {security.isSendingVerification ? (
                                         <Loader2 className="size-4 animate-spin" />
                                     ) : (
-                                        <Mail className="size-4" />
+                                        <Mail className="size-4 mr-1" />
                                     )}
                                     Send email
                                 </AccountButton>
