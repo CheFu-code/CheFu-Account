@@ -3,6 +3,7 @@
 import { CheckCircle2, Loader2, X } from "lucide-react";
 import Image from "next/image";
 import type { KeyboardEvent } from "react";
+import { AccountButton } from "../AccountPrimitives";
 
 export function TotpSetupPanel({
     code,
@@ -50,15 +51,15 @@ export function TotpSetupPanel({
                             your authenticator app.
                         </p>
                     </div>
-                    <button
-                        type="button"
+                    <AccountButton
+                        variant="secondary"
                         onClick={onCancel}
                         disabled={isVerifying}
-                        className="rounded-full border border-white/10 p-2 text-[#bdb5a8] transition hover:bg-white/8 disabled:opacity-60"
+                        className="account-button-icon"
                         aria-label="Cancel 2FA setup"
                     >
                         <X className="size-4" aria-hidden="true" />
-                    </button>
+                    </AccountButton>
                 </div>
 
                 <div className="mt-5 grid gap-5 md:grid-cols-[220px_1fr]">
@@ -101,11 +102,11 @@ export function TotpSetupPanel({
                                 autoFocus
                             />
                         </label>
-                        <button
-                            type="button"
+                        <AccountButton
+                            variant="primary"
                             onClick={onVerify}
                             disabled={!canVerify}
-                            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#e5ad5b] px-4 py-3 text-sm font-bold text-[#26190a] transition hover:bg-[#ffd18a] disabled:opacity-60"
+                            className="account-button-full"
                         >
                             {isVerifying ? (
                                 <Loader2 className="size-4 animate-spin" aria-hidden="true" />
@@ -113,7 +114,7 @@ export function TotpSetupPanel({
                                 <CheckCircle2 className="size-4" aria-hidden="true" />
                             )}
                             Enable 2FA
-                        </button>
+                        </AccountButton>
                     </div>
                 </div>
             </div>

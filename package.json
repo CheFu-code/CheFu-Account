@@ -6,10 +6,11 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "typecheck": "tsc --noEmit",
     "start": "next start",
-    "lint": "eslint .",
-    "smoke": "node scripts/smoke-routes.mjs"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --max-warnings=0",
+    "lint:fix": "eslint . --fix",
+    "check": "npm run typecheck && npm run lint"
   },
   "dependencies": {
     "@simplewebauthn/browser": "^13.3.0",

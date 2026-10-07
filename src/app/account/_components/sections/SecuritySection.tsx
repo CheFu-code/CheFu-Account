@@ -10,7 +10,8 @@ import {
     ShieldCheck,
     Smartphone,
 } from "lucide-react";
-import { ActionRow, SectionCard } from "../AccountControls";
+import { ActionRow } from "../AccountControls";
+import { AccountButton, AccountPanel, SectionHeader } from "../AccountPrimitives";
 import type { AccountSettingsFormProps } from "../account-form-types";
 import { PasskeySection } from "./PasskeySection";
 import { ReauthenticationDialog } from "./ReauthenticationDialog";
@@ -33,24 +34,26 @@ export function SecuritySection({
           : "Sign in again to your account before enrolling an authenticator app.";
 
     return (
-        <div className="space-y-5">
-            <SectionCard
-                icon={ShieldCheck}
-                title="Security & sign-in"
-                description="Protect your account with verification, password recovery, and MFA recovery codes."
-                aside={security.summary?.mfaEnabled ? "MFA enabled" : "MFA ready"}
-            >
-                <div className="divide-y divide-white/10">
+        <div className="account-security-section">
+            <SectionHeader
+                title="Security"
+                description="Manage your password, two-factor authentication, and active sessions."
+            />
+            <h2 className="account-subsection-title">Password</h2>
+            <AccountPanel className="account-security-panel">
+                <div className="account-security-rows">
+                    <div className="account-security-subsection-heading">
+                        <h2 className="account-subsection-title">Two-factor authentication</h2>
+                    </div>
                     <ActionRow
                         icon={KeyRound}
                         title="Password reset"
                         description={`Send a secure reset link to ${account.user.email}.`}
                         action={
-                            <button
-                                type="button"
+                            <AccountButton
+                                variant="secondary"
                                 onClick={onSendResetEmail}
                                 disabled={isSendingReset}
-                                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/14 bg-white/4 px-4 py-2.5 text-sm font-bold text-[#d7d0c5] transition hover:border-[#e5ad5b]/35 hover:bg-white/8 hover:text-[#f4f0e8] disabled:opacity-60"
                             >
                                 {isSendingReset ? (
                                     <Loader2 className="size-4 animate-spin" />
@@ -58,7 +61,7 @@ export function SecuritySection({
                                     <Mail className="size-4" />
                                 )}
                                 Send reset
-                            </button>
+                            </AccountButton>
                         }
                     />
 
@@ -77,11 +80,10 @@ export function SecuritySection({
                                     Verified
                                 </span>
                             ) : (
-                                <button
-                                    type="button"
+                                <AccountButton
+                                    variant="secondary"
                                     onClick={security.sendVerificationEmail}
                                     disabled={security.isSendingVerification}
-                                    className="inline-flex items-center justify-center gap-2 rounded-full border border-white/14 bg-white/4 px-4 py-2.5 text-sm font-bold text-[#d7d0c5] transition hover:border-[#e5ad5b]/35 hover:bg-white/8 hover:text-[#f4f0e8] disabled:opacity-60"
                                 >
                                     {security.isSendingVerification ? (
                                         <Loader2 className="size-4 animate-spin" />
@@ -89,7 +91,7 @@ export function SecuritySection({
                                         <Mail className="size-4" />
                                     )}
                                     Send email
-                                </button>
+                                </AccountButton>
                             )
                         }
                     />
@@ -100,11 +102,10 @@ export function SecuritySection({
                         description={mfaDescription}
                         action={
                             <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                                <button
-                                    type="button"
+                                <AccountButton
+                                    variant="secondary"
                                     onClick={() => void security.loadSecuritySummary()}
                                     disabled={security.isLoading}
-                                    className="inline-flex items-center justify-center gap-2 rounded-full border border-white/14 bg-white/4 px-4 py-2.5 text-sm font-bold text-[#d7d0c5] transition hover:border-[#e5ad5b]/35 hover:bg-white/8 hover:text-[#f4f0e8] disabled:opacity-60"
                                 >
                                     <RotateCcw
                                         className={`size-4 ${
@@ -112,16 +113,15 @@ export function SecuritySection({
                                         }`}
                                     />
                                     Refresh
-                                </button>
+                                </AccountButton>
                                 {security.summary?.mfaEnabled ? (
-                                    <button
-                                        type="button"
+                                    <AccountButton
+                                        variant="danger"
                                         onClick={security.disableTotp}
                                         disabled={
                                             security.isDisablingTotp ||
                                             !security.totpFactorUid
                                         }
-                                        className="inline-flex items-center justify-center gap-2 rounded-full border border-red-300/30 px-4 py-2 text-sm font-semibold text-red-100 transition hover:bg-red-400/10 disabled:opacity-60"
                                     >
                                         {security.isDisablingTotp ? (
                                             <Loader2 className="size-4 animate-spin" />
@@ -129,17 +129,16 @@ export function SecuritySection({
                                             <ShieldCheck className="size-4" />
                                         )}
                                         Disable 2FA
-                                    </button>
+                                    </AccountButton>
                                 ) : (
-                                    <button
-                                        type="button"
+                                    <AccountButton
+                                        variant="primary"
                                         onClick={security.startTotpSetup}
                                         disabled={
                                             security.isStartingTotp ||
                                             !security.firebaseReady ||
                                             !security.currentUser
                                         }
-                                        className="inline-flex items-center justify-center gap-2 rounded-full bg-[#e5ad5b] px-4 py-2.5 text-sm font-bold text-[#26190a] transition hover:bg-[#ffd18a] disabled:opacity-60"
                                     >
                                         {security.isStartingTotp ? (
                                             <Loader2 className="size-4 animate-spin" />
@@ -147,13 +146,14 @@ export function SecuritySection({
                                             <Smartphone className="size-4" />
                                         )}
                                         Enable 2FA
-                                    </button>
+                                    </AccountButton>
                                 )}
                             </div>
                         }
                     />
 
-                    <div className="py-4">
+                    <div className="account-recovery-section py-4">
+                        <h2 className="account-subsection-title">Recovery methods</h2>
                         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                             <div>
                                 <p className="font-semibold text-[#f4f0e8]">Recovery codes</p>
@@ -162,11 +162,10 @@ export function SecuritySection({
                                     them once and store only hashes.
                                 </p>
                             </div>
-                            <button
-                                type="button"
+                            <AccountButton
+                                variant="primary"
                                 onClick={() => void security.generateBackupCodes()}
                                 disabled={security.isGeneratingCodes}
-                                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#f4f0e8] px-4 py-2.5 text-sm font-bold text-[#26190a] transition hover:bg-white disabled:opacity-60"
                             >
                                 {security.isGeneratingCodes ? (
                                     <Loader2 className="size-4 animate-spin" />
@@ -174,7 +173,7 @@ export function SecuritySection({
                                     <KeyRound className="size-4" />
                                 )}
                                 Generate codes
-                            </button>
+                            </AccountButton>
                         </div>
 
                         {security.summary ? (
@@ -194,14 +193,14 @@ export function SecuritySection({
                                     <p className="text-sm font-semibold text-amber-100">
                                         Store these now. They will not be shown again.
                                     </p>
-                                    <button
-                                        type="button"
+                                    <AccountButton
+                                        variant="secondary"
                                         onClick={security.copyCodes}
-                                        className="inline-flex items-center gap-2 rounded-full border border-amber-200/30 px-3 py-1.5 text-xs font-semibold text-amber-100 hover:bg-amber-200/10"
+                                        className="text-xs"
                                     >
                                         <Copy className="size-3.5" />
                                         Copy
-                                    </button>
+                                    </AccountButton>
                                 </div>
                                 <div className="grid gap-2 sm:grid-cols-2">
                                     {security.codes.map((code) => (
@@ -217,7 +216,7 @@ export function SecuritySection({
                         ) : null}
                     </div>
                 </div>
-            </SectionCard>
+            </AccountPanel>
 
             <PasskeySection />
 

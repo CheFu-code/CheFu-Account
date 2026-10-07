@@ -1,8 +1,8 @@
 "use client";
 
-import { CheckCircle2, Fingerprint, KeyRound, Loader2, Smartphone, Trash2, X } from "lucide-react";
+import { CheckCircle2, Loader2, Trash2, X } from "lucide-react";
 import { useCallback, useState } from "react";
-import { ActionRow, SectionCard } from "../AccountControls";
+import { AccountButton, SectionHeader } from "../AccountPrimitives";
 import { usePasskeyManagement } from "./usePasskeyManagement";
 
 export function PasskeySection() {
@@ -22,40 +22,23 @@ export function PasskeySection() {
     );
 
     return (
-        <SectionCard
-            icon={Fingerprint}
-            title="Passkeys"
-            description="Fast, secure sign-in using biometric or device authentication."
-            aside={
-                passkey.credentials.length > 0
-                    ? `${passkey.credentials.length} passkey${passkey.credentials.length === 1 ? "" : "s"}`
-                    : "None registered"
-            }
-        >
-                <div className="divide-y divide-white/10">
+        <section className="account-passkey-section">
+            <SectionHeader title="Passkeys" description="Fast, secure sign-in using biometric or device authentication." />
+            <div className="account-passkey-toolbar">
+                <div>
+                    <p className="font-medium text-[var(--fg)]">Registered passkeys</p>
+                    <p className="account-helper">
+                        {passkey.credentials.length
+                            ? `${passkey.credentials.length} passkey${passkey.credentials.length === 1 ? "" : "s"} registered`
+                            : "No passkeys registered yet."}
+                    </p>
+                </div>
+                <AccountButton variant="primary" onClick={passkey.startPasskeyRegistration}>
+                    {passkey.isRegistering ? "Adding..." : "Add passkey"}
+                </AccountButton>
+            </div>
+            <div className="account-passkey-list">
                     {/* Add Passkey Button */}
-                    <ActionRow
-                        icon={Smartphone}
-                        title="Add passkey"
-                        description="Register a new passkey for secure sign-in without passwords."
-                        action={
-                            <button
-                                type="button"
-                                onClick={passkey.startPasskeyRegistration}
-                                disabled={passkey.isRegistering}
-                                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#e5ad5b] px-4 py-2.5 text-sm font-bold text-[#26190a] transition hover:bg-[#ffd18a] disabled:opacity-60"
-                            >
-                                {passkey.isRegistering ? (
-                                    <Loader2 className="size-4 animate-spin" />
-                                ) : (
-                                    <KeyRound className="size-4" />
-                                )}
-                                Add passkey
-                            </button>
-                        }
-                    />
-
-                    {/* Registered Passkeys */}
                     {passkey.isLoadingCredentials ? (
                         <div className="flex items-center justify-center gap-2 px-5 py-8 text-sm text-[#9e968a]">
                             <Loader2 className="size-4 animate-spin" />
@@ -83,47 +66,48 @@ export function PasskeySection() {
                                 <div className="flex items-center gap-2">
                                     {deleteConfirm === credential.credentialId ? (
                                         <>
-                                            <button
-                                                type="button"
+                                            <AccountButton
+                                                variant="danger"
                                                 onClick={() => handleDeleteConfirm(credential.credentialId)}
                                                 disabled={passkey.isDeleting[credential.credentialId]}
-                                                className="inline-flex items-center justify-center gap-2 rounded-full border border-red-300/30 px-3 py-2 text-xs font-semibold text-red-100 transition hover:bg-red-400/10 disabled:opacity-60"
+                                                className="text-xs"
                                             >
                                                 {passkey.isDeleting[credential.credentialId] ? (
                                                     <Loader2 className="size-3 animate-spin" />
                                                 ) : (
                                                     "Confirm"
                                                 )}
-                                            </button>
-                                            <button
-                                                type="button"
+                                            </AccountButton>
+                                            <AccountButton
+                                                variant="secondary"
                                                 onClick={() => setDeleteConfirm(null)}
-                                                className="inline-flex items-center justify-center rounded-full border border-white/14 bg-white/4 px-3 py-2 text-xs font-semibold text-[#d7d0c5] transition hover:bg-white/8"
+                                                className="account-button-icon text-xs"
+                                                aria-label="Cancel passkey deletion"
                                             >
                                                 <X className="size-3" />
-                                            </button>
+                                            </AccountButton>
                                         </>
                                     ) : (
-                                        <button
-                                            type="button"
+                                        <AccountButton
+                                            variant="secondary"
                                             onClick={() => handleDeleteClick(credential.credentialId)}
-                                            className="inline-flex items-center justify-center rounded-full border border-white/14 bg-white/4 px-3 py-2 text-xs font-semibold text-[#d7d0c5] transition hover:border-red-300/30 hover:bg-red-400/10 hover:text-red-100"
+                                            className="account-button-icon text-xs"
+                                            aria-label={`Delete passkey for ${credential.email}`}
                                         >
                                             <Trash2 className="size-3" />
-                                        </button>
+                                        </AccountButton>
                                     )}
                                 </div>
                             </div>
                         ))
                     )}
 
-                    {/* Error Message */}
                     {passkey.error && (
-                        <div className="border-t border-white/10 bg-red-400/10 px-5 py-3 text-sm text-red-100">
+                        <div className="account-inline-error">
                             {passkey.error}
                         </div>
                     )}
-                </div>
-            </SectionCard>
+            </div>
+        </section>
     );
 }

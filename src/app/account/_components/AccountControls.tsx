@@ -3,6 +3,7 @@
 import { Loader2, LockKeyhole, Save, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { toTitle } from "./account-data";
+import { AccountButton } from "./AccountPrimitives";
 
 export function SectionCard({
     action,
@@ -20,25 +21,25 @@ export function SectionCard({
     title: string;
 }) {
     return (
-        <section className="overflow-hidden rounded-4xl border border-white/10 bg-[#1a1916]/95 shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
-            <div className="border-b border-white/10 bg-white/2.5 p-5 sm:p-6">
+        <section className="overflow-hidden rounded border border-[#e5e7eb] bg-white shadow-sm">
+            <div className="border-b border-[#e5e7eb] bg-[#f9fafb] p-5 sm:p-6">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex items-start gap-3">
-                        <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-[#e5ad5b]/22 bg-[#e5ad5b]/10 text-[#ffd18a]">
+                        <span className="flex size-10 shrink-0 items-center justify-center rounded border border-[#d1d5db] bg-white text-[#1a3050]">
                             <Icon className="size-5" aria-hidden="true" />
                         </span>
                         <div>
-                            <h2 className="text-xl font-semibold tracking-[-0.03em] text-[#f4f0e8]">
+                            <h2 className="text-xl font-semibold tracking-[-0.03em] text-[#111827]">
                                 {title}
                             </h2>
-                            <p className="mt-1 text-sm leading-6 text-[#8f887d]">
+                            <p className="mt-1 text-sm leading-6 text-[#6b7280]">
                                 {description}
                             </p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
                         {aside ? (
-                            <span className="rounded-full border border-[#e5ad5b]/18 bg-[#e5ad5b]/9 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-[#ffd18a]">
+                            <span className="rounded border border-[#d1d5db] bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-[#1a3050]">
                                 {aside}
                             </span>
                         ) : null}
@@ -64,7 +65,7 @@ export function QuickLink({
         <button
             type="button"
             onClick={onClick}
-            className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/4 px-3 py-2 text-xs font-semibold text-[#d7d0c5] transition hover:border-[#e5ad5b]/35 hover:bg-white/8 hover:text-[#f4f0e8]"
+            className="inline-flex items-center gap-2 rounded border border-[#d1d5db] bg-white px-3 py-2 text-xs font-semibold text-[#374151] transition hover:bg-[#f3f4f6]"
         >
             <Icon className="size-4" aria-hidden="true" />
             {label}
@@ -90,8 +91,8 @@ export function ActionRow({
                     <Icon className="size-4" aria-hidden="true" />
                 </span>
                 <div>
-                    <p className="font-semibold text-[#f4f0e8]">{title}</p>
-                    <p className="mt-1 text-sm leading-6 text-[#8f887d]">{description}</p>
+                    <p className="font-semibold text-[#111827]">{title}</p>
+                    <p className="mt-1 text-sm leading-6 text-[#6b7280]">{description}</p>
                 </div>
             </div>
             {action}
@@ -120,7 +121,7 @@ export function ToggleRow({
                 type="button"
                 onClick={onToggle}
                 className={`relative h-6 w-11 shrink-0 rounded-full transition ${
-                    checked ? "bg-[#e5ad5b]" : "bg-[#4b463e]"
+                    checked ? "bg-[#1a3050]" : "bg-[#d1d5db]"
                 }`}
                 aria-pressed={checked}
             >
@@ -155,14 +156,14 @@ export function TextField({
 }) {
     return (
         <label className={`block ${wide ? "md:col-span-2" : ""}`}>
-            <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#bdb5a8]">{label}</span>
+            <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#374151]">{label}</span>
             <input
                 type={type}
                 min={min}
                 max={max}
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
-                className="mt-2 h-12 w-full rounded-2xl border border-white/12 bg-[#11110f] px-4 text-sm text-[#f4f0e8] outline-none transition placeholder:text-[#736c63] hover:border-white/20 focus:border-[#e5ad5b]/70 focus:ring-4 focus:ring-[#e5ad5b]/10"
+                className="mt-2 h-10 w-full rounded border border-[#d1d5db] bg-white px-3 text-sm text-[#111827] outline-none transition placeholder:text-[#9ca3af] hover:border-[#9ca3af] focus:border-[#1a3050] focus:ring-2 focus:ring-[#1a3050]/10"
                 placeholder={placeholder}
             />
         </label>
@@ -179,13 +180,13 @@ export function LockedInfo({
     value: string;
 }) {
     return (
-        <div className="rounded-2xl border border-white/10 bg-[#11110f] p-4">
+        <div className="rounded border border-[#e5e7eb] bg-[#f9fafb] p-4">
             <div className="flex items-start gap-3">
-                <LockKeyhole className="mt-0.5 size-4 text-[#8f887d]" aria-hidden="true" />
+                <LockKeyhole className="mt-0.5 size-4 text-[#6b7280]" aria-hidden="true" />
                 <div className="min-w-0">
-                    <p className="text-xs font-bold uppercase tracking-widest text-[#8f887d]">{label}</p>
-                    <p className="mt-1.5 truncate text-sm font-medium text-[#f4f0e8]">{value}</p>
-                    {description ? <p className="mt-1 text-xs leading-5 text-[#797267]">{description}</p> : null}
+                    <p className="text-xs font-bold uppercase tracking-widest text-[#6b7280]">{label}</p>
+                    <p className="mt-1.5 truncate text-sm font-medium text-[#111827]">{value}</p>
+                    {description ? <p className="mt-1 text-xs leading-5 text-[#6b7280]">{description}</p> : null}
                 </div>
             </div>
         </div>
@@ -205,11 +206,11 @@ export function SelectField({
 }) {
     return (
         <label className="block">
-            <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#bdb5a8]">{label}</span>
+            <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#374151]">{label}</span>
             <select
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
-                className="mt-2 h-12 w-full rounded-2xl border border-white/12 bg-[#11110f] px-4 text-sm text-[#f4f0e8] outline-none transition hover:border-white/20 focus:border-[#e5ad5b]/70 focus:ring-4 focus:ring-[#e5ad5b]/10"
+                className="mt-2 h-10 w-full rounded border border-[#d1d5db] bg-white px-3 text-sm text-[#111827] outline-none transition hover:border-[#9ca3af] focus:border-[#1a3050] focus:ring-2 focus:ring-[#1a3050]/10"
             >
                 {options.map((option) => (
                     <option key={option} value={option}>
@@ -223,10 +224,10 @@ export function SelectField({
 
 export function SaveButton({ isSaving, label }: { isSaving: boolean; label: string }) {
     return (
-        <button
+        <AccountButton
             type="submit"
+            variant="primary"
             disabled={isSaving}
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-[#e5ad5b] px-4 py-2.5 text-sm font-bold text-[#26190a] transition hover:bg-[#ffd18a] disabled:cursor-not-allowed disabled:opacity-60"
         >
             {isSaving ? (
                 <Loader2 className="size-4 animate-spin" aria-hidden="true" />
@@ -234,6 +235,6 @@ export function SaveButton({ isSaving, label }: { isSaving: boolean; label: stri
                 <Save className="size-4" aria-hidden="true" />
             )}
             {label}
-        </button>
+        </AccountButton>
     );
 }

@@ -11,7 +11,14 @@ import {
     type MultiFactorResolver,
 } from "firebase/auth";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import {
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+    type FormEvent,
+} from "react";
 import { toast } from "sonner";
 import {
     chefuAppLabel,
@@ -57,6 +64,16 @@ export function LoginClient() {
         [searchParams],
     );
 
+    const createBackendSession = useCallback(
+        async (user: NonNullable<typeof auth.currentUser>) => {
+            const idToken = await user.getIdToken(true);
+            await syncChefuAccountSession(idToken, appId);
+            toast.success(`Signed in to ${appName}.`);
+            completeAuthRedirect(fromPath, router.replace);
+        },
+        [appId, appName, fromPath, router],
+    );
+
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (!user || isSubmitting || attemptedExistingSession.current) return;
@@ -76,7 +93,7 @@ export function LoginClient() {
         });
 
         return () => unsubscribe();
-    }, [appId, appName, fromPath, isSubmitting, router]);
+    }, [appName, createBackendSession, isSubmitting]);
 
     const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -212,13 +229,6 @@ export function LoginClient() {
             />
         </>
     );
-
-    async function createBackendSession(user: NonNullable<typeof auth.currentUser>) {
-        const idToken = await user.getIdToken(true);
-        await syncChefuAccountSession(idToken, appId);
-        toast.success(`Signed in to ${appName}.`);
-        completeAuthRedirect(fromPath, router.replace);
-    }
 }
 
 function isMfaRequiredError(error: unknown): error is MultiFactorError {

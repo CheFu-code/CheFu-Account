@@ -1,6 +1,6 @@
 "use client";
 
-import { AccountAuthScreenProps } from "@/app/types";
+import type { AccountAuthScreenProps } from "@/app/types";
 import { Eye, EyeOff, Fingerprint, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -24,7 +24,11 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                     <h1 className="text-2xl font-semibold tracking-tight">{copy.eyebrow}</h1>
                     <p className="mt-1.5 text-sm text-stone-600">Continue to {appName}</p>
 
-                    <form onSubmit={onSubmit} className="mt-8 space-y-5">
+                    <form
+                        onSubmit={onSubmit}
+                        autoComplete={mode === "register" ? "off" : undefined}
+                        className="mt-8 space-y-5"
+                    >
                         {mode === "register" ? (
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
@@ -38,7 +42,7 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                                         onChange={(event) => props.setFirstName(event.target.value)}
                                         placeholder="First name"
                                         className={inputClass}
-                                        autoComplete="given-name"
+                                        autoComplete={mode === "register" ? "off" : "given-name"}
                                         autoFocus
                                     />
                                 </div>
@@ -53,7 +57,7 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                                         onChange={(event) => props.setLastName(event.target.value)}
                                         placeholder="Last name"
                                         className={inputClass}
-                                        autoComplete="family-name"
+                                        autoComplete={mode === "register" ? "off" : "family-name"}
                                     />
                                 </div>
                             </div>
@@ -70,7 +74,7 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                                 onChange={(event) => setEmail(event.target.value)}
                                 placeholder="you@example.com"
                                 className={inputClass}
-                                autoComplete="email"
+                                autoComplete={mode === "register" ? "off" : "email"}
                                 autoFocus={mode !== "register"}
                             />
                         </div>
@@ -107,21 +111,20 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                                     >
                                         {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                                     </button>
-
-                                    {mode === "register" ? (
-                                        <p className="text-center text-xs leading-5 text-stone-500">
-                                            By creating an account, you agree to our{" "}
-                                            <Link href="https://chefu.co.za/terms" target="_blank" rel="noopener noreferrer" className={linkClass}>
-                                                Terms of Service
-                                            </Link>{" "}
-                                            and{" "}
-                                            <Link href="https://chefu.co.za/privacy" target="_blank" rel="noopener noreferrer" className={linkClass}>
-                                                Privacy Policy
-                                            </Link>
-                                            .
-                                        </p>
-                                    ) : null}
                                 </div>
+                                {mode === "register" ? (
+                                    <p className="mt-3 text-center text-xs leading-5 text-stone-500">
+                                        By creating an account, you agree to our{" "}
+                                        <Link href="https://chefu.co.za/terms" target="_blank" rel="noopener noreferrer" className={linkClass}>
+                                            Terms of Service
+                                        </Link>{" "}
+                                        and{" "}
+                                        <Link href="https://chefu.co.za/privacy" target="_blank" rel="noopener noreferrer" className={linkClass}>
+                                            Privacy Policy
+                                        </Link>
+                                        .
+                                    </p>
+                                ) : null}
                             </div>
                         ) : null}
 

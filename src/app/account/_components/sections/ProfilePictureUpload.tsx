@@ -41,11 +41,11 @@ export function ProfilePictureUpload({
     const initial = (userName.trim()[0] || "U").toUpperCase();
 
     return (
-        <div className="rounded-3xl border border-white/10 bg-[#11110f] p-5">
+        <div className="rounded border border-[var(--border)] bg-[var(--surface)] p-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
                 {/* Profile Picture Display */}
                 <div className="relative group size-20 shrink-0 sm:size-24">
-                    <div className="size-full overflow-hidden rounded-2xl border-2 border-white/12 bg-[#24221e] shadow-md transition group-hover:border-[#e5ad5b]/60">
+                    <div className="size-full overflow-hidden rounded border-2 border-[var(--border-strong)] bg-[var(--surface-alt)] shadow-sm transition group-hover:border-[var(--accent)]">
                         {displayImageUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -54,7 +54,7 @@ export function ProfilePictureUpload({
                                 className="size-full object-cover"
                             />
                         ) : (
-                            <div className="grid size-full place-items-center bg-[#e5ad5b] text-2xl font-bold text-[#26190a] sm:text-3xl">
+                            <div className="grid size-full place-items-center bg-[var(--surface-alt)] text-2xl font-bold text-[var(--fg-2)] sm:text-3xl">
                                 {initial}
                             </div>
                         )}
@@ -65,7 +65,7 @@ export function ProfilePictureUpload({
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={isUploading}
-                        className="absolute -bottom-1 -right-1 flex size-8 items-center justify-center rounded-xl bg-[#e5ad5b] text-[#26190a] shadow-lg transition hover:bg-[#ffd18a] disabled:cursor-not-allowed disabled:opacity-60"
+                        className="absolute -bottom-1 -right-1 flex size-8 items-center justify-center rounded bg-[var(--accent)] text-white shadow-sm transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
                         aria-label="Upload profile picture"
                         title="Upload profile picture"
                     >
@@ -90,10 +90,10 @@ export function ProfilePictureUpload({
                 {/* Upload Info & Action Button */}
                 <div className="flex-1 space-y-2">
                     <div>
-                        <h4 className="text-sm font-semibold text-[#f4f0e8]">
+                        <h4 className="text-sm font-semibold text-[var(--fg)]">
                             Profile picture
                         </h4>
-                        <p className="text-xs text-[#8f887d]">
+                        <p className="text-xs text-[var(--fg-muted)]">
                             PNG, JPG, GIF, or WEBP up to 5MB.
                         </p>
                     </div>
@@ -103,16 +103,16 @@ export function ProfilePictureUpload({
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
                             disabled={isUploading}
-                            className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/4 px-3.5 py-1.5 text-xs font-semibold text-[#d7d0c5] transition hover:border-[#e5ad5b]/40 hover:bg-white/8 hover:text-[#f4f0e8] disabled:cursor-not-allowed disabled:opacity-60"
+                            className="inline-flex items-center gap-2 rounded border border-[var(--border-strong)] bg-[var(--bg)] px-3.5 py-1.5 text-xs font-semibold text-[var(--fg-2)] transition hover:border-[var(--accent)] hover:bg-[var(--surface-alt)] disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             {isUploading ? (
                                 <>
-                                    <Loader2 className="size-3.5 animate-spin text-[#e5ad5b]" />
+                                    <Loader2 className="size-3.5 animate-spin text-[var(--accent)]" />
                                     Uploading...
                                 </>
                             ) : (
                                 <>
-                                    <UploadCloud className="size-3.5 text-[#e5ad5b]" />
+                                    <UploadCloud className="size-3.5 text-[var(--accent)]" />
                                     Change photo
                                 </>
                             )}

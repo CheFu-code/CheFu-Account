@@ -5,6 +5,15 @@ import { LoginClient } from "./LoginClient";
 export const metadata: Metadata = {
     title: "Sign in",
     description: "Sign in to your account.",
+    robots: {
+        index: false,
+        follow: false,
+        nocache: true,
+    },
+    referrer: "strict-origin",
+    alternates: {
+        canonical: "/login",
+    },
 };
 
 export default function LoginPage() {

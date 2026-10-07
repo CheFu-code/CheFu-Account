@@ -7,6 +7,9 @@ export type AccountUser = {
     email: string;
     roles?: string[];
     displayName?: string | null;
+    lastLoginAt?: string | null;
+    createdAt?: string | null;
+    updatedAt?: string | null;
 };
 
 export type EmailPreferences = {
@@ -38,6 +41,8 @@ export type AccountProfile = {
     detectedCountryCode?: string;
     detectedCountrySource?: string;
     detectedCountryUpdatedAt?: string | null;
+    createdAt?: string | null;
+    updatedAt?: string | null;
     language: string;
     learningGoal: string;
     skillLevel: "beginner" | "intermediate" | "advanced" | null;

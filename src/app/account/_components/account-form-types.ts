@@ -14,12 +14,14 @@ export type AccountSettingsFormProps = {
     aiTutorSuggestions: boolean;
     defaultCourseDifficulty: AccountProfile["defaultCourseDifficulty"];
     emailPreferences: EmailPreferences;
+    firstName: string;
     isSaving: boolean;
     isSendingReset: boolean;
     language?: string;
     learningGoal: string;
     learningInterestsInput: string;
     lessonStyle: AccountProfile["lessonStyle"];
+    lastName: string;
     name: string;
     onDefaultCourseDifficultyChange: (
         value: AccountProfile["defaultCourseDifficulty"],
@@ -40,6 +42,8 @@ export type AccountSettingsFormProps = {
     privacy: PrivacyPreferences;
     securityEmailsEnabled: boolean;
     setLanguage?: (value: string) => void;
+    setFirstName: (value: string) => void;
+    setLastName: (value: string) => void;
     setLearningGoal: (value: string) => void;
     setName: (value: string) => void;
     setSecurityEmailsEnabled: Dispatch<SetStateAction<boolean>>;

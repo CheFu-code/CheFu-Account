@@ -9,6 +9,7 @@ import {
     defaultPrivacyPreferences,
     navItems,
 } from "./account-data";
+import { mockAccount } from "./preview-account";
 import type {
     AccountProfile,
     AccountResponse,
@@ -22,6 +23,10 @@ import {
 } from "../../../lib/chefu-account";
 import { auth } from "../../../lib/firebase";
 
+const isDevPreview =
+    process.env.NODE_ENV !== "production" &&
+    process.env.NEXT_PUBLIC_DEV_PREVIEW === "true";
+
 export function useAccountController() {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -29,6 +34,8 @@ export function useAccountController() {
     const sectionParam = searchParams.get("section");
     const [account, setAccount] = useState<AccountResponse | null>(null);
     const [name, setName] = useState("");
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
     const [bio, setBio] = useState("");
     const [language, setLanguage] = useState("en");
     const [learningGoal, setLearningGoal] = useState("");
@@ -64,6 +71,11 @@ export function useAccountController() {
 
         async function loadAccount() {
             try {
+                if (isDevPreview) {
+                    if (!cancelled) hydrateAccount(mockAccount);
+                    return;
+                }
+
                 const response = await fetch(apiUrl("/auth/me"), {
                     credentials: "include",
                     headers: { "x-chefu-app": "academy" },
@@ -128,15 +140,33 @@ export function useAccountController() {
         event.preventDefault();
         if (!account) return;
 
-        const trimmedName = name.trim().replace(/\s+/g, " ");
+        const trimmedFirstName = firstName.trim().replace(/\s+/g, " ");
+        const trimmedLastName = lastName.trim().replace(/\s+/g, " ");
+        const trimmedName = `${trimmedFirstName} ${trimmedLastName}`.trim().replace(/\s+/g, " ");
         if (trimmedName.length < 2) {
-            toast.error("Display name must be at least 2 characters.");
+            toast.error("First and last name must contain at least 2 characters together.");
             return;
         }
+        setName(trimmedName);
 
         setIsSaving(true);
 
         try {
+            if (isDevPreview) {
+                hydrateAccount({
+                    ...account,
+                    user: { ...account.user, displayName: trimmedName },
+                    profile: {
+                        ...account.profile,
+                        firstName: trimmedFirstName,
+                        lastName: trimmedLastName,
+                        fullname: trimmedName,
+                    },
+                });
+                toast.success("Preview profile updated locally.");
+                return;
+            }
+
             const weeklyGoal = Number(weeklyLearningGoal);
             const nextEmailPreferences = {
                 ...emailPreferences,
@@ -208,6 +238,10 @@ export function useAccountController() {
 
     async function sendResetEmail() {
         if (!account?.user.email) return;
+        if (isDevPreview) {
+            toast.success("Preview mode: password reset email skipped.");
+            return;
+        }
         setIsSendingReset(true);
 
         try {
@@ -226,6 +260,11 @@ export function useAccountController() {
     }
 
     async function handleSignOut() {
+        if (isDevPreview) {
+            window.location.replace("/login");
+            return;
+        }
+
         setIsSigningOut(true);
 
         try {
@@ -264,6 +303,8 @@ export function useAccountController() {
 
     function hydrateAccount(data: AccountResponse) {
         setAccount(data);
+        setFirstName(data.profile.firstName || "");
+        setLastName(data.profile.lastName || "");
         setName(data.profile.fullname || data.user.displayName || "");
         setBio(data.profile.bio || "");
         setLanguage(data.profile.language || "en");
@@ -297,6 +338,7 @@ export function useAccountController() {
         bio,
         defaultCourseDifficulty,
         emailPreferences,
+        firstName,
         filteredSections,
         goToSection,
         handleProfilePictureSuccess,
@@ -310,6 +352,7 @@ export function useAccountController() {
         learningGoal,
         learningInterestsInput,
         lessonStyle,
+        lastName,
         name,
         preferredContentFormat,
         privacy,
@@ -321,8 +364,10 @@ export function useAccountController() {
         setBio,
         setDefaultCourseDifficulty,
         setEmailPreferences,
+        setFirstName,
         setLanguage,
         setLearningGoal,
+        setLastName,
         setLearningInterestsInput,
         setLessonStyle,
         setName,
@@ -337,7 +382,7 @@ export function useAccountController() {
 }
 
 function resolveAccountSection(value: string | null) {
-    if (value === "profile") return "personal-info";
+    if (value === "profile") return "home";
     if (value === "passkeys" || value === "passkey") return "security";
     return value && navItems.some((item) => item.id === value) ? value : "home";
 }

@@ -1,0 +1,44 @@
+import type { AccountResponse } from "./account-types";
+import { defaultEmailPreferences, defaultPrivacyPreferences } from "./account-data";
+
+export const mockAccount: AccountResponse = {
+    user: {
+        uid: "dev-preview-user",
+        email: "preview@chefu.local",
+        roles: ["user"],
+        displayName: "Preview User",
+        lastLoginAt: "October 7, 2026 at 09:14 UTC",
+        createdAt: "February 12, 2023",
+    },
+    profile: {
+        fullname: "Preview User",
+        firstName: "Preview",
+        lastName: "User",
+        phone: null,
+        profilePicture: "",
+        bio: "This is local development preview data.",
+        country: "",
+        countryCode: "",
+        language: "en",
+        learningGoal: "Build better learning habits",
+        skillLevel: "beginner",
+        learningInterests: ["Technology", "Product design"],
+        weeklyLearningGoal: 3,
+        lessonStyle: "example-heavy",
+        defaultCourseDifficulty: "beginner",
+        preferredContentFormat: "examples",
+        aiTutorSuggestions: true,
+        privacy: defaultPrivacyPreferences,
+        onboardingComplete: true,
+        appGuideComplete: true,
+        subscriptionStatus: "free",
+        member: false,
+        emailPreferences: defaultEmailPreferences,
+        roles: ["user"],
+        securityEmailsEnabled: true,
+        apps: {
+            academy: { enabled: true },
+            flow: { enabled: true },
+        },
+    },
+};

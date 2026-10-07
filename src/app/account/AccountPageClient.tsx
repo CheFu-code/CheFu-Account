@@ -12,9 +12,9 @@ export function AccountPageClient() {
 
     if (account.isLoading) {
         return (
-            <section className="flex min-h-dvh items-center justify-center bg-[#11110f] px-5 text-[#f4f0e8]">
-                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-[#1a1916] px-5 py-4 text-sm font-semibold shadow-2xl shadow-black/30">
-                    <Loader2 className="size-4 animate-spin text-[#e5ad5b]" aria-hidden="true" />
+            <section className="account-public-state flex min-h-dvh items-center justify-center px-5">
+                <div className="flex items-center gap-3 rounded border border-[var(--border)] bg-[var(--surface)] px-5 py-4 text-sm font-semibold text-[var(--fg)] shadow-sm">
+                    <Loader2 className="size-4 animate-spin text-[var(--accent)]" aria-hidden="true" />
                     Opening your account
                 </div>
             </section>
@@ -23,15 +23,15 @@ export function AccountPageClient() {
 
     if (!account.account) {
         return (
-            <section className="flex min-h-dvh items-center justify-center bg-[#11110f] px-5 text-[#f4f0e8]">
-                <div className="max-w-md rounded-[2rem] border border-white/10 bg-[#1a1916] p-7 text-center shadow-2xl shadow-black/30">
+            <section className="account-public-state flex min-h-dvh items-center justify-center px-5">
+                <div className="max-w-md rounded border border-[var(--border)] bg-[var(--surface)] p-7 text-center text-[var(--fg)] shadow-sm">
                     <h1 className="text-2xl font-semibold tracking-[-0.03em]">Account unavailable</h1>
-                    <p className="mt-2 text-sm leading-6 text-[#9e968a]">
+                    <p className="mt-2 text-sm leading-6 text-[var(--fg-muted)]">
                         We could not load your account session.
                     </p>
                     <Link
                         href="/login?returnTo=/account"
-                        className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#e5ad5b] px-4 py-2.5 text-sm font-bold text-[#26190a] transition hover:bg-[#ffd18a]"
+                        className="mt-5 inline-flex items-center gap-2 rounded border border-[var(--accent)] bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-[var(--accent-ink)] transition hover:bg-[var(--accent-hover)]"
                     >
                         Sign in
                         <ArrowRight className="size-4" aria-hidden="true" />
@@ -57,11 +57,8 @@ export function AccountPageClient() {
             {account.activeSection === "home" ? (
                 <AccountHomePanel
                     account={account.account}
-                    accountSearch={account.accountSearch}
-                    filteredSections={account.filteredSections}
                     initials={account.initials}
                     name={account.name}
-                    onSearchChange={account.setAccountSearch}
                     onSelectSection={account.goToSection}
                 />
             ) : (
@@ -72,12 +69,14 @@ export function AccountPageClient() {
                     aiTutorSuggestions={account.aiTutorSuggestions}
                     defaultCourseDifficulty={account.defaultCourseDifficulty}
                     emailPreferences={account.emailPreferences}
+                    firstName={account.firstName}
                     isSaving={account.isSaving}
                     isSendingReset={account.isSendingReset}
                     language={account.language}
                     learningGoal={account.learningGoal}
                     learningInterestsInput={account.learningInterestsInput}
                     lessonStyle={account.lessonStyle}
+                    lastName={account.lastName}
                     name={account.name}
                     onDefaultCourseDifficultyChange={account.setDefaultCourseDifficulty}
                     onEmailPreferencesChange={account.setEmailPreferences}
@@ -96,6 +95,8 @@ export function AccountPageClient() {
                     privacy={account.privacy}
                     securityEmailsEnabled={account.securityEmailsEnabled}
                     setLanguage={account.setLanguage}
+                    setFirstName={account.setFirstName}
+                    setLastName={account.setLastName}
                     setLearningGoal={account.setLearningGoal}
                     setName={account.setName}
                     setSecurityEmailsEnabled={account.setSecurityEmailsEnabled}

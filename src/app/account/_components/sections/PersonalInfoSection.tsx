@@ -1,50 +1,78 @@
 "use client";
 
-import { IdCard } from "lucide-react";
-import { LockedInfo, SaveButton, SectionCard, TextField } from "../AccountControls";
-import { ProfilePictureUpload } from "./ProfilePictureUpload";
+import { useState } from "react";
+import { SaveButton, TextField } from "../AccountControls";
+import { AccountButton, FieldRow, SectionHeader } from "../AccountPrimitives";
 import type { AccountSettingsFormProps } from "../account-form-types";
-import type { AccountProfile } from "../account-types";
+import { ProfilePictureUpload } from "./ProfilePictureUpload";
 
 export function PersonalInfoSection({
     account,
+    firstName,
     isSaving,
+    lastName,
     name,
     onProfilePictureSuccess,
     setName,
+    setFirstName,
+    setLastName,
 }: AccountSettingsFormProps) {
+    const [editing, setEditing] = useState(false);
+    const currentFirstName = firstName || account.profile.firstName || "Not set";
+    const currentLastName = lastName || account.profile.lastName || "Not set";
+    const phone = account.profile.phone || "Not set";
+    const bio = account.profile.bio || "Not set";
+
     return (
-        <SectionCard
-            icon={IdCard}
-            title="Personal info"
-            description="Manage the profile data and permissions shared across all your apps."
-            action={<SaveButton isSaving={isSaving} label="Save profile" />}
-        >
-            <div className="space-y-6">
-                <ProfilePictureUpload
-                    currentImageUrl={account.profile.profilePicture}
-                    userName={name || account.user.displayName || account.user.email}
-                    onUploadSuccess={onProfilePictureSuccess}
+        <div className="account-personal-info">
+
+
+            <section className="account-personal-section">
+                <SectionHeader
+                    title="Personal Information"
+                    description="Your personal details. Some information may be visible to others where indicated."
                 />
 
-                <div className="grid gap-4 md:grid-cols-2">
-                    <TextField label="Display name" value={name} onChange={setName} />
-                    <LockedInfo
-                        label="Email"
-                        value={account.user.email}
-                        description="Your email is used as your account identity and cannot be changed."
-                    />
-                    <LockedInfo
-                        label="Detected country"
-                        value={detectedCountryLabel(account.profile)}
-                    />
+                <div className="account-editable-toolbar">
+                    <h2 className="account-subsection-title">Editable fields</h2>
+                    {!editing ? (
+                        <AccountButton onClick={() => setEditing(true)}>Edit</AccountButton>
+                    ) : (
+                        <div className="flex gap-2">
+                            <SaveButton isSaving={isSaving} label="Save changes" />
+                            <AccountButton onClick={() => setEditing(false)}>Cancel</AccountButton>
+                        </div>
+                    )}
                 </div>
-            </div>
-        </SectionCard>
+
+                {editing ? (
+                    <div className="account-edit-form">
+                        <ProfilePictureUpload
+                            currentImageUrl={account.profile.profilePicture}
+                            userName={name || account.user.displayName || account.user.email}
+                            onUploadSuccess={onProfilePictureSuccess}
+                        />
+                        <div className="account-edit-grid">
+                            <TextField label="First name" value={firstName} onChange={setFirstName} />
+                            <TextField label="Last name" value={lastName} onChange={setLastName} />
+                        </div>
+                        <TextField
+                            label="Display name"
+                            value={name}
+                            onChange={setName}
+                            placeholder="How your name appears across Chefu"
+                        />
+                    </div>
+                ) : (
+                    <dl className="account-personal-fields">
+                        <FieldRow label="First name" value={currentFirstName} />
+                        <FieldRow label="Last name" value={currentLastName} />
+                        <FieldRow label="Display name" value={name || "Not set"} />
+                        <FieldRow label="Work phone" value={phone} />
+                        <FieldRow label="Professional bio" value={bio} />
+                    </dl>
+                )}
+            </section>
+        </div>
     );
 }
-
-function detectedCountryLabel(profile: AccountProfile) {
-    return profile.detectedCountryCode?.trim().toUpperCase() || "Not detected yet";
-}
-

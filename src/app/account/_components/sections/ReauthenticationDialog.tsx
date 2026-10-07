@@ -2,6 +2,7 @@
 
 import { KeyRound, Loader2, ShieldCheck, X } from "lucide-react";
 import type { FormEvent } from "react";
+import { AccountButton } from "../AccountPrimitives";
 
 export function ReauthenticationDialog({
     code,
@@ -50,15 +51,15 @@ export function ReauthenticationDialog({
                             </p>
                         </div>
                     </div>
-                    <button
-                        type="button"
+                    <AccountButton
+                        variant="secondary"
                         onClick={onCancel}
                         disabled={isSubmitting}
-                        className="rounded-full border border-white/10 p-2 text-[#bdb5a8] transition hover:bg-white/8 disabled:opacity-60"
+                        className="account-button-icon"
                         aria-label="Cancel sign-in confirmation"
                     >
                         <X className="size-4" aria-hidden="true" />
-                    </button>
+                    </AccountButton>
                 </div>
 
                 <form onSubmit={onSubmit} className="mt-5 space-y-4">
@@ -100,10 +101,11 @@ export function ReauthenticationDialog({
                         </label>
                     )}
 
-                    <button
+                    <AccountButton
                         type="submit"
+                        variant="primary"
                         disabled={isSubmitting || !canSubmit}
-                        className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#e5ad5b] px-4 text-sm font-bold text-[#26190a] transition hover:bg-[#ffd18a] disabled:opacity-60"
+                        className="account-button-full"
                     >
                         {isSubmitting ? (
                             <Loader2 className="size-4 animate-spin" aria-hidden="true" />
@@ -111,7 +113,7 @@ export function ReauthenticationDialog({
                             <KeyRound className="size-4" aria-hidden="true" />
                         )}
                         Continue
-                    </button>
+                    </AccountButton>
                 </form>
             </div>
         </div>
