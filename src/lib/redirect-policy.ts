@@ -1,4 +1,4 @@
-export type ChefuAppId = "academy" | "admin" | "merchant" | "flow" | "muzalo" | "quantum" | "infinity" | "logix" | "logix-dash" | "cloudence";
+export type ChefuAppId = "academy" | "admin" | "merchant" | "flow" | "muzalo" | "quantum" | "infinity" | "logix" | "logix-dash" | "cloudence" | "nook";
 
 export type RedirectTargetKind = "relative" | "app-origin" | "oauth-authorize";
 
@@ -96,6 +96,10 @@ const CHEFU_APP_RETURN_TO_POLICY: Record<ChefuAppId, AppRedirectPolicy> = {
         allowedOrigins: ["https://cloudence.chefu.co.za"],
         oauthClientIds: ["cloudence-web"],
     },
+    nook: {
+        allowedOrigins: [],
+        oauthClientIds: ["nook-mobile"],
+    },
 };
 
 const OAUTH_AUTHORIZE_ORIGINS = [
@@ -158,6 +162,10 @@ const OAUTH_CLIENT_RETURN_TO_POLICY: Record<string, OauthClientRedirectPolicy> =
         appId: "infinity",
         redirectUris: ["infinity://auth"],
     },
+    "nook-mobile": {
+        appId: "nook",
+        redirectUris: ["nook://sso-callback"],
+    },
     "infinity-web": {
         appId: "infinity",
         redirectUris: ["https://infinity.chefu.co.za/auth/callback"],
@@ -190,6 +198,7 @@ export function resolveChefuAppId(value?: string | null): ChefuAppId {
     if (normalized === "logix") return "logix";
     if (normalized === "logix-dash") return "logix-dash";
     if (normalized === "cloudence") return "cloudence";
+    if (normalized === "nook") return "nook";
     if (normalized === "merchant") return "merchant";
     return "academy";
 }
@@ -209,6 +218,7 @@ export function isKnownChefuAppParam(value?: string | null) {
         normalized === "logix" ||
         normalized === "logix-dash" ||
         normalized === "cloudence" ||
+        normalized === "nook" ||
         normalized === "academy" ||
         normalized === "merchant"
     );
