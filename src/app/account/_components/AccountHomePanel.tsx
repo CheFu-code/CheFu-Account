@@ -56,7 +56,7 @@ export function AccountHomePanel({
 
             <AccountPanel className="account-profile-fields">
                 <dl>
-                    <FieldRow label="Full name" value={fullName} managed />
+                    <FieldRow label="Full name" value={fullName} />
                     <FieldRow label="Your email" value={account.user.email} managed />
                     <FieldRow label="Country" value={country} managed />
                     <FieldRow label="Account status" value={<span className="account-status account-status-success">Active</span>} managed />

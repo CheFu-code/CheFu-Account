@@ -91,7 +91,71 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         } finally {
             setIsLoading(false);
         }
+
     }, [appId]);
+
+    async function recordSecurityActivity(
+        eventType:
+            | "password_changed"
+            | "password_reset_email_sent"
+            | "mfa_enabled"
+            | "mfa_disabled",
+    ) {
+        try {
+            const idToken = await (auth.currentUser ?? currentUser)?.getIdToken(true);
+            const response = await fetch(apiUrl("/auth/security-activity"), {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-chefu-app": appId,
+                    ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+                },
+                body: JSON.stringify({ eventType }),
+            });
+            if (!response.ok) {
+                throw new Error("Security activity could not be recorded.");
+            }
+        } catch (error) {
+            toast.warning("Security change completed, but its activity could not be recorded.", {
+                description: error instanceof Error ? error.message : "Please refresh and try again.",
+            });
+        }
+    }
+
+    async function notifyPasswordChanged(
+        user: NonNullable<typeof currentUser>,
+        idToken: string,
+    ) {
+        try {
+            const response = await fetch(apiUrl("/email/password-changed"), {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    Authorization: `Bearer ${idToken}`,
+                    "Content-Type": "application/json",
+                    "x-chefu-app": appId,
+                },
+                body: JSON.stringify({
+                    deviceInfo: navigator.userAgent,
+                    location: accountLocationLabel(account.profile),
+                    userName: account.profile.fullname || user.displayName || undefined,
+                }),
+            });
+            const data = (await response.json().catch(() => null)) as {
+                reason?: string;
+                sent?: boolean;
+            } | null;
+            if (!response.ok || data?.sent === false) {
+                throw new Error(data?.reason || "Password-change email could not be sent.");
+            }
+        } catch (error) {
+            toast.warning("Password changed, but the notification email could not be sent.", {
+                description:
+                    error instanceof Error ? error.message : "Please try again later.",
+            });
+        }
+    }
 
     useEffect(() => {
         void loadSecuritySummary();
@@ -219,6 +283,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
             const enrolledUser = refreshedUser ?? auth.currentUser ?? user;
             const idToken = await enrolledUser.getIdToken(true);
             await syncChefuSession(idToken);
+            await recordSecurityActivity("mfa_enabled");
             setSummary((currentSummary) =>
                 securitySummaryFromFirebaseUser(enrolledUser, currentSummary),
             );
@@ -254,6 +319,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
             const refreshedUser = await refreshFirebaseUser();
             const idToken = await (refreshedUser ?? auth.currentUser ?? user).getIdToken(true);
             await syncChefuSession(idToken);
+            await recordSecurityActivity("mfa_disabled");
             setCodes([]);
             await loadSecuritySummary(idToken);
             await notifyMfaChanged("disabled", idToken);
@@ -404,7 +470,12 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
             const user = currentUser;
             if (!user) throw new Error("Sign in again before changing your password.");
             await updatePassword(user, passwordToSet || "");
-            await refreshFirebaseUser();
+            const refreshedUser = await refreshFirebaseUser();
+            const activeUser = refreshedUser ?? auth.currentUser ?? user;
+            const idToken = await activeUser.getIdToken(true);
+            await syncChefuSession(idToken);
+            await recordSecurityActivity("password_changed");
+            await notifyPasswordChanged(activeUser, idToken);
             setNewPassword("");
             setConfirmNewPassword("");
             toast.success("Your password has been changed.");

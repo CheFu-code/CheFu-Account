@@ -1,6 +1,7 @@
 "use client";
 
 import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { isValidElement } from "react";
 
 export function SectionHeader({ title, description }: { title: string; description: string }) {
     return (
@@ -27,6 +28,8 @@ function renderAccountValue(value: ReactNode): ReactNode {
     if (value === null || value === undefined || typeof value === "boolean") {
         return value ? "Yes" : "No";
     }
+
+    if (isValidElement(value)) return value;
 
     if (typeof value === "object" && !Array.isArray(value)) {
         const candidate = value as { message?: unknown; code?: unknown; name?: unknown };

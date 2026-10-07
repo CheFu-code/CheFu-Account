@@ -327,6 +327,29 @@ export function useAccountController() {
 
         try {
             await sendPasswordResetEmail(auth, account.user.email);
+            try {
+                const idToken = await auth.currentUser?.getIdToken(true);
+                const activityResponse = await fetch(apiUrl("/auth/security-activity"), {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "x-chefu-app": appId,
+                        ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+                    },
+                    body: JSON.stringify({
+                        eventType: "password_reset_email_sent",
+                    }),
+                });
+                if (!activityResponse.ok) {
+                    throw new Error("The reset email activity could not be recorded.");
+                }
+            } catch (error) {
+                toast.warning("Reset email sent, but its activity could not be recorded.", {
+                    description:
+                        error instanceof Error ? error.message : "Please refresh and try again.",
+                });
+            }
             toast.success("Password reset email sent.", {
                 description: `Check ${account.user.email}.`,
             });

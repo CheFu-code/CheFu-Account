@@ -29,7 +29,9 @@ export function AccountSettingsForm(props: AccountSettingsFormProps) {
                     onEmailPreferencesChange={props.onEmailPreferencesChange}
                 />
             ) : null}
-            {props.activeSection === "activity" ? <ActivitySection account={props.account} /> : null}
+            {props.activeSection === "activity" ? (
+                <ActivitySection account={props.account} appId={props.appId} />
+            ) : null}
         </form>
     );
 }
