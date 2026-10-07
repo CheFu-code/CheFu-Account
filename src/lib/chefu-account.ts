@@ -118,6 +118,40 @@ export async function syncChefuAccountSession(idToken: string, appId: ChefuAppId
     }
 }
 
+export async function sendEmailVerificationCode(idToken: string, appName: string) {
+    const response = await fetch(apiUrl("/auth/email-verification/send"), {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${idToken}`,
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ appName }),
+    });
+    if (!response.ok) throw new Error(await readApiError(response));
+}
+
+export async function verifyEmailVerificationCode(idToken: string, code: string) {
+    const response = await fetch(apiUrl("/auth/email-verification/verify"), {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${idToken}`,
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ code }),
+    });
+    if (!response.ok) throw new Error(await readApiError(response));
+}
+
+async function readApiError(response: Response) {
+    const data = (await response.json().catch(() => ({}))) as {
+        message?: string;
+        error?: string;
+    };
+    return data.message || data.error || "Unable to complete email verification.";
+}
+
 export async function clearChefuAccountSession(globalLogout = true) {
     const path = globalLogout ? "/auth/session?global=true" : "/auth/session";
 

@@ -12,8 +12,11 @@ import {
     preserveAuthParams,
     resolveChefuApp,
     safeReturnTo,
+    sendEmailVerificationCode,
     syncChefuAccountSession,
+    verifyEmailVerificationCode,
 } from "../../lib/chefu-account";
+import { EmailVerificationDialog } from "./EmailVerificationDialog";
 
 export function RegisterClient() {
     const router = useRouter();
@@ -21,6 +24,8 @@ export function RegisterClient() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [verificationOpen, setVerificationOpen] = useState(false);
+    const [verificationEmail, setVerificationEmail] = useState("");
 
     const appId = resolveChefuApp(searchParams.get("app"));
     const appName = chefuAppLabel(appId);
@@ -50,9 +55,9 @@ export function RegisterClient() {
             const credential = await createUserWithEmailAndPassword(auth, email, password);
             registered = true;
             const idToken = await credential.user.getIdToken(true);
-            await syncChefuAccountSession(idToken, appId);
-            toast.success(`Account created for ${appName}.`);
-            completeAuthRedirect(fromPath, router.replace);
+            await sendEmailVerificationCode(idToken, appName);
+            setVerificationEmail(credential.user.email || email);
+            setVerificationOpen(true);
         } catch (error) {
             if (registered) {
                 await signOut(auth).catch(() => undefined);
@@ -69,6 +74,7 @@ export function RegisterClient() {
     };
 
     return (
+        <>
         <AccountAuthScreen
             alternateHref={loginHref}
             appName={appName}
@@ -80,6 +86,52 @@ export function RegisterClient() {
             setEmail={setEmail}
             setPassword={setPassword}
         />
+        {verificationOpen ? (
+            <EmailVerificationDialog
+                email={verificationEmail}
+                isSubmitting={isSubmitting}
+                onCancel={async () => {
+                    setVerificationOpen(false);
+                    await signOut(auth).catch(() => undefined);
+                }}
+                onResend={async () => {
+                    const user = auth.currentUser;
+                    if (!user) return;
+                    setIsSubmitting(true);
+                    try {
+                        await sendEmailVerificationCode(await user.getIdToken(true), appName);
+                        toast.success("A new verification code was sent.");
+                    } catch (error) {
+                        toast.error("Unable to resend the verification code.", {
+                            description: error instanceof Error ? error.message : "Please try again.",
+                        });
+                    } finally {
+                        setIsSubmitting(false);
+                    }
+                }}
+                onSubmit={async (code) => {
+                    const user = auth.currentUser;
+                    if (!user || !/^\d{6}$/.test(code)) {
+                        toast.error("Enter the 6-digit verification code.");
+                        return;
+                    }
+                    setIsSubmitting(true);
+                    try {
+                        await verifyEmailVerificationCode(await user.getIdToken(true), code);
+                        await syncChefuAccountSession(await user.getIdToken(true), appId);
+                        toast.success(`Account created for ${appName}.`);
+                        completeAuthRedirect(fromPath, router.replace);
+                    } catch (error) {
+                        toast.error("Unable to verify your email.", {
+                            description: error instanceof Error ? error.message : "Please try again.",
+                        });
+                    } finally {
+                        setIsSubmitting(false);
+                    }
+                }}
+            />
+        ) : null}
+        </>
     );
 }
 
