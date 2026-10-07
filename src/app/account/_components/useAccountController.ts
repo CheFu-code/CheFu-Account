@@ -156,7 +156,7 @@ export function useAccountController() {
                     "x-chefu-app": "academy",
                 },
                 body: JSON.stringify({
-                    name: trimmedName,
+                    fullname: trimmedName,
                     emailPreferences: { security: securityEmailsEnabled },
                     academyProfile: {
                         bio,
@@ -264,7 +264,7 @@ export function useAccountController() {
 
     function hydrateAccount(data: AccountResponse) {
         setAccount(data);
-        setName(data.profile.name || data.user.displayName || "");
+        setName(data.profile.fullname || data.user.displayName || "");
         setBio(data.profile.bio || "");
         setLanguage(data.profile.language || "en");
         setLearningGoal(data.profile.learningGoal || "");

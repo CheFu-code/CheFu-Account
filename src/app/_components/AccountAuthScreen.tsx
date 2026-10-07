@@ -25,6 +25,40 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                     <p className="mt-1.5 text-sm text-stone-600">Continue to {appName}</p>
 
                     <form onSubmit={onSubmit} className="mt-8 space-y-5">
+                        {mode === "register" ? (
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label htmlFor="first-name" className="mb-1.5 block text-sm font-medium text-stone-800">
+                                        First name
+                                    </label>
+                                    <input
+                                        id="first-name"
+                                        type="text"
+                                        value={props.firstName}
+                                        onChange={(event) => props.setFirstName(event.target.value)}
+                                        placeholder="First name"
+                                        className={inputClass}
+                                        autoComplete="given-name"
+                                        autoFocus
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="last-name" className="mb-1.5 block text-sm font-medium text-stone-800">
+                                        Last name
+                                    </label>
+                                    <input
+                                        id="last-name"
+                                        type="text"
+                                        value={props.lastName}
+                                        onChange={(event) => props.setLastName(event.target.value)}
+                                        placeholder="Last name"
+                                        className={inputClass}
+                                        autoComplete="family-name"
+                                    />
+                                </div>
+                            </div>
+                        ) : null}
+
                         <div>
                             <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-stone-800">
                                 Email address
@@ -37,7 +71,7 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                                 placeholder="you@example.com"
                                 className={inputClass}
                                 autoComplete="email"
-                                autoFocus
+                                autoFocus={mode !== "register"}
                             />
                         </div>
 
@@ -73,6 +107,20 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                                     >
                                         {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                                     </button>
+
+                                    {mode === "register" ? (
+                                        <p className="text-center text-xs leading-5 text-stone-500">
+                                            By creating an account, you agree to our{" "}
+                                            <Link href="https://chefu.co.za/terms" target="_blank" rel="noopener noreferrer" className={linkClass}>
+                                                Terms of Service
+                                            </Link>{" "}
+                                            and{" "}
+                                            <Link href="https://chefu.co.za/privacy" target="_blank" rel="noopener noreferrer" className={linkClass}>
+                                                Privacy Policy
+                                            </Link>
+                                            .
+                                        </p>
+                                    ) : null}
                                 </div>
                             </div>
                         ) : null}

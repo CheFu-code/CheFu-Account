@@ -1,7 +1,7 @@
 "use client";
 
 import { FirebaseError } from "firebase/app";
-import { createUserWithEmailAndPassword, signOut } from "firebase/auth";
+import { createUserWithEmailAndPassword, signOut, updateProfile } from "firebase/auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState, type FormEvent } from "react";
 import { toast } from "sonner";
@@ -22,6 +22,8 @@ export function RegisterClient() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [email, setEmail] = useState("");
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
     const [password, setPassword] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [verificationOpen, setVerificationOpen] = useState(false);
@@ -42,8 +44,11 @@ export function RegisterClient() {
     const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        if (!email || !password) {
-            toast.error("Please enter both email and password.");
+        const trimmedFirstName = firstName.trim();
+        const trimmedLastName = lastName.trim();
+
+        if (!trimmedFirstName || !trimmedLastName || !email || !password) {
+            toast.error("Please enter your first name, last name, email, and password.");
             return;
         }
 
@@ -54,6 +59,9 @@ export function RegisterClient() {
         try {
             const credential = await createUserWithEmailAndPassword(auth, email, password);
             registered = true;
+            await updateProfile(credential.user, {
+                displayName: `${trimmedFirstName} ${trimmedLastName}`,
+            });
             const idToken = await credential.user.getIdToken(true);
             await sendEmailVerificationCode(idToken, appName);
             setVerificationEmail(credential.user.email || email);
@@ -79,11 +87,15 @@ export function RegisterClient() {
             alternateHref={loginHref}
             appName={appName}
             email={email}
+            firstName={firstName}
             isSubmitting={isSubmitting}
+            lastName={lastName}
             mode="register"
             onSubmit={onSubmit}
             password={password}
             setEmail={setEmail}
+            setFirstName={setFirstName}
+            setLastName={setLastName}
             setPassword={setPassword}
         />
         {verificationOpen ? (

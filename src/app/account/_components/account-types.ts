@@ -27,7 +27,9 @@ export type PrivacyPreferences = {
 };
 
 export type AccountProfile = {
-    name: string;
+    fullname: string;
+    firstName: string;
+    lastName: string;
     phone?: string | null;
     profilePicture?: string;
     bio: string;

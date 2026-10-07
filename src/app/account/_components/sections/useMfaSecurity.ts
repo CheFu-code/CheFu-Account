@@ -382,7 +382,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
                 body: JSON.stringify({
                     action,
                     location: accountLocationLabel(account.profile),
-                    userName: account.profile.name || account.user.displayName || undefined,
+                    userName: account.profile.fullname || account.user.displayName || undefined,
                 }),
             });
             const data = (await response.json().catch(() => null)) as {

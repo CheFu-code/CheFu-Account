@@ -21,7 +21,11 @@ export type AccountAuthScreenProps =
     | (AccountAuthBaseProps & {
         forgotPasswordHref?: never;
         mode: "register";
+        firstName: string;
+        lastName: string;
         password: string;
+        setFirstName: (firstName: string) => void;
+        setLastName: (lastName: string) => void;
         setPassword: (password: string) => void;
     })
     | (AccountAuthBaseProps & {
