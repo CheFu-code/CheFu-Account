@@ -205,14 +205,6 @@ body {
 }
 
 .account-mobile-header { display: none; }
-.account-menu {
-    position: fixed;
-    top: 14px;
-    right: 24px;
-    z-index: 50;
-    display: flex;
-    align-items: center;
-}
 .account-icon-button {
     display: inline-flex;
     align-items: center;
@@ -223,6 +215,38 @@ body {
     border-radius: var(--r);
     color: var(--fg-muted);
     background: var(--bg);
+}
+
+.account-sidebar-signout {
+    padding: 12px 16px 16px;
+    border-top: 1px solid var(--border);
+}
+
+.account-signout-button {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r);
+    padding: 9px 12px;
+    color: var(--fg-2);
+    background: transparent;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.account-signout-button:hover:not(:disabled) {
+    color: var(--danger);
+    border-color: var(--danger);
+    background: var(--surface-alt);
+}
+
+.account-signout-button:disabled {
+    cursor: wait;
+    opacity: 0.65;
 }
 
 .account-section-header {
@@ -456,7 +480,6 @@ body {
 @media (max-width: 767px) {
     .account-shell { display: block; height: 100dvh; overflow: hidden; }
     .account-mobile-header { display: flex; height: 52px; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid var(--border); background: var(--surface); }
-    .account-menu { display: none; }
     .account-sidebar { position: fixed; inset: 0 auto 0 0; z-index: 40; width: min(280px, 88vw); height: 100dvh; transform: translateX(-100%); transition: transform .2s; box-shadow: 8px 0 24px rgba(0,0,0,.08); }
     .account-sidebar-open { transform: translateX(0); }
     .account-main { padding: 28px 16px 40px; }

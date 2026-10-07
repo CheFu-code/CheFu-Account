@@ -48,11 +48,6 @@ export function AccountPageClient() {
             isSigningOut={account.isSigningOut}
             onSelectSection={account.goToSection}
             onSignOut={account.handleSignOut}
-            user={{
-                displayName: account.name,
-                email: account.account.user.email,
-                photoURL: account.account.profile.profilePicture,
-            }}
         >
             {account.activeSection === "home" ? (
                 <AccountHomePanel

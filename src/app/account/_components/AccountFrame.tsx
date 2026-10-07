@@ -1,7 +1,6 @@
 "use client";
 
-import { CheFuUserDropdown, type CheFuUserDropdownUser } from "chefu-ui";
-import { Menu, X } from "lucide-react";
+import { Loader2, LogOut, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { navItems } from "./account-data";
@@ -15,7 +14,6 @@ type AccountFrameProps = {
   isSigningOut: boolean;
   onSelectSection: (id: string) => void;
   onSignOut: () => void;
-  user: CheFuUserDropdownUser;
 };
 
 export function AccountFrame(props: AccountFrameProps) {
@@ -45,37 +43,17 @@ export function AccountFrame(props: AccountFrameProps) {
     <div className="account-ui account-shell">
       <header className="account-mobile-header">
         <Brand compact />
-        <div className="flex items-center gap-2">
-         
-          <CheFuUserDropdown
-            accountHref="/account"
-            onSignOut={props.onSignOut}
-            pendingSignOut={props.isSigningOut}
-            user={props.user}
-            variant="cyan"
-          />
-          <button
-            type="button"
-            className="account-icon-button"
-            aria-label={
-              mobileNavOpen ? "Close navigation menu" : "Open navigation menu"
-            }
-            onClick={() => setMobileNavOpen((open) => !open)}
-          >
-            {mobileNavOpen ? <X size={16} /> : <Menu size={16} />}
-          </button>
-        </div>
+        <button
+          type="button"
+          className="account-icon-button"
+          aria-label={
+            mobileNavOpen ? "Close navigation menu" : "Open navigation menu"
+          }
+          onClick={() => setMobileNavOpen((open) => !open)}
+        >
+          {mobileNavOpen ? <X size={16} /> : <Menu size={16} />}
+        </button>
       </header>
-
-      <div className="account-menu">
-        <CheFuUserDropdown
-          accountHref="/account"
-          onSignOut={props.onSignOut}
-          pendingSignOut={props.isSigningOut}
-          user={props.user}
-          variant="cyan"
-        />
-      </div>
 
       <aside
         className={`account-sidebar ${mobileNavOpen ? "account-sidebar-open" : ""}`}
@@ -111,8 +89,23 @@ export function AccountFrame(props: AccountFrameProps) {
           ))}
         </nav>
         <div className="account-theme-row">
-          <span>Dark mode</span>
+          <span>{darkMode ? "Dark mode" : "Light mode"}</span>
           <Toggle checked={darkMode} onChange={setDarkMode} id="theme-toggle" />
+        </div>
+        <div className="account-sidebar-signout">
+          <button
+            type="button"
+            className="account-signout-button"
+            onClick={props.onSignOut}
+            disabled={props.isSigningOut}
+          >
+            {props.isSigningOut ? (
+              <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+            ) : (
+              <LogOut className="size-4" aria-hidden="true" />
+            )}
+            {props.isSigningOut ? "Signing out..." : "Sign out"}
+          </button>
         </div>
       </aside>
 
@@ -126,7 +119,7 @@ function Brand({ compact = false }: { compact?: boolean }) {
     <Link href="/account" className="flex items-center gap-3">
       <span
         role="img"
-        aria-label="CHEFU Technologies"
+        aria-label="Chefu Technologies"
         className={`block shrink-0 bg-[var(--fg)] ${compact ? "h-5" : "h-6"} aspect-[512/359]`}
         style={{
           maskImage: "url(/ct-logo.png)",
