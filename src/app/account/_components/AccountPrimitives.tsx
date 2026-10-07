@@ -16,11 +16,27 @@ export function FieldRow({ label, value, managed = false }: { label: string; val
         <div className="account-field-row">
             <dt>{label}</dt>
             <dd>
-                {value}
+                {renderAccountValue(value)}
                 {managed ? <span className="account-managed">Managed</span> : null}
             </dd>
         </div>
     );
+}
+
+function renderAccountValue(value: ReactNode): ReactNode {
+    if (value === null || value === undefined || typeof value === "boolean") {
+        return value ? "Yes" : "No";
+    }
+
+    if (typeof value === "object" && !Array.isArray(value)) {
+        const candidate = value as { message?: unknown; code?: unknown; name?: unknown };
+        if (typeof candidate.message === "string") return candidate.message;
+        if (typeof candidate.code === "string") return candidate.code;
+        if (typeof candidate.name === "string") return candidate.name;
+        return "Unavailable";
+    }
+
+    return value;
 }
 
 export function AccountPanel({ children, className = "" }: { children: ReactNode; className?: string }) {

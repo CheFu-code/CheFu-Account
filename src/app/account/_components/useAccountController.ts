@@ -110,6 +110,8 @@ export function useAccountController() {
         return () => {
             cancelled = true;
         };
+    // hydrateAccount only updates local state setters and is intentionally stable for this load effect.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [router]);
 
     useEffect(() => {
@@ -303,13 +305,13 @@ export function useAccountController() {
 
     function hydrateAccount(data: AccountResponse) {
         setAccount(data);
-        setFirstName(data.profile.firstName || "");
-        setLastName(data.profile.lastName || "");
-        setName(data.profile.fullname || data.user.displayName || "");
-        setBio(data.profile.bio || "");
-        setLanguage(data.profile.language || "en");
-        setLearningGoal(data.profile.learningGoal || "");
-        setSkillLevel(data.profile.skillLevel || "beginner");
+        setFirstName(readText(data.profile.firstName));
+        setLastName(readText(data.profile.lastName));
+        setName(readText(data.profile.fullname) || readText(data.user.displayName));
+        setBio(readText(data.profile.bio));
+        setLanguage(readText(data.profile.language) || "en");
+        setLearningGoal(readText(data.profile.learningGoal));
+        setSkillLevel(readText(data.profile.skillLevel) as AccountProfile["skillLevel"] || "beginner");
         setWeeklyLearningGoal(String(data.profile.weeklyLearningGoal || 3));
         setLessonStyle(data.profile.lessonStyle || "example-heavy");
         setDefaultCourseDifficulty(data.profile.defaultCourseDifficulty || "beginner");
@@ -322,6 +324,17 @@ export function useAccountController() {
         });
         setLearningInterestsInput((data.profile.learningInterests || []).join(", "));
         setSecurityEmailsEnabled(data.profile.securityEmailsEnabled);
+    }
+
+    function readText(value: unknown) {
+        if (typeof value === "string") return value;
+        if (value && typeof value === "object") {
+            const candidate = value as { message?: unknown; code?: unknown; name?: unknown };
+            if (typeof candidate.message === "string") return candidate.message;
+            if (typeof candidate.code === "string") return candidate.code;
+            if (typeof candidate.name === "string") return candidate.name;
+        }
+        return "";
     }
 
     function goToSection(id: string) {
