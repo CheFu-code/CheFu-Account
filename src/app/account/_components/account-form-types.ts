@@ -11,6 +11,7 @@ export type AccountSettingsFormProps = {
     account: AccountResponse;
     activeSection: string;
     appId: ChefuAppId;
+    bio: string;
     aiTutorSuggestions: boolean;
     defaultCourseDifficulty: AccountProfile["defaultCourseDifficulty"];
     emailPreferences: EmailPreferences;
@@ -39,6 +40,7 @@ export type AccountSettingsFormProps = {
     onSubmit: (event: FormEvent<HTMLFormElement>) => void;
     onToggleAiTutorSuggestions: () => void;
     preferredContentFormat: AccountProfile["preferredContentFormat"];
+    phone: string;
     privacy: PrivacyPreferences;
     securityEmailsEnabled: boolean;
     setLanguage?: (value: string) => void;
@@ -46,6 +48,8 @@ export type AccountSettingsFormProps = {
     setLastName: (value: string) => void;
     setLearningGoal: (value: string) => void;
     setName: (value: string) => void;
+    setPhone: (value: string) => void;
+    setBio: (value: string) => void;
     setSecurityEmailsEnabled: Dispatch<SetStateAction<boolean>>;
     setWeeklyLearningGoal: (value: string) => void;
     skillLevel: AccountProfile["skillLevel"];

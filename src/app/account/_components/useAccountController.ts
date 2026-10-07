@@ -36,6 +36,7 @@ export function useAccountController() {
     const [name, setName] = useState("");
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
+    const [phone, setPhone] = useState("");
     const [bio, setBio] = useState("");
     const [language, setLanguage] = useState("en");
     const [learningGoal, setLearningGoal] = useState("");
@@ -163,6 +164,8 @@ export function useAccountController() {
                         firstName: trimmedFirstName,
                         lastName: trimmedLastName,
                         fullname: trimmedName,
+                        phone: phone.trim(),
+                        bio: bio.trim(),
                     },
                 });
                 toast.success("Preview profile updated locally.");
@@ -189,6 +192,7 @@ export function useAccountController() {
                 },
                 body: JSON.stringify({
                     fullname: trimmedName,
+                    phone: phone.trim(),
                     emailPreferences: { security: securityEmailsEnabled },
                     academyProfile: {
                         bio,
@@ -307,6 +311,7 @@ export function useAccountController() {
         setAccount(data);
         setFirstName(readText(data.profile.firstName));
         setLastName(readText(data.profile.lastName));
+        setPhone(readText(data.profile.phone));
         setName(readText(data.profile.fullname) || readText(data.user.displayName));
         setBio(readText(data.profile.bio));
         setLanguage(readText(data.profile.language) || "en");
@@ -367,6 +372,7 @@ export function useAccountController() {
         lessonStyle,
         lastName,
         name,
+        phone,
         preferredContentFormat,
         privacy,
         saveProfile,
@@ -384,6 +390,7 @@ export function useAccountController() {
         setLearningInterestsInput,
         setLessonStyle,
         setName,
+        setPhone,
         setPreferredContentFormat,
         setPrivacy,
         setSecurityEmailsEnabled,

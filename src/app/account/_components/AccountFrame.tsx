@@ -46,15 +46,11 @@ export function AccountFrame(props: AccountFrameProps) {
       <header className="account-mobile-header">
         <Brand compact />
         <div className="flex items-center gap-2">
-          <Toggle
-            checked={darkMode}
-            onChange={setDarkMode}
-            id="mobile-theme-toggle"
-          />
+         
           <CheFuUserDropdown
+            accountHref="/account"
             onSignOut={props.onSignOut}
             pendingSignOut={props.isSigningOut}
-            triggerClassName="rounded border border-[var(--border-strong)] bg-[var(--bg)] text-[var(--fg)]"
             user={props.user}
             variant="cyan"
           />
@@ -73,9 +69,9 @@ export function AccountFrame(props: AccountFrameProps) {
 
       <div className="account-menu">
         <CheFuUserDropdown
+          accountHref="/account"
           onSignOut={props.onSignOut}
           pendingSignOut={props.isSigningOut}
-          triggerClassName="rounded border border-[var(--border-strong)] bg-[var(--bg)] text-[var(--fg)]"
           user={props.user}
           variant="cyan"
         />
@@ -153,7 +149,9 @@ function Brand({ compact = false }: { compact?: boolean }) {
           </span>
         </span>
       ) : (
-        <span className="text-sm font-semibold text-[var(--fg)]">My Account</span>
+        <span className="text-sm font-semibold text-[var(--fg)]">
+          My Account
+        </span>
       )}
     </Link>
   );

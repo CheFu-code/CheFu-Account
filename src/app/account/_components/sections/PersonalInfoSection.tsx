@@ -8,20 +8,24 @@ import { ProfilePictureUpload } from "./ProfilePictureUpload";
 
 export function PersonalInfoSection({
     account,
+    bio,
     firstName,
     isSaving,
     lastName,
     name,
+    phone,
     onProfilePictureSuccess,
     setName,
     setFirstName,
+    setBio,
     setLastName,
+    setPhone,
 }: AccountSettingsFormProps) {
     const [editing, setEditing] = useState(false);
     const currentFirstName = firstName || account.profile.firstName || "Not set";
     const currentLastName = lastName || account.profile.lastName || "Not set";
-    const phone = account.profile.phone || "Not set";
-    const bio = account.profile.bio || "Not set";
+    const displayedPhone = phone || "Not set";
+    const displayedBio = bio || "Not set";
 
     return (
         <div className="account-personal-info">
@@ -57,6 +61,19 @@ export function PersonalInfoSection({
                             <TextField label="Last name" value={lastName} onChange={setLastName} />
                         </div>
                         <TextField
+                            label="Phone number"
+                            value={phone}
+                            onChange={setPhone}
+                            type="tel"
+                            placeholder="+27 00 000 0000"
+                        />
+                        <TextField
+                            label="Professional bio"
+                            value={bio}
+                            onChange={setBio}
+                            placeholder="Tell us a little about yourself"
+                        />
+                        <TextField
                             label="Display name"
                             value={name}
                             onChange={setName}
@@ -68,8 +85,8 @@ export function PersonalInfoSection({
                         <FieldRow label="First name" value={currentFirstName} />
                         <FieldRow label="Last name" value={currentLastName} />
                         <FieldRow label="Display name" value={name || "Not set"} />
-                        <FieldRow label="Work phone" value={phone} />
-                        <FieldRow label="Professional bio" value={bio} />
+                        <FieldRow label="Phone number" value={displayedPhone} />
+                        <FieldRow label="Professional bio" value={displayedBio} />
                     </dl>
                 )}
             </section>

@@ -66,6 +66,7 @@ export function AccountPageClient() {
                     account={account.account}
                     activeSection={account.activeSection}
                     appId={account.appId}
+                    bio={account.bio}
                     aiTutorSuggestions={account.aiTutorSuggestions}
                     defaultCourseDifficulty={account.defaultCourseDifficulty}
                     emailPreferences={account.emailPreferences}
@@ -85,6 +86,7 @@ export function AccountPageClient() {
                     onPreferredContentFormatChange={account.setPreferredContentFormat}
                     onPrivacyChange={account.setPrivacy}
                     onProfilePictureSuccess={account.handleProfilePictureSuccess}
+                    phone={account.phone}
                     onSendResetEmail={account.sendResetEmail}
                     onSkillLevelChange={account.setSkillLevel}
                     onSubmit={account.saveProfile}
@@ -99,6 +101,8 @@ export function AccountPageClient() {
                     setLastName={account.setLastName}
                     setLearningGoal={account.setLearningGoal}
                     setName={account.setName}
+                    setPhone={account.setPhone}
+                    setBio={account.setBio}
                     setSecurityEmailsEnabled={account.setSecurityEmailsEnabled}
                     setWeeklyLearningGoal={account.setWeeklyLearningGoal}
                     skillLevel={account.skillLevel}

@@ -19,7 +19,6 @@ export function AccountHomePanel({
 }: AccountHomePanelProps) {
     const fullName = name || account.user.displayName || "Account user";
     const country = account.profile.country || account.profile.detectedCountryCode || "Not set";
-    const accountStatus = account.profile.member ? "Active" : "Essential";
 
     return (
         <div className="account-profile-overview">
@@ -60,7 +59,7 @@ export function AccountHomePanel({
                     <FieldRow label="Full name" value={fullName} managed />
                     <FieldRow label="Your email" value={account.user.email} managed />
                     <FieldRow label="Country" value={country} managed />
-                    <FieldRow label="Account status" value={<span className="account-status account-status-success">{accountStatus}</span>} managed />
+                    <FieldRow label="Account status" value={<span className="account-status account-status-success">Active</span>} managed />
                     <FieldRow
                         label="Last sign-in"
                         value={formatAccountDate(account.user.lastLoginAt)}
