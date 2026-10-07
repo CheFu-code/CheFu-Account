@@ -12,6 +12,7 @@ export function PersonalInfoSection({
     firstName,
     isSaving,
     lastName,
+    location,
     name,
     phone,
     onProfilePictureSuccess,
@@ -19,13 +20,18 @@ export function PersonalInfoSection({
     setFirstName,
     setBio,
     setLastName,
+    setLocation,
     setPhone,
+    setWebsite,
+    website,
 }: AccountSettingsFormProps) {
     const [editing, setEditing] = useState(false);
     const currentFirstName = firstName || account.profile.firstName || "Not set";
     const currentLastName = lastName || account.profile.lastName || "Not set";
     const displayedPhone = phone || "Not set";
     const displayedBio = bio || "Not set";
+    const displayedWebsite = website || "Not set";
+    const displayedLocation = location || "Not set";
 
     return (
         <div className="account-personal-info">
@@ -74,6 +80,18 @@ export function PersonalInfoSection({
                             placeholder="Tell us a little about yourself"
                         />
                         <TextField
+                            label="Website"
+                            value={website}
+                            onChange={setWebsite}
+                            placeholder="https://example.com"
+                        />
+                        <TextField
+                            label="Location"
+                            value={location}
+                            onChange={setLocation}
+                            placeholder="City, country"
+                        />
+                        <TextField
                             label="Display name"
                             value={name}
                             onChange={setName}
@@ -87,6 +105,8 @@ export function PersonalInfoSection({
                         <FieldRow label="Display name" value={name || "Not set"} />
                         <FieldRow label="Phone number" value={displayedPhone} />
                         <FieldRow label="Professional bio" value={displayedBio} />
+                        <FieldRow label="Website" value={displayedWebsite} />
+                        <FieldRow label="Location" value={displayedLocation} />
                     </dl>
                 )}
             </section>

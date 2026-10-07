@@ -50,8 +50,12 @@ export type AccountSettingsFormProps = {
     setName: (value: string) => void;
     setPhone: (value: string) => void;
     setBio: (value: string) => void;
+    setWebsite: (value: string) => void;
+    setLocation: (value: string) => void;
     setSecurityEmailsEnabled: Dispatch<SetStateAction<boolean>>;
     setWeeklyLearningGoal: (value: string) => void;
     skillLevel: AccountProfile["skillLevel"];
     weeklyLearningGoal: string;
+    website: string;
+    location: string;
 };

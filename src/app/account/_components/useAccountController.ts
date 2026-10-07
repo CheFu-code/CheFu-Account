@@ -39,6 +39,8 @@ export function useAccountController() {
     const [lastName, setLastName] = useState("");
     const [phone, setPhone] = useState("");
     const [bio, setBio] = useState("");
+    const [website, setWebsite] = useState("");
+    const [location, setLocation] = useState("");
     const [language, setLanguage] = useState("en");
     const [learningGoal, setLearningGoal] = useState("");
     const [skillLevel, setSkillLevel] =
@@ -157,6 +159,8 @@ export function useAccountController() {
         const displayNameChanged = trimmedDisplayName !== originalDisplayName;
         const phoneChanged = phone.trim() !== readText(account.profile.phone).trim();
         const bioChanged = bio.trim() !== readText(account.profile.bio).trim();
+        const websiteChanged = website.trim() !== readText(account.profile.website).trim();
+        const locationChanged = location.trim() !== readText(account.profile.location).trim();
         const privacyChanges = Object.fromEntries(
             (Object.keys(privacy) as Array<keyof PrivacyPreferences>)
                 .filter((key) => privacy[key] !== account.profile.privacy[key])
@@ -184,7 +188,8 @@ export function useAccountController() {
         }
 
         const hasPersonalInfoChanges =
-            displayNameChanged || firstNameChanged || lastNameChanged || phoneChanged || bioChanged;
+            displayNameChanged || firstNameChanged || lastNameChanged || phoneChanged ||
+            bioChanged || websiteChanged || locationChanged;
         if (
             (activeSection === "personal-info" && !hasPersonalInfoChanges) ||
             (activeSection === "privacy" && !hasPrivacyChanges)
@@ -198,6 +203,8 @@ export function useAccountController() {
             firstName?: string;
             lastName?: string;
             phone?: string;
+            website?: string;
+            location?: string;
             academyProfile?: {
                 bio?: string;
                 privacy?: Partial<PrivacyPreferences>;
@@ -212,6 +219,8 @@ export function useAccountController() {
             }
             if (phoneChanged) profileUpdates.phone = phone.trim();
             if (bioChanged) profileUpdates.academyProfile = { bio: bio.trim() };
+            if (websiteChanged) profileUpdates.website = website.trim();
+            if (locationChanged) profileUpdates.location = location.trim();
         } else if (activeSection === "privacy" && hasPrivacyChanges) {
             profileUpdates.academyProfile = { privacy: privacyChanges };
         }
@@ -239,6 +248,12 @@ export function useAccountController() {
                 }
                 if (activeSection === "personal-info" && bioChanged) {
                     previewProfileUpdates.bio = bio.trim();
+                }
+                if (activeSection === "personal-info" && websiteChanged) {
+                    previewProfileUpdates.website = website.trim();
+                }
+                if (activeSection === "personal-info" && locationChanged) {
+                    previewProfileUpdates.location = location.trim();
                 }
                 if (activeSection === "privacy" && hasPrivacyChanges) {
                     previewProfileUpdates.privacy = {
@@ -412,6 +427,8 @@ export function useAccountController() {
         setPhone(readText(data.profile.phone));
         setName(readText(data.profile.fullname) || readText(data.user.displayName));
         setBio(readText(data.profile.bio));
+        setWebsite(readText(data.profile.website));
+        setLocation(readText(data.profile.location));
         setLanguage(readText(data.profile.language) || "en");
         setLearningGoal(readText(data.profile.learningGoal));
         setSkillLevel(readText(data.profile.skillLevel) as AccountProfile["skillLevel"] || "beginner");
@@ -486,6 +503,8 @@ export function useAccountController() {
         lastName,
         name,
         phone,
+        website,
+        location,
         preferredContentFormat,
         privacy,
         saveProfile,
@@ -494,6 +513,8 @@ export function useAccountController() {
         setAccountSearch,
         setAiTutorSuggestions,
         setBio,
+        setWebsite,
+        setLocation,
         setDefaultCourseDifficulty,
         setEmailPreferences,
         setFirstName,

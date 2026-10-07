@@ -36,6 +36,8 @@ export type AccountProfile = {
     phone?: string | null;
     profilePicture?: string;
     bio: string;
+    website?: string;
+    location?: string;
     country: string;
     countryCode: string;
     detectedCountryCode?: string;

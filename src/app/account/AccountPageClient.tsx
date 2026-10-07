@@ -102,6 +102,10 @@ export function AccountPageClient() {
                     setWeeklyLearningGoal={account.setWeeklyLearningGoal}
                     skillLevel={account.skillLevel}
                     weeklyLearningGoal={account.weeklyLearningGoal}
+                    website={account.website}
+                    location={account.location}
+                    setWebsite={account.setWebsite}
+                    setLocation={account.setLocation}
                 />
             )}
             </AccountFrame>

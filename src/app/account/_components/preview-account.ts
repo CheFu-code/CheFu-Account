@@ -17,6 +17,8 @@ export const mockAccount: AccountResponse = {
         phone: null,
         profilePicture: "",
         bio: "This is local development preview data.",
+        website: "",
+        location: "",
         country: "",
         countryCode: "",
         language: "en",
