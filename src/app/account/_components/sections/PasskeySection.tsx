@@ -55,6 +55,9 @@ export function PasskeySection() {
                                     <CheckCircle2 className="size-5 text-[#e5ad5b]" />
                                     <div>
                                         <p className="font-medium text-[#f4f0e8]">{credential.email}</p>
+                                        <p className="text-sm text-[var(--fg)]">
+                                            {credential.deviceName || "Unknown device"}
+                                        </p>
                                         {credential.lastUsedAt && (
                                             <p className="text-xs text-[#9e968a]">
                                                 Last used: {new Date(credential.lastUsedAt).toLocaleDateString()}

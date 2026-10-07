@@ -15,7 +15,11 @@ export type SecuritySummary = {
     backupCodesLastUsedAt: string | null;
 };
 
-export type PendingMfaAction = "start-setup" | "verify-setup" | "disable";
+export type PendingMfaAction =
+    | "start-setup"
+    | "verify-setup"
+    | "disable"
+    | "change-password";
 
 export function isMfaRequiredError(error: unknown): error is MultiFactorError {
     return error instanceof FirebaseError && error.code === "auth/multi-factor-auth-required";

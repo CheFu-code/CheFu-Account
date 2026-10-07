@@ -6,26 +6,40 @@ import { AccountButton } from "../AccountPrimitives";
 
 export function ReauthenticationDialog({
     code,
+    confirmNewPassword,
     email,
+    isChangingPassword,
     isSubmitting,
     onCancel,
     onCodeChange,
+    onConfirmNewPasswordChange,
+    onNewPasswordChange,
     onPasswordChange,
     onSubmit,
+    newPassword,
     password,
     requiresMfa,
 }: {
     code: string;
+    confirmNewPassword: string;
     email: string;
+    isChangingPassword: boolean;
     isSubmitting: boolean;
     onCancel: () => void;
     onCodeChange: (value: string) => void;
+    onConfirmNewPasswordChange: (value: string) => void;
+    onNewPasswordChange: (value: string) => void;
     onPasswordChange: (value: string) => void;
     onSubmit: (event: FormEvent<HTMLFormElement>) => void;
     password: string;
+    newPassword: string;
     requiresMfa: boolean;
 }) {
-    const canSubmit = requiresMfa ? code.length === 6 : password.length > 0;
+    const validNewPassword =
+        !isChangingPassword ||
+        (newPassword.length >= 8 && newPassword === confirmNewPassword);
+    const canSubmit =
+        (requiresMfa ? code.length === 6 : password.length > 0) && validNewPassword;
 
     return (
         <div
@@ -42,12 +56,14 @@ export function ReauthenticationDialog({
                         </span>
                         <div>
                             <h3 id="reauth-title" className="text-xl font-semibold">
-                                Confirm your sign-in
+                                {isChangingPassword ? "Change your password" : "Confirm your sign-in"}
                             </h3>
                             <p className="mt-1 text-sm leading-6 text-[#8f887d]">
-                                {requiresMfa
-                                    ? "Enter your authenticator code to finish confirming this change."
-                                    : `Enter the password for ${email} to continue.`}
+                                {isChangingPassword
+                                    ? `Confirm your sign-in for ${email}, then choose a new password.`
+                                    : requiresMfa
+                                      ? "Enter your authenticator code to finish confirming this change."
+                                      : `Enter the password for ${email} to continue.`}
                             </p>
                         </div>
                     </div>
@@ -100,6 +116,42 @@ export function ReauthenticationDialog({
                             />
                         </label>
                     )}
+                    {isChangingPassword ? (
+                        <>
+                            <label className="block space-y-2" htmlFor="new-account-password">
+                                <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#bdb5a8]">
+                                    New password
+                                </span>
+                                <input
+                                    id="new-account-password"
+                                    type="password"
+                                    value={newPassword}
+                                    onChange={(event) => onNewPasswordChange(event.target.value)}
+                                    className="h-12 w-full rounded-2xl border border-white/12 bg-[#11110f] px-4 text-sm text-[#f4f0e8] outline-none focus:border-[#e5ad5b]/70 focus:ring-4 focus:ring-[#e5ad5b]/10"
+                                    autoComplete="new-password"
+                                    minLength={8}
+                                />
+                            </label>
+                            <label className="block space-y-2" htmlFor="confirm-account-password">
+                                <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#bdb5a8]">
+                                    Confirm new password
+                                </span>
+                                <input
+                                    id="confirm-account-password"
+                                    type="password"
+                                    value={confirmNewPassword}
+                                    onChange={(event) =>
+                                        onConfirmNewPasswordChange(event.target.value)
+                                    }
+                                    className="h-12 w-full rounded-2xl border border-white/12 bg-[#11110f] px-4 text-sm text-[#f4f0e8] outline-none focus:border-[#e5ad5b]/70 focus:ring-4 focus:ring-[#e5ad5b]/10"
+                                    autoComplete="new-password"
+                                />
+                            </label>
+                            <p className="text-xs text-[#8f887d]">
+                                Use at least 8 characters. The new password is saved only after your sign-in is confirmed.
+                            </p>
+                        </>
+                    ) : null}
 
                     <AccountButton
                         type="submit"
@@ -112,7 +164,7 @@ export function ReauthenticationDialog({
                         ) : (
                             <KeyRound className="size-4" aria-hidden="true" />
                         )}
-                        Continue
+                        {isChangingPassword ? "Change password" : "Continue"}
                     </AccountButton>
                 </form>
             </div>

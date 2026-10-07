@@ -8,6 +8,7 @@ import {
     reauthenticateWithCredential,
     sendEmailVerification,
     TotpMultiFactorGenerator,
+    updatePassword,
     type MultiFactorResolver,
     type TotpSecret,
 } from "firebase/auth";
@@ -56,6 +57,8 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         useState<PendingMfaAction | null>(null);
     const [reauthPassword, setReauthPassword] = useState("");
     const [reauthCode, setReauthCode] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmNewPassword, setConfirmNewPassword] = useState("");
     const [reauthResolver, setReauthResolver] = useState<MultiFactorResolver | null>(null);
     const [isReauthenticating, setIsReauthenticating] = useState(false);
 
@@ -281,6 +284,10 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         setReauthPassword("");
         setReauthCode("");
         setReauthResolver(null);
+        if (action === "change-password") {
+            setNewPassword("");
+            setConfirmNewPassword("");
+        }
         toast.info("Confirm your sign-in to continue.");
     }
 
@@ -289,6 +296,20 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         setReauthPassword("");
         setReauthCode("");
         setReauthResolver(null);
+        setNewPassword("");
+        setConfirmNewPassword("");
+    }
+
+    function startPasswordChange() {
+        if (!currentUser?.email) {
+            toast.error("Sign in again before changing your password.");
+            return;
+        }
+        if (!currentUser.providerData.some((provider) => provider.providerId === "password")) {
+            toast.error("This account does not have a password sign-in. Use password reset to set one.");
+            return;
+        }
+        requestReauthentication("change-password");
     }
 
     async function submitReauthentication(event: FormEvent<HTMLFormElement>) {
@@ -302,6 +323,17 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
 
         if (reauthResolver && reauthCode.length !== 6) {
             toast.error("Enter the 6-digit authenticator code.");
+            return;
+        }
+        if (
+            pendingReauthAction === "change-password" &&
+            (newPassword.length < 8 || newPassword !== confirmNewPassword)
+        ) {
+            toast.error(
+                newPassword.length < 8
+                    ? "Your new password must be at least 8 characters."
+                    : "The new passwords do not match.",
+            );
             return;
         }
 
@@ -326,9 +358,21 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
 
             await refreshFirebaseUser();
             const action = pendingReauthAction;
+            const passwordToSet = newPassword;
             resetReauthentication();
-            toast.success("Sign-in confirmed.");
-            await resumeMfaAction(action);
+            if (action !== "change-password") toast.success("Sign-in confirmed.");
+            try {
+                await resumeMfaAction(action, passwordToSet);
+            } catch (error) {
+                toast.error(
+                    action === "change-password"
+                        ? "Unable to change your password."
+                        : "Unable to complete the security change.",
+                    {
+                        description: readReauthenticationError(error),
+                    },
+                );
+            }
         } catch (error) {
             if (!reauthResolver && isMfaRequiredError(error)) {
                 const resolver = getMultiFactorResolver(auth, error);
@@ -355,7 +399,17 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         }
     }
 
-    async function resumeMfaAction(action: PendingMfaAction) {
+    async function resumeMfaAction(action: PendingMfaAction, passwordToSet?: string) {
+        if (action === "change-password") {
+            const user = currentUser;
+            if (!user) throw new Error("Sign in again before changing your password.");
+            await updatePassword(user, passwordToSet || "");
+            await refreshFirebaseUser();
+            setNewPassword("");
+            setConfirmNewPassword("");
+            toast.success("Your password has been changed.");
+            return;
+        }
         if (action === "start-setup") {
             await startTotpSetup();
             return;
@@ -456,6 +510,9 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         loadSecuritySummary,
         reauthCode,
         reauthPassword,
+        confirmNewPassword,
+        isChangingPassword: pendingReauthAction === "change-password",
+        newPassword,
         reauthenticationOpen: Boolean(pendingReauthAction),
         reauthenticationRequiresMfa: Boolean(reauthResolver),
         resetReauthentication,
@@ -463,6 +520,8 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         sendVerificationEmail,
         setReauthCode,
         setReauthPassword,
+        setConfirmNewPassword,
+        setNewPassword,
         setTotpCode,
         startTotpSetup,
         summary,
@@ -473,5 +532,6 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         verifyTotpSetup,
         cancelTotpSetup,
         disableTotp,
+        startPasswordChange,
     };
 }

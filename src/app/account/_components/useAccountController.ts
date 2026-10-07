@@ -79,7 +79,7 @@ export function useAccountController() {
 
                 const response = await fetch(apiUrl("/auth/me"), {
                     credentials: "include",
-                    headers: { "x-chefu-app": "academy" },
+                    headers: { "x-chefu-app": appId },
                 });
 
                 if (response.status === 401) {
@@ -113,7 +113,7 @@ export function useAccountController() {
         };
     // hydrateAccount only updates local state setters and is intentionally stable for this load effect.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [router]);
+    }, [appId, router]);
 
     useEffect(() => {
         if (!sectionParam) return;
@@ -143,72 +143,140 @@ export function useAccountController() {
         event.preventDefault();
         if (!account) return;
 
-        const trimmedFirstName = firstName.trim().replace(/\s+/g, " ");
-        const trimmedLastName = lastName.trim().replace(/\s+/g, " ");
-        const trimmedName = `${trimmedFirstName} ${trimmedLastName}`.trim().replace(/\s+/g, " ");
-        if (trimmedName.length < 2) {
-            toast.error("First and last name must contain at least 2 characters together.");
+        const normalizeName = (value: string) => value.trim().replace(/\s+/g, " ");
+        const trimmedFirstName = normalizeName(firstName);
+        const trimmedLastName = normalizeName(lastName);
+        const trimmedDisplayName = normalizeName(name);
+        const originalFirstName = normalizeName(readText(account.profile.firstName));
+        const originalLastName = normalizeName(readText(account.profile.lastName));
+        const originalDisplayName = normalizeName(
+            readText(account.profile.fullname) || readText(account.user.displayName),
+        );
+        const firstNameChanged = trimmedFirstName !== originalFirstName;
+        const lastNameChanged = trimmedLastName !== originalLastName;
+        const displayNameChanged = trimmedDisplayName !== originalDisplayName;
+        const phoneChanged = phone.trim() !== readText(account.profile.phone).trim();
+        const bioChanged = bio.trim() !== readText(account.profile.bio).trim();
+        const privacyChanges = Object.fromEntries(
+            (Object.keys(privacy) as Array<keyof PrivacyPreferences>)
+                .filter((key) => privacy[key] !== account.profile.privacy[key])
+                .map((key) => [key, privacy[key]]),
+        ) as Partial<PrivacyPreferences>;
+        const hasPrivacyChanges = Object.keys(privacyChanges).length > 0;
+
+        if (
+            activeSection === "personal-info" &&
+            displayNameChanged &&
+            trimmedDisplayName.length < 2
+        ) {
+            toast.error("Display name must contain at least 2 characters.");
             return;
         }
-        setName(trimmedName);
+
+        if (
+            activeSection === "personal-info" &&
+            !displayNameChanged &&
+            (firstNameChanged || lastNameChanged) &&
+            (!trimmedFirstName || !trimmedLastName)
+        ) {
+            toast.error("First name and last name are both required.");
+            return;
+        }
+
+        const hasPersonalInfoChanges =
+            displayNameChanged || firstNameChanged || lastNameChanged || phoneChanged || bioChanged;
+        if (
+            (activeSection === "personal-info" && !hasPersonalInfoChanges) ||
+            (activeSection === "privacy" && !hasPrivacyChanges)
+        ) {
+            toast.info("There are no profile changes to save.");
+            return;
+        }
+
+        const profileUpdates: {
+            fullname?: string;
+            firstName?: string;
+            lastName?: string;
+            phone?: string;
+            academyProfile?: {
+                bio?: string;
+                privacy?: Partial<PrivacyPreferences>;
+            };
+        } = {};
+        if (activeSection === "personal-info") {
+            if (displayNameChanged) {
+                profileUpdates.fullname = trimmedDisplayName;
+            } else if (firstNameChanged || lastNameChanged) {
+                profileUpdates.firstName = trimmedFirstName;
+                profileUpdates.lastName = trimmedLastName;
+            }
+            if (phoneChanged) profileUpdates.phone = phone.trim();
+            if (bioChanged) profileUpdates.academyProfile = { bio: bio.trim() };
+        } else if (activeSection === "privacy" && hasPrivacyChanges) {
+            profileUpdates.academyProfile = { privacy: privacyChanges };
+        }
 
         setIsSaving(true);
 
         try {
             if (isDevPreview) {
+                const previewProfileUpdates: Partial<AccountProfile> = {};
+                if (activeSection === "personal-info" && displayNameChanged) {
+                    previewProfileUpdates.fullname = trimmedDisplayName;
+                    const nameParts = trimmedDisplayName.split(" ");
+                    previewProfileUpdates.firstName = nameParts[0];
+                    previewProfileUpdates.lastName = nameParts.slice(1).join(" ");
+                } else if (activeSection === "personal-info") {
+                    if (firstNameChanged) previewProfileUpdates.firstName = trimmedFirstName;
+                    if (lastNameChanged) previewProfileUpdates.lastName = trimmedLastName;
+                    if (firstNameChanged || lastNameChanged) {
+                        previewProfileUpdates.fullname =
+                            `${trimmedFirstName} ${trimmedLastName}`.trim();
+                    }
+                }
+                if (activeSection === "personal-info" && phoneChanged) {
+                    previewProfileUpdates.phone = phone.trim();
+                }
+                if (activeSection === "personal-info" && bioChanged) {
+                    previewProfileUpdates.bio = bio.trim();
+                }
+                if (activeSection === "privacy" && hasPrivacyChanges) {
+                    previewProfileUpdates.privacy = {
+                        ...account.profile.privacy,
+                        ...privacyChanges,
+                    };
+                }
+
                 hydrateAccount({
                     ...account,
-                    user: { ...account.user, displayName: trimmedName },
+                    user: {
+                        ...account.user,
+                        ...(activeSection === "personal-info" &&
+                        (displayNameChanged || firstNameChanged || lastNameChanged)
+                            ? {
+                                  displayName:
+                                      previewProfileUpdates.fullname ||
+                                      account.user.displayName,
+                              }
+                            : {}),
+                    },
                     profile: {
                         ...account.profile,
-                        firstName: trimmedFirstName,
-                        lastName: trimmedLastName,
-                        fullname: trimmedName,
-                        phone: phone.trim(),
-                        bio: bio.trim(),
+                        ...previewProfileUpdates,
                     },
                 });
                 toast.success("Preview profile updated locally.");
                 return;
             }
 
-            const weeklyGoal = Number(weeklyLearningGoal);
-            const nextEmailPreferences = {
-                ...emailPreferences,
-                security: securityEmailsEnabled,
-            };
-            const learningInterests = learningInterestsInput
-                .split(",")
-                .map((interest) => interest.trim())
-                .filter(Boolean)
-                .slice(0, 12);
-
             const response = await fetch(apiUrl("/auth/profile"), {
                 method: "PATCH",
                 credentials: "include",
                 headers: {
                     "Content-Type": "application/json",
-                    "x-chefu-app": "academy",
+                    "x-chefu-app": appId,
                 },
-                body: JSON.stringify({
-                    fullname: trimmedName,
-                    phone: phone.trim(),
-                    emailPreferences: { security: securityEmailsEnabled },
-                    academyProfile: {
-                        bio,
-                        language,
-                        learningGoal,
-                        skillLevel,
-                        learningInterests,
-                        weeklyLearningGoal: Number.isFinite(weeklyGoal) ? weeklyGoal : 3,
-                        lessonStyle,
-                        defaultCourseDifficulty,
-                        preferredContentFormat,
-                        aiTutorSuggestions,
-                        privacy,
-                        emailPreferences: nextEmailPreferences,
-                    },
-                }),
+                body: JSON.stringify(profileUpdates),
             });
 
             const data = (await response.json().catch(() => null)) as
@@ -224,10 +292,17 @@ export function useAccountController() {
                 throw new Error(message || "Your account could not be updated.");
             }
 
-            if (auth.currentUser) {
-                await updateProfile(auth.currentUser, { displayName: trimmedName }).catch(
-                    () => undefined,
-                );
+            const updatedDisplayName =
+                activeSection === "personal-info"
+                    ? profileUpdates.fullname ||
+                      (profileUpdates.firstName !== undefined
+                          ? `${profileUpdates.firstName} ${profileUpdates.lastName}`
+                          : undefined)
+                    : undefined;
+            if (auth.currentUser && updatedDisplayName) {
+                await updateProfile(auth.currentUser, {
+                    displayName: updatedDisplayName,
+                }).catch(() => undefined);
             }
 
             hydrateAccount(data as AccountResponse);

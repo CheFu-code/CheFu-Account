@@ -32,6 +32,11 @@ export function SecuritySection({
         : security.currentUser || !security.firebaseReady
           ? "No second factor is enrolled yet. Add an authenticator app to protect your account sign-ins."
           : "Sign in again to your account before enrolling an authenticator app.";
+    const hasPasswordProvider = Boolean(
+        security.currentUser?.providerData.some(
+            (provider) => provider.providerId === "password",
+        ),
+    );
 
     return (
         <div className="account-security-section">
@@ -43,8 +48,40 @@ export function SecuritySection({
             <AccountPanel className="account-security-panel">
                 <div className="account-security-rows">
                     <div className="account-security-subsection-heading">
-                        <h2 className="account-subsection-title">Two-factor authentication</h2>
+                        <h2 className="account-subsection-title">Password and sign-in</h2>
                     </div>
+                    <ActionRow
+                        icon={KeyRound}
+                        title={hasPasswordProvider ? "Change password" : "Set a password"}
+                        description={
+                            hasPasswordProvider
+                                ? "Choose a new password after confirming your sign-in."
+                                : "Send a secure reset link to set a password for this account."
+                        }
+                        action={
+                            <AccountButton
+                                variant="secondary"
+                                onClick={
+                                    hasPasswordProvider
+                                        ? security.startPasswordChange
+                                        : onSendResetEmail
+                                }
+                                disabled={!security.currentUser || !security.firebaseReady}
+                            >
+                                {hasPasswordProvider ? (
+                                    <>
+                                        <KeyRound className="size-4" />
+                                        Change password
+                                    </>
+                                ) : (
+                                    <>
+                                        <Mail className="size-4" />
+                                        Set password
+                                    </>
+                                )}
+                            </AccountButton>
+                        }
+                    />
                     <ActionRow
                         icon={KeyRound}
                         title="Password reset"
@@ -235,15 +272,20 @@ export function SecuritySection({
             {security.reauthenticationOpen ? (
                 <ReauthenticationDialog
                     code={security.reauthCode}
+                    confirmNewPassword={security.confirmNewPassword}
                     email={security.currentUser?.email || account.user.email}
+                    isChangingPassword={security.isChangingPassword}
                     isSubmitting={security.isReauthenticating}
                     onCancel={() => {
                         if (!security.isReauthenticating) security.resetReauthentication();
                     }}
                     onCodeChange={security.setReauthCode}
+                    onConfirmNewPasswordChange={security.setConfirmNewPassword}
+                    onNewPasswordChange={security.setNewPassword}
                     onPasswordChange={security.setReauthPassword}
                     onSubmit={security.submitReauthentication}
                     password={security.reauthPassword}
+                    newPassword={security.newPassword}
                     requiresMfa={security.reauthenticationRequiresMfa}
                 />
             ) : null}
