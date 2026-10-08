@@ -85,8 +85,7 @@ export function LoginClient() {
                 .catch(async (error) => {
                     await signOut(auth).catch(() => undefined);
                     toast.error(`Unable to continue to ${appName}.`, {
-                        description:
-                            error instanceof Error ? error.message : "Please sign in again.",
+                        description: readContinuationError(error),
                     });
                     setIsSubmitting(false);
                 });
@@ -116,8 +115,7 @@ export function LoginClient() {
                 attemptedExistingSession.current = true;
                 await signOut(auth).catch(() => undefined);
                 toast.error(`Unable to continue to ${appName}.`, {
-                    description:
-                        error instanceof Error ? error.message : "Please sign in again.",
+                    description: readContinuationError(error),
                 });
             } else if (isMfaRequiredError(error)) {
                 const resolver = getMultiFactorResolver(auth, error);
@@ -242,6 +240,11 @@ function completeAuthRedirect(target: string, replace: (href: string) => void) {
     }
 
     window.location.assign(target);
+}
+
+function readContinuationError(error: unknown) {
+    if (!(error instanceof Error)) return "Please sign in again.";
+    return error.message.replace(/\s*Request ID:\s*\S+/gi, "").trim() || "Please sign in again.";
 }
 
 function readFirebaseLoginError(error: unknown) {
