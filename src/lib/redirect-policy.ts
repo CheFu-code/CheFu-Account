@@ -177,6 +177,7 @@ const OAUTH_AUTHORIZE_QUERY_KEYS = new Set([
     "code_challenge",
     "code_challenge_method",
     "nonce",
+    "prompt",
     "redirect_uri",
     "response_mode",
     "response_type",
@@ -357,6 +358,9 @@ function isAllowedOauthAuthorizeReturn(
     if (!isPkceCodeChallenge(url.searchParams.get("code_challenge"))) return false;
     if (!isOauthOpaqueParam(url.searchParams.get("state"), 16, 512)) return false;
     if (!isOauthOpaqueParam(url.searchParams.get("nonce"), 16, 512)) return false;
+
+    const prompt = url.searchParams.get("prompt");
+    if (prompt && !["login", "consent", "select_account", "none"].includes(prompt)) return false;
 
     const responseMode = url.searchParams.get("response_mode");
     return !responseMode || responseMode === "jwt" || responseMode === "query";
