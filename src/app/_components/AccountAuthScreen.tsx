@@ -128,6 +128,23 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                             </div>
                         ) : null}
 
+                        {mode === "login" && props.setTrustDevice ? (
+                            <label className="flex items-start gap-2.5 text-sm text-stone-700">
+                                <input
+                                    type="checkbox"
+                                    checked={props.trustDevice ?? false}
+                                    onChange={(event) => props.setTrustDevice?.(event.target.checked)}
+                                    className="mt-0.5 size-4 accent-amber-700"
+                                />
+                                <span>
+                                    Trust this device for 90 days
+                                    <span className="mt-0.5 block text-xs text-stone-500">
+                                        Only select this on a private device you control.
+                                    </span>
+                                </span>
+                            </label>
+                        ) : null}
+
                         <button
                             type="submit"
                             disabled={isSubmitting}

@@ -6,9 +6,11 @@ import {
     KeyRound,
     Loader2,
     Mail,
+    MonitorSmartphone,
     RotateCcw,
     ShieldCheck,
     Smartphone,
+    Trash2,
 } from "lucide-react";
 import { ActionRow } from "../AccountControls";
 import { AccountButton, AccountPanel, SectionHeader } from "../AccountPrimitives";
@@ -246,6 +248,97 @@ export function SecuritySection({
                             </div>
                         ) : null}
                     </div>
+                </div>
+            </AccountPanel>
+
+            <AccountPanel className="account-security-panel">
+                <div className="account-security-rows">
+                    <div className="flex flex-col gap-4 py-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="flex items-start gap-3">
+                            <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-white/5 text-[#bdb5a8]">
+                                <MonitorSmartphone className="size-4" aria-hidden="true" />
+                            </span>
+                            <div>
+                                <h2 className="font-semibold text-[#f4f0e8]">Trusted devices</h2>
+                                <p className="mt-1 max-w-2xl text-sm leading-6 text-[#8f887d]">
+                                    Devices stay trusted for 90 days. New devices require an email code,
+                                    or an authenticator code when 2FA is enabled.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            <AccountButton
+                                variant="secondary"
+                                onClick={() => void security.loadTrustedDevices()}
+                                disabled={security.isLoadingTrustedDevices}
+                            >
+                                <RotateCcw
+                                    className={`size-4 ${security.isLoadingTrustedDevices ? "animate-spin" : ""}`}
+                                />
+                                Refresh
+                            </AccountButton>
+                            {security.trustedDevices.length > 0 ? (
+                                <AccountButton
+                                    variant="danger"
+                                    onClick={() => void security.revokeTrustedDevice()}
+                                    disabled={security.revokingTrustedDevice}
+                                >
+                                    {security.revokingTrustedDevice ? (
+                                        <Loader2 className="size-4 animate-spin" />
+                                    ) : (
+                                        <Trash2 className="size-4" />
+                                    )}
+                                    Revoke all
+                                </AccountButton>
+                            ) : null}
+                        </div>
+                    </div>
+
+                    {security.isLoadingTrustedDevices && !security.trustedDevices.length ? (
+                        <p className="py-4 text-sm text-[#8f887d]">Loading trusted devices…</p>
+                    ) : security.trustedDevices.length ? (
+                        <ul className="divide-y divide-white/8">
+                            {security.trustedDevices.map((device) => (
+                                <li
+                                    key={device.id}
+                                    className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between"
+                                >
+                                    <div className="flex items-start gap-3">
+                                        <MonitorSmartphone
+                                            className="mt-1 size-4 shrink-0 text-[#bdb5a8]"
+                                            aria-hidden="true"
+                                        />
+                                        <div>
+                                            <p className="font-medium text-[#f4f0e8]">
+                                                {device.deviceName}
+                                                {device.isCurrent ? (
+                                                    <span className="ml-2 rounded-full border border-[#e5ad5b]/20 bg-[#e5ad5b]/10 px-2 py-0.5 text-xs text-[#ffd18a]">
+                                                        This device
+                                                    </span>
+                                                ) : null}
+                                            </p>
+                                            <p className="mt-1 text-xs leading-5 text-[#8f887d]">
+                                                Last used {new Date(device.lastSeenAt).toLocaleString()} ·
+                                                Expires {new Date(device.expiresAt).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <AccountButton
+                                        variant="danger"
+                                        onClick={() => void security.revokeTrustedDevice(device.id)}
+                                        disabled={security.revokingTrustedDevice}
+                                    >
+                                        <Trash2 className="size-4" />
+                                        Revoke
+                                    </AccountButton>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="py-4 text-sm text-[#8f887d]">
+                            No trusted devices. You can trust a device when you sign in.
+                        </p>
+                    )}
                 </div>
             </AccountPanel>
 

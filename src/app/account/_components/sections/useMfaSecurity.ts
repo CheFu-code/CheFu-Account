@@ -30,8 +30,20 @@ type ReauthenticationResult = ApiError & {
     reauthToken?: string;
 };
 
+export type TrustedDevice = {
+    id: string;
+    deviceName: string;
+    createdAt: number;
+    lastSeenAt: number;
+    expiresAt: number;
+    isCurrent: boolean;
+};
+
 export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
     const [summary, setSummary] = useState<SecuritySummary | null>(null);
+    const [trustedDevices, setTrustedDevices] = useState<TrustedDevice[]>([]);
+    const [isLoadingTrustedDevices, setIsLoadingTrustedDevices] = useState(false);
+    const [revokingTrustedDevice, setRevokingTrustedDevice] = useState(false);
     const [isReady, setIsReady] = useState(false);
     const [codes, setCodes] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -90,9 +102,70 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         }
     }, [appId]);
 
+    const loadTrustedDevices = useCallback(async () => {
+        setIsLoadingTrustedDevices(true);
+        try {
+            const response = await fetch(apiUrl("/auth/trusted-devices"), {
+                credentials: "include",
+                headers: { "x-chefu-app": appId },
+            });
+            const data = (await response.json().catch(() => null)) as
+                | { devices?: TrustedDevice[] }
+                | ApiError
+                | null;
+            if (!response.ok || !data || !("devices" in data)) {
+                throw new Error(
+                    formatApiError(
+                        data && "error" in data ? data : null,
+                        "Could not load trusted devices.",
+                    ),
+                );
+            }
+            setTrustedDevices(data.devices || []);
+        } catch (error) {
+            toast.error("Unable to load trusted devices.", {
+                description: error instanceof Error ? error.message : "Please try again.",
+            });
+        } finally {
+            setIsLoadingTrustedDevices(false);
+        }
+    }, [appId]);
+
+    async function revokeTrustedDevice(deviceId?: string) {
+        const prompt = deviceId
+            ? "Remove trust from this device? It will need verification before being trusted again."
+            : "Revoke trust from all listed devices?";
+        if (!window.confirm(prompt)) return;
+        setRevokingTrustedDevice(true);
+        try {
+            const response = await fetch(apiUrl("/auth/trusted-devices"), {
+                method: "DELETE",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-chefu-app": appId,
+                },
+                body: JSON.stringify(deviceId ? { deviceId } : { all: true }),
+            });
+            const data = (await response.json().catch(() => null)) as ApiError | null;
+            if (!response.ok) {
+                throw new Error(formatApiError(data, "Could not revoke device trust."));
+            }
+            toast.success(deviceId ? "Device trust revoked." : "All device trust revoked.");
+            await loadTrustedDevices();
+        } catch (error) {
+            toast.error("Unable to revoke device trust.", {
+                description: error instanceof Error ? error.message : "Please try again.",
+            });
+        } finally {
+            setRevokingTrustedDevice(false);
+        }
+    }
+
     useEffect(() => {
         void loadSecuritySummary();
-    }, [loadSecuritySummary]);
+        void loadTrustedDevices();
+    }, [loadSecuritySummary, loadTrustedDevices]);
 
     async function requestReauthentication(action: PendingMfaAction) {
         setPendingReauthAction(action);
@@ -479,6 +552,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         isDisablingTotp,
         isGeneratingCodes,
         isLoading,
+        isLoadingTrustedDevices,
         isReauthenticating,
         isSendingVerification,
         isStartingTotp,
@@ -491,6 +565,8 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         newPassword,
         reauthenticationOpen: Boolean(pendingReauthAction),
         reauthenticationRequiresMfa: Boolean(reauthPendingCredential),
+        revokeTrustedDevice,
+        revokingTrustedDevice,
         resetReauthentication,
         secretText,
         sendVerificationEmail,
@@ -505,6 +581,8 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         totpCode,
         totpFactorUid,
         totpSetup: qrDataUrl && secretText ? { qrDataUrl, secretText } : null,
+        trustedDevices,
+        loadTrustedDevices,
         verifyTotpSetup,
         cancelTotpSetup,
         disableTotp,

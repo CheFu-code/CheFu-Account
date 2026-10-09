@@ -9,6 +9,8 @@ export type AccountAuthBaseProps = {
     setEmail: (email: string) => void;
     onPasskeyClick?: () => void;
     isPasskeySubmitting?: boolean;
+    trustDevice?: boolean;
+    setTrustDevice?: (trust: boolean) => void;
 };
 
 export type AccountAuthScreenProps =

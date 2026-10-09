@@ -106,11 +106,17 @@ export class MfaRequiredLoginError extends Error {
     }
 }
 
+export type SessionTrustResult = {
+    trustDeviceVerificationRequired?: boolean;
+    trustDeviceRequiresAuthenticator?: boolean;
+};
+
 export async function loginWithPassword(
     email: string,
     password: string,
     appId: ChefuAppId,
-) {
+    trustDevice = false,
+): Promise<SessionTrustResult> {
     const response = await fetch(apiUrl("/auth/session/password"), {
         method: "POST",
         headers: {
@@ -118,7 +124,7 @@ export async function loginWithPassword(
             [CHEFU_APP_HEADER]: appId,
         },
         credentials: "include",
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, trustDevice }),
     });
     const result = (await response.json().catch(() => ({}))) as {
         error?: string;
@@ -160,6 +166,7 @@ export async function loginWithPassword(
         const requestId = result.requestId ? ` Request ID: ${result.requestId}` : "";
         throw new Error(`${message}${requestId}`);
     }
+    return (await response.json().catch(() => ({}))) as SessionTrustResult;
 }
 
 export async function completePasswordMfaSession(
@@ -168,7 +175,8 @@ export async function completePasswordMfaSession(
     enrollmentId: string,
     verificationCode: string,
     appId: ChefuAppId,
-) {
+    trustDevice = false,
+): Promise<SessionTrustResult> {
     const response = await fetch(apiUrl("/auth/session/mfa"), {
         method: "POST",
         headers: {
@@ -181,10 +189,12 @@ export async function completePasswordMfaSession(
             mfaPendingCredential: pendingCredential,
             mfaEnrollmentId: enrollmentId,
             verificationCode,
+            trustDevice,
         }),
     });
 
     if (!response.ok) throw new Error(await readApiError(response));
+    return (await response.json().catch(() => ({}))) as SessionTrustResult;
 }
 
 export async function sendEmailVerificationCode(

@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { startAuthentication } from "@simplewebauthn/browser";
-import { apiUrl, type ChefuAppId } from "../../lib/chefu-account";
+import { apiUrl, type ChefuAppId, type SessionTrustResult } from "../../lib/chefu-account";
 
 export type PasskeySignInState = {
   isAuthenticating: boolean;
@@ -14,7 +14,10 @@ export function usePasskeySignIn() {
   });
 
   const signInWithPasskey = useCallback(
-    async (appId: ChefuAppId): Promise<boolean> => {
+    async (
+      appId: ChefuAppId,
+      trustDevice = false,
+    ): Promise<SessionTrustResult | null> => {
       try {
         setState({ isAuthenticating: true, error: undefined });
 
@@ -52,6 +55,7 @@ export function usePasskeySignIn() {
             body: JSON.stringify({
               challengeId,
               response: assertionResponse,
+              trustDevice,
             }),
           },
         );
@@ -61,7 +65,7 @@ export function usePasskeySignIn() {
         }
 
         setState({ isAuthenticating: false });
-        return true;
+        return (await verifyResponse.json().catch(() => ({}))) as SessionTrustResult;
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Passkey sign-in failed";
@@ -70,7 +74,7 @@ export function usePasskeySignIn() {
           error: message,
         });
         toast.error(message);
-        return false;
+        return null;
       }
     },
     [],
