@@ -29,14 +29,8 @@ export function SecuritySection({
         ? `${security.summary.enrolledFactors.length} second factor${
               security.summary.enrolledFactors.length === 1 ? "" : "s"
           } enrolled.`
-        : security.currentUser || !security.firebaseReady
-          ? "No second factor is enrolled yet. Add an authenticator app to protect your account sign-ins."
-          : "Sign in again to your account before enrolling an authenticator app.";
-    const hasPasswordProvider = Boolean(
-        security.currentUser?.providerData.some(
-            (provider) => provider.providerId === "password",
-        ),
-    );
+        : "No second factor is enrolled yet. Add an authenticator app to protect your account sign-ins.";
+    const hasPasswordProvider = security.hasPasswordProvider;
 
     return (
         <div className="account-security-section">
@@ -66,7 +60,7 @@ export function SecuritySection({
                                         ? security.startPasswordChange
                                         : onSendResetEmail
                                 }
-                                disabled={!security.currentUser || !security.firebaseReady}
+                                disabled={!security.sessionReady || security.isLoading}
                             >
                                 {hasPasswordProvider ? (
                                     <>
@@ -173,8 +167,8 @@ export function SecuritySection({
                                         onClick={security.startTotpSetup}
                                         disabled={
                                             security.isStartingTotp ||
-                                            !security.firebaseReady ||
-                                            !security.currentUser
+                                            !security.sessionReady ||
+                                            security.isLoading
                                         }
                                     >
                                         {security.isStartingTotp ? (
@@ -273,7 +267,7 @@ export function SecuritySection({
                 <ReauthenticationDialog
                     code={security.reauthCode}
                     confirmNewPassword={security.confirmNewPassword}
-                    email={security.currentUser?.email || account.user.email}
+                    email={security.currentUser.email}
                     isChangingPassword={security.isChangingPassword}
                     isSubmitting={security.isReauthenticating}
                     onCancel={() => {

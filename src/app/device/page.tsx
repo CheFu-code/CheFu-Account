@@ -2,8 +2,6 @@
 
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { auth } from "../../lib/firebase";
 
 function DeviceAuthContent() {
     const searchParams = useSearchParams();
@@ -11,6 +9,9 @@ function DeviceAuthContent() {
     const [password, setPassword] = useState("");
     const [code, setCode] = useState(searchParams.get("code") || "");
     const [deviceCode, setDeviceCode] = useState(searchParams.get("deviceCode") || "");
+    const [mfaCode, setMfaCode] = useState("");
+    const [mfaPendingCredential, setMfaPendingCredential] = useState("");
+    const [mfaEnrollmentId, setMfaEnrollmentId] = useState("");
     const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
     const [message, setMessage] = useState("Sign in with your Chefu account to finish the terminal login.");
     const mounted = useRef(false);
@@ -31,9 +32,9 @@ function DeviceAuthContent() {
 
     const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        if (!email || !password || !deviceCode) {
+        if (!deviceCode || (!mfaPendingCredential && (!email || !password))) {
             setStatus("error");
-            setMessage("Enter your email, password, and the device code shown in the terminal.");
+            setMessage("Enter the required sign-in details and the device code shown in the terminal.");
             return;
         }
 
@@ -41,40 +42,54 @@ function DeviceAuthContent() {
         setMessage("Finishing sign-in…");
 
         try {
-            const credential = await signInWithEmailAndPassword(auth, email, password);
-            const idToken = await credential.user.getIdToken(true);
-
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.chefu.co.za"}/auth/device/complete`, {
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.chefu.co.za"}/auth/device/${mfaPendingCredential ? "mfa-complete" : "complete"}`,
+                {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     deviceCode,
                     userCode: code,
                     email,
-                    password,
+                    ...(mfaPendingCredential
+                        ? {
+                              mfaPendingCredential,
+                              mfaEnrollmentId,
+                              verificationCode: mfaCode,
+                          }
+                        : { password }),
                 }),
-            });
+                },
+            );
 
-            const data = await response.json().catch(() => ({}));
+            const data = (await response.json().catch(() => ({}))) as {
+                mfaRequired?: boolean;
+                mfaPendingCredential?: string;
+                mfaInfo?: Array<{ mfaEnrollmentId?: string; factorId?: string }>;
+                message?: string;
+                error?: string;
+            };
             if (!response.ok) {
                 throw new Error(data?.message || data?.error || "Unable to finish sign-in.");
             }
-
-            if (idToken) {
-                await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.chefu.co.za"}/auth/session`, {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${idToken}`,
-                        "x-chefu-app": "root",
-                    },
-                    credentials: "include",
-                }).catch(() => undefined);
+            if (data.mfaRequired) {
+                const factor = data.mfaInfo?.find(
+                    (item) => item.factorId === "totp" && item.mfaEnrollmentId,
+                );
+                if (!data.mfaPendingCredential || !factor?.mfaEnrollmentId) {
+                    throw new Error("The server could not start multi-factor sign-in.");
+                }
+                setMfaPendingCredential(data.mfaPendingCredential);
+                setMfaEnrollmentId(factor.mfaEnrollmentId);
+                setMfaCode("");
+                setStatus("idle");
+                setMessage("Enter your authenticator code to finish signing in.");
+                return;
             }
 
             setStatus("success");
             setMessage("Sign-in completed. You can return to the terminal and press Enter.");
         } catch (error) {
-            await signOut(auth).catch(() => undefined);
             setStatus("error");
             setMessage(error instanceof Error ? error.message : "Unable to finish sign-in.");
         }
@@ -95,23 +110,48 @@ function DeviceAuthContent() {
                 )}
 
                 <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
-                    <label style={{ display: "grid", gap: 8 }}>
-                        <span style={{ color: "#cbd5e1" }}>Email</span>
-                        <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" placeholder="you@example.com" style={{ borderRadius: 10, border: "1px solid #475569", background: "#020817", color: "white", padding: "12px 14px" }} />
-                    </label>
+                    {!mfaPendingCredential && (
+                        <>
+                            <label style={{ display: "grid", gap: 8 }}>
+                                <span style={{ color: "#cbd5e1" }}>Email</span>
+                                <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" placeholder="you@example.com" style={{ borderRadius: 10, border: "1px solid #475569", background: "#020817", color: "white", padding: "12px 14px" }} />
+                            </label>
 
-                    <label style={{ display: "grid", gap: 8 }}>
-                        <span style={{ color: "#cbd5e1" }}>Password</span>
-                        <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" placeholder="Password" style={{ borderRadius: 10, border: "1px solid #475569", background: "#020817", color: "white", padding: "12px 14px" }} />
-                    </label>
+                            <label style={{ display: "grid", gap: 8 }}>
+                                <span style={{ color: "#cbd5e1" }}>Password</span>
+                                <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" placeholder="Password" style={{ borderRadius: 10, border: "1px solid #475569", background: "#020817", color: "white", padding: "12px 14px" }} />
+                            </label>
+                        </>
+                    )}
 
                     <label style={{ display: "grid", gap: 8 }}>
                         <span style={{ color: "#cbd5e1" }}>Terminal code</span>
                         <input value={code} onChange={(event) => setCode(event.target.value)} placeholder="CHEFU-ABCD" style={{ borderRadius: 10, border: "1px solid #475569", background: "#020817", color: "white", padding: "12px 14px", letterSpacing: 1.5 }} />
                     </label>
 
+                    {mfaPendingCredential ? (
+                        <label style={{ display: "grid", gap: 8 }}>
+                            <span style={{ color: "#cbd5e1" }}>Authenticator code</span>
+                            <input
+                                autoComplete="one-time-code"
+                                inputMode="numeric"
+                                maxLength={6}
+                                value={mfaCode}
+                                onChange={(event) =>
+                                    setMfaCode(event.target.value.replace(/\D/g, "").slice(0, 6))
+                                }
+                                placeholder="000000"
+                                style={{ borderRadius: 10, border: "1px solid #475569", background: "#020817", color: "white", padding: "12px 14px", letterSpacing: 2 }}
+                            />
+                        </label>
+                    ) : null}
+
                     <button disabled={status === "submitting"} type="submit" style={{ marginTop: 8, border: "none", padding: "12px 16px", borderRadius: 10, background: "#2563eb", color: "white", fontWeight: 700, cursor: "pointer", opacity: status === "submitting" ? 0.7 : 1 }}>
-                        {status === "submitting" ? "Finishing…" : "Finish sign-in"}
+                        {status === "submitting"
+                            ? "Finishing…"
+                            : mfaPendingCredential
+                              ? "Verify and finish sign-in"
+                              : "Finish sign-in"}
                     </button>
                 </form>
             </div>

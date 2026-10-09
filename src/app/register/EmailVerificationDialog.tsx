@@ -16,6 +16,7 @@ export function EmailVerificationDialog({
     initialResendsRemaining,
     attemptsRemaining,
     verificationMessage,
+    resetCodeKey,
     onCancel,
     onSubmit,
     onResend,
@@ -26,6 +27,7 @@ export function EmailVerificationDialog({
     initialResendsRemaining: number;
     attemptsRemaining: number;
     verificationMessage: string;
+    resetCodeKey: number;
     onCancel: () => void;
     onSubmit: (code: string) => void;
     onResend: () => Promise<{
@@ -48,6 +50,12 @@ export function EmailVerificationDialog({
         );
         return () => window.clearTimeout(timer);
     }, [resendCooldown]);
+
+    useEffect(() => {
+        if (resetCodeKey === 0) return;
+        setCode("");
+        refs.current[0]?.focus();
+    }, [resetCodeKey]);
 
     async function resendCode() {
         if (isSubmitting || resendCooldown > 0 || resendsRemaining <= 0) return;

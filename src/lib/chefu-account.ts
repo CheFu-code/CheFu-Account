@@ -96,28 +96,95 @@ export function preserveAuthParams(
     return query ? `${path}?${query}` : path;
 }
 
-export async function syncChefuAccountSession(idToken: string, appId: ChefuAppId) {
-    const response = await fetch(apiUrl("/auth/session"), {
+export class MfaRequiredLoginError extends Error {
+    constructor(
+        public readonly pendingCredential: string,
+        public readonly enrollmentId: string,
+    ) {
+        super("Multi-factor authentication is required.");
+        this.name = "MfaRequiredLoginError";
+    }
+}
+
+export async function loginWithPassword(
+    email: string,
+    password: string,
+    appId: ChefuAppId,
+) {
+    const response = await fetch(apiUrl("/auth/session/password"), {
         method: "POST",
         headers: {
-            Authorization: `Bearer ${idToken}`,
+            "Content-Type": "application/json",
             [CHEFU_APP_HEADER]: appId,
         },
         credentials: "include",
+        body: JSON.stringify({ email, password }),
     });
+    const result = (await response.json().catch(() => ({}))) as {
+        error?: string;
+        message?: string;
+        mfaRequired?: boolean;
+        mfaPendingCredential?: string;
+        mfaInfo?: Array<{
+            mfaEnrollmentId?: string;
+            factorId?: string;
+        }>;
+        retryAfter?: number;
+        requestId?: string;
+    };
 
     if (!response.ok) {
-        const data = (await response.json().catch(() => ({}))) as {
-            error?: string;
-            message?: string;
-            requestId?: string;
-        };
-        const message =
-            data.error || data.message || "Unable to start your account session. Please try signing in again.";
-        const requestId = data.requestId ? ` Request ID: ${data.requestId}` : "";
+        if (result.mfaRequired) {
+            const totpFactor = result.mfaInfo?.find((factor) => factor.factorId === "totp");
+            if (!result.mfaPendingCredential || !totpFactor?.mfaEnrollmentId) {
+                throw new Error("The server could not start multi-factor sign-in. Please try again.");
+            }
+            throw new MfaRequiredLoginError(
+                result.mfaPendingCredential,
+                totpFactor.mfaEnrollmentId,
+            );
+        }
+        if (response.status === 401) {
+            throw new Error("Invalid email or password.");
+        }
+        if (response.status === 429 && typeof result.retryAfter === "number") {
+            throw new Error(
+                `Too many login attempts. Please try again in ${result.retryAfter} seconds.`,
+            );
+        }
 
+        const message =
+            result.error ||
+            result.message ||
+            "Unable to sign in. Please try again.";
+        const requestId = result.requestId ? ` Request ID: ${result.requestId}` : "";
         throw new Error(`${message}${requestId}`);
     }
+}
+
+export async function completePasswordMfaSession(
+    email: string,
+    pendingCredential: string,
+    enrollmentId: string,
+    verificationCode: string,
+    appId: ChefuAppId,
+) {
+    const response = await fetch(apiUrl("/auth/session/mfa"), {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            [CHEFU_APP_HEADER]: appId,
+        },
+        credentials: "include",
+        body: JSON.stringify({
+            email,
+            mfaPendingCredential: pendingCredential,
+            mfaEnrollmentId: enrollmentId,
+            verificationCode,
+        }),
+    });
+
+    if (!response.ok) throw new Error(await readApiError(response));
 }
 
 export async function sendEmailVerificationCode(
@@ -169,12 +236,15 @@ export async function verifyEmailVerificationCode(
     code: string,
     password: string,
     displayName: string,
+    appId: ChefuAppId,
 ) {
     const response = await fetch(apiUrl("/auth/email-verification/verify"), {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
+            [CHEFU_APP_HEADER]: appId,
         },
+        credentials: "include",
         body: JSON.stringify({ email, code, password, displayName }),
     });
     if (!response.ok) {

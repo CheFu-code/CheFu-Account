@@ -1,12 +1,7 @@
-import {
-  signInWithCustomToken,
-  type UserCredential,
-} from "firebase/auth";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { startAuthentication } from "@simplewebauthn/browser";
-import { auth } from "../../lib/firebase";
-import { apiUrl } from "../../lib/chefu-account";
+import { apiUrl, type ChefuAppId } from "../../lib/chefu-account";
 
 export type PasskeySignInState = {
   isAuthenticating: boolean;
@@ -19,16 +14,19 @@ export function usePasskeySignIn() {
   });
 
   const signInWithPasskey = useCallback(
-    async (): Promise<UserCredential | null> => {
+    async (appId: ChefuAppId): Promise<boolean> => {
       try {
         setState({ isAuthenticating: true, error: undefined });
 
         // Step 1: Get authentication options
         const optionsResponse = await fetch(
-          apiUrl("/auth/passkey/authenticate/options"),
+          apiUrl("/auth/passkey/session/options"),
           {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              "x-chefu-app": appId,
+            },
           },
         );
 
@@ -43,10 +41,14 @@ export function usePasskeySignIn() {
 
         // Step 3: Verify authentication with server
         const verifyResponse = await fetch(
-          apiUrl("/auth/passkey/authenticate/verify"),
+          apiUrl("/auth/passkey/session/verify"),
           {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              "x-chefu-app": appId,
+            },
+            credentials: "include",
             body: JSON.stringify({
               challengeId,
               response: assertionResponse,
@@ -58,13 +60,8 @@ export function usePasskeySignIn() {
           throw new Error("Failed to verify authentication");
         }
 
-        const { customToken } = await verifyResponse.json();
-
-        // Step 4: Sign in with Firebase using custom token
-        const credential = await signInWithCustomToken(auth, customToken);
-        
         setState({ isAuthenticating: false });
-        return credential;
+        return true;
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Passkey sign-in failed";
@@ -73,7 +70,7 @@ export function usePasskeySignIn() {
           error: message,
         });
         toast.error(message);
-        return null;
+        return false;
       }
     },
     [],

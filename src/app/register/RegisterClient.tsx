@@ -1,11 +1,9 @@
 "use client";
 
-import { signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { AccountAuthScreen } from "../_components/AccountAuthScreen";
-import { auth } from "../../lib/firebase";
 import {
     chefuAppLabel,
     EmailVerificationCodeError,
@@ -13,7 +11,6 @@ import {
     resolveChefuApp,
     safeReturnTo,
     sendEmailVerificationCode,
-    syncChefuAccountSession,
     verifyEmailVerificationCode,
 } from "../../lib/chefu-account";
 import { EmailVerificationDialog } from "./EmailVerificationDialog";
@@ -32,6 +29,7 @@ export function RegisterClient() {
     const [resendsRemaining, setResendsRemaining] = useState(0);
     const [verificationAttemptsRemaining, setVerificationAttemptsRemaining] = useState(3);
     const [verificationMessage, setVerificationMessage] = useState("");
+    const [verificationCodeResetKey, setVerificationCodeResetKey] = useState(0);
 
     const appId = resolveChefuApp(searchParams.get("app"));
     const appName = chefuAppLabel(appId);
@@ -106,6 +104,7 @@ export function RegisterClient() {
                 initialResendsRemaining={resendsRemaining}
                 attemptsRemaining={verificationAttemptsRemaining}
                 verificationMessage={verificationMessage}
+                resetCodeKey={verificationCodeResetKey}
                 onCancel={() => {
                     setVerificationOpen(false);
                     setPassword("");
@@ -145,17 +144,13 @@ export function RegisterClient() {
                             code,
                             password,
                             `${firstName.trim()} ${lastName.trim()}`,
+                            appId,
                         );
-                        const credential = await signInWithEmailAndPassword(
-                            auth,
-                            verificationEmail,
-                            password,
-                        );
-                        await syncChefuAccountSession(await credential.user.getIdToken(true), appId);
                         toast.success(`Account created for ${appName}.`);
                         completeAuthRedirect(fromPath, router.replace);
                     } catch (error) {
                         if (error instanceof EmailVerificationCodeError) {
+                            setVerificationCodeResetKey((key) => key + 1);
                             setVerificationAttemptsRemaining(error.attemptsRemaining);
                             setVerificationMessage(
                                 error.attemptsRemaining > 0

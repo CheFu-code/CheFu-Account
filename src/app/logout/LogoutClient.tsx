@@ -1,9 +1,7 @@
 "use client";
 
-import { signOut } from "firebase/auth";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { auth } from "../../lib/firebase";
 import {
     chefuAppLabel,
     clearChefuAccountSession,
@@ -20,9 +18,8 @@ export function LogoutClient() {
 
     const signOutEverywhere = useCallback(async () => {
         setLogoutError("");
-        const [serverResult, localResult] = await Promise.allSettled([
+        const [serverResult] = await Promise.allSettled([
             clearChefuAccountSession(),
-            signOut(auth),
         ]);
 
         if (serverResult.status === "rejected") {
@@ -33,13 +30,6 @@ export function LogoutClient() {
             );
             return;
         }
-        if (localResult.status === "rejected") {
-            setLogoutError(
-                "Shared sessions were revoked, but this app could not clear its local sign-in. Please retry.",
-            );
-            return;
-        }
-
         const returnTo = safeReturnTo(searchParams.get("returnTo"), appId, "/login");
         window.location.replace(returnTo);
     }, [appId, searchParams]);

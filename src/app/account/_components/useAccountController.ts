@@ -1,6 +1,5 @@
 "use client";
 
-import { signOut, updateProfile } from "firebase/auth";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { toast } from "sonner";
@@ -22,7 +21,6 @@ import {
     requestPasswordResetEmail,
     resolveChefuApp,
 } from "../../../lib/chefu-account";
-import { auth } from "../../../lib/firebase";
 
 const isDevPreview =
     process.env.NODE_ENV !== "production" &&
@@ -309,18 +307,6 @@ export function useAccountController() {
                 throw new Error(message || "Your account could not be updated.");
             }
 
-            const updatedDisplayName =
-                activeSection === "personal-info"
-                    ? profileUpdates.fullname ||
-                      (profileUpdates.firstName !== undefined
-                          ? `${profileUpdates.firstName} ${profileUpdates.lastName}`
-                          : undefined)
-                    : undefined;
-            if (auth.currentUser && updatedDisplayName) {
-                await updateProfile(auth.currentUser, {
-                    displayName: updatedDisplayName,
-                }).catch(() => undefined);
-            }
 
             hydrateAccount(data as AccountResponse);
             toast.success("Account updated.");
@@ -349,14 +335,12 @@ export function useAccountController() {
                 "/account",
             );
             try {
-                const idToken = await auth.currentUser?.getIdToken(true);
                 const activityResponse = await fetch(apiUrl("/auth/security-activity"), {
                     method: "POST",
                     credentials: "include",
                     headers: {
                         "Content-Type": "application/json",
                         "x-chefu-app": appId,
-                        ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
                     },
                     body: JSON.stringify({
                         eventType: "password_reset_email_sent",
@@ -393,17 +377,11 @@ export function useAccountController() {
         setIsSigningOut(true);
 
         try {
-            const [serverResult, localResult] = await Promise.allSettled([
+            const [serverResult] = await Promise.allSettled([
                 clearChefuAccountSession(),
-                signOut(auth),
             ]);
             if (serverResult.status === "rejected") {
                 throw serverResult.reason;
-            }
-            if (localResult.status === "rejected") {
-                throw new Error(
-                    "Shared sessions were revoked, but this app could not clear its local sign-in.",
-                );
             }
             window.location.replace("/login?returnTo=/account");
         } catch (error) {
@@ -430,11 +408,6 @@ export function useAccountController() {
                 },
             };
         });
-        if (auth.currentUser) {
-            updateProfile(auth.currentUser, { photoURL: imageUrl }).catch(
-                () => undefined,
-            );
-        }
     }
 
     function hydrateAccount(data: AccountResponse) {

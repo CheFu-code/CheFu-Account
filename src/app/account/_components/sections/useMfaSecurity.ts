@@ -1,31 +1,13 @@
 "use client";
 
 import QRCode from "qrcode";
-import {
-    EmailAuthProvider,
-    getMultiFactorResolver,
-    multiFactor,
-    reauthenticateWithCredential,
-    sendEmailVerification,
-    TotpMultiFactorGenerator,
-    updatePassword,
-    type MultiFactorResolver,
-    type TotpSecret,
-} from "firebase/auth";
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { toast } from "sonner";
-import { useFirebaseAuthState } from "@/hooks/useFirebaseAuthState";
 import type { AccountResponse } from "../account-types";
-import { apiUrl, syncChefuAccountSession, type ChefuAppId } from "../../../../lib/chefu-account";
-import { auth } from "../../../../lib/firebase";
+import { apiUrl, type ChefuAppId } from "../../../../lib/chefu-account";
 import {
     accountLocationLabel,
     formatApiError,
-    isMfaRequiredError,
-    isRecentLoginRequiredError,
-    readFirebaseMfaError,
-    readReauthenticationError,
-    securitySummaryFromFirebaseUser,
     type PendingMfaAction,
     type SecuritySummary,
 } from "./mfa-security-utils";
@@ -35,21 +17,30 @@ type UseMfaSecurityOptions = {
     appId: ChefuAppId;
 };
 
+type ApiError = {
+    error?: string;
+    message?: string;
+    requestId?: string;
+};
+
+type ReauthenticationResult = ApiError & {
+    mfaRequired?: boolean;
+    mfaPendingCredential?: string;
+    mfaInfo?: Array<{ mfaEnrollmentId?: string; displayName?: string }>;
+    reauthToken?: string;
+};
+
 export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
-    const {
-        isReady: firebaseReady,
-        refresh: refreshFirebaseUser,
-        user: firebaseUser,
-    } = useFirebaseAuthState();
     const [summary, setSummary] = useState<SecuritySummary | null>(null);
+    const [isReady, setIsReady] = useState(false);
     const [codes, setCodes] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isGeneratingCodes, setIsGeneratingCodes] = useState(false);
     const [isSendingVerification, setIsSendingVerification] = useState(false);
-    const [totpSecret, setTotpSecret] = useState<TotpSecret | null>(null);
     const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
     const [secretText, setSecretText] = useState("");
     const [totpCode, setTotpCode] = useState("");
+    const [totpSetupId, setTotpSetupId] = useState("");
     const [isStartingTotp, setIsStartingTotp] = useState(false);
     const [isVerifyingTotp, setIsVerifyingTotp] = useState(false);
     const [isDisablingTotp, setIsDisablingTotp] = useState(false);
@@ -59,138 +50,117 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
     const [reauthCode, setReauthCode] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmNewPassword, setConfirmNewPassword] = useState("");
-    const [reauthResolver, setReauthResolver] = useState<MultiFactorResolver | null>(null);
+    const [reauthPendingCredential, setReauthPendingCredential] = useState("");
+    const [reauthEnrollmentId, setReauthEnrollmentId] = useState("");
+    const [reauthToken, setReauthToken] = useState("");
     const [isReauthenticating, setIsReauthenticating] = useState(false);
 
-    const currentUser = firebaseUser ?? auth.currentUser;
+    const currentUser = useMemo(
+        () => ({
+            email: account.user.email,
+            displayName: account.profile.fullname || account.user.displayName || "",
+        }),
+        [account.profile.fullname, account.user.displayName, account.user.email],
+    );
     const totpFactorUid = useMemo(
         () =>
-            summary?.enrolledFactors.find(
-                (factor) => factor.factorId === TotpMultiFactorGenerator.FACTOR_ID,
-            )?.uid,
+            summary?.enrolledFactors.find((factor) => factor.factorId === "totp")?.uid,
         [summary?.enrolledFactors],
     );
 
-    const loadSecuritySummary = useCallback(async (idToken?: string) => {
-        const headers: Record<string, string> = { "x-chefu-app": appId };
-        if (idToken) headers.Authorization = `Bearer ${idToken}`;
-
+    const loadSecuritySummary = useCallback(async () => {
         setIsLoading(true);
         try {
             const response = await fetch(apiUrl("/auth/security"), {
                 credentials: "include",
-                headers,
+                headers: { "x-chefu-app": appId },
             });
-
-            if (!response.ok) throw new Error("Could not load security status.");
-            setSummary((await response.json()) as SecuritySummary);
+            const data = (await response.json().catch(() => null)) as SecuritySummary | ApiError | null;
+            if (!response.ok) {
+                throw new Error(formatApiError(data as ApiError | null, "Could not load security status."));
+            }
+            setSummary(data as SecuritySummary);
         } catch (error) {
             toast.error("Unable to load security status.", {
                 description: error instanceof Error ? error.message : "Please try again.",
             });
         } finally {
             setIsLoading(false);
+            setIsReady(true);
         }
-
     }, [appId]);
-
-    async function recordSecurityActivity(
-        eventType:
-            | "password_changed"
-            | "password_reset_email_sent"
-            | "mfa_enabled"
-            | "mfa_disabled",
-    ) {
-        try {
-            const idToken = await (auth.currentUser ?? currentUser)?.getIdToken(true);
-            const response = await fetch(apiUrl("/auth/security-activity"), {
-                method: "POST",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                    "x-chefu-app": appId,
-                    ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
-                },
-                body: JSON.stringify({ eventType }),
-            });
-            if (!response.ok) {
-                throw new Error("Security activity could not be recorded.");
-            }
-        } catch (error) {
-            toast.warning("Security change completed, but its activity could not be recorded.", {
-                description: error instanceof Error ? error.message : "Please refresh and try again.",
-            });
-        }
-    }
-
-    async function notifyPasswordChanged(
-        user: NonNullable<typeof currentUser>,
-        idToken: string,
-    ) {
-        try {
-            const response = await fetch(apiUrl("/email/password-changed"), {
-                method: "POST",
-                credentials: "include",
-                headers: {
-                    Authorization: `Bearer ${idToken}`,
-                    "Content-Type": "application/json",
-                    "x-chefu-app": appId,
-                },
-                body: JSON.stringify({
-                    deviceInfo: navigator.userAgent,
-                    location: accountLocationLabel(account.profile),
-                    userName: account.profile.fullname || user.displayName || undefined,
-                }),
-            });
-            const data = (await response.json().catch(() => null)) as {
-                reason?: string;
-                sent?: boolean;
-            } | null;
-            if (!response.ok || data?.sent === false) {
-                throw new Error(data?.reason || "Password-change email could not be sent.");
-            }
-        } catch (error) {
-            toast.warning("Password changed, but the notification email could not be sent.", {
-                description:
-                    error instanceof Error ? error.message : "Please try again later.",
-            });
-        }
-    }
 
     useEffect(() => {
         void loadSecuritySummary();
     }, [loadSecuritySummary]);
 
+    async function requestReauthentication(action: PendingMfaAction) {
+        setPendingReauthAction(action);
+        setReauthPassword("");
+        setReauthCode("");
+        setReauthPendingCredential("");
+        setReauthEnrollmentId("");
+        setReauthToken("");
+        if (action === "change-password") {
+            setNewPassword("");
+            setConfirmNewPassword("");
+        }
+        toast.info("Confirm your sign-in to continue.");
+    }
+
+    function resetReauthentication() {
+        setPendingReauthAction(null);
+        setReauthPassword("");
+        setReauthCode("");
+        setReauthPendingCredential("");
+        setReauthEnrollmentId("");
+        setReauthToken("");
+        setNewPassword("");
+        setConfirmNewPassword("");
+    }
+
+    async function notifyPasswordChanged() {
+        const response = await fetch(apiUrl("/email/password-changed"), {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+                "x-chefu-app": appId,
+            },
+            body: JSON.stringify({
+                deviceInfo: navigator.userAgent,
+                location: accountLocationLabel(account.profile),
+                userName: currentUser.displayName || undefined,
+            }),
+        });
+        const data = (await response.json().catch(() => null)) as {
+            reason?: string;
+            sent?: boolean;
+        } | null;
+        if (!response.ok || data?.sent === false) {
+            throw new Error(data?.reason || "Password-change email could not be sent.");
+        }
+    }
+
     async function generateBackupCodes(
         successMessage = "Recovery codes generated.",
-        idToken?: string,
     ) {
-        const bearerToken = idToken || (await getFreshIdToken());
-        const headers: Record<string, string> = { "x-chefu-app": appId };
-        if (bearerToken) headers.Authorization = `Bearer ${bearerToken}`;
-
         setIsGeneratingCodes(true);
         try {
             const response = await fetch(apiUrl("/auth/mfa/backup-codes"), {
                 method: "POST",
                 credentials: "include",
-                headers,
+                headers: { "x-chefu-app": appId },
             });
-            const data = (await response.json().catch(() => null)) as {
-                codes?: string[];
-                error?: string;
-                message?: string;
-                remaining?: number;
-                requestId?: string;
-            } | null;
-
+            const data = (await response.json().catch(() => null)) as
+                | { codes?: string[]; error?: string; message?: string; requestId?: string }
+                | null;
             if (!response.ok || !data?.codes) {
                 throw new Error(formatApiError(data, "Could not generate recovery codes."));
             }
-
             setCodes(data.codes);
             toast.success(successMessage);
-            await loadSecuritySummary(bearerToken);
+            await loadSecuritySummary();
         } catch (error) {
             toast.error("Unable to generate recovery codes.", {
                 description: error instanceof Error ? error.message : "Please try again.",
@@ -201,15 +171,24 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
     }
 
     async function sendVerificationEmail() {
-        const user = currentUser;
-        if (!user) {
-            toast.error("Please sign in again before sending verification email.");
-            return;
-        }
-
         setIsSendingVerification(true);
         try {
-            await sendEmailVerification(user);
+            const response = await fetch(apiUrl("/auth/security/email-verification"), {
+                method: "POST",
+                credentials: "include",
+                headers: { "x-chefu-app": appId },
+            });
+            const data = (await response.json().catch(() => null)) as
+                | { sent?: boolean; verified?: boolean; error?: string; message?: string }
+                | null;
+            if (!response.ok) {
+                throw new Error(formatApiError(data, "Unable to send verification email."));
+            }
+            if (data?.verified) {
+                await loadSecuritySummary();
+                toast.success("Your email is already verified.");
+                return;
+            }
             toast.success("Verification email sent.", {
                 description: `Check ${account.user.email}.`,
             });
@@ -223,82 +202,82 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
     }
 
     async function startTotpSetup() {
-        const user = currentUser;
-        if (!user?.email) {
-            toast.error(
-                firebaseReady
-                    ? "Please sign in again before enabling 2FA."
-                    : "Still checking your sign-in session. Try again in a moment.",
-            );
+        if (!summary?.emailVerified) {
+            toast.error("Verify your email before enabling 2FA.");
             return;
         }
+        await requestReauthentication("start-setup");
+    }
 
+    async function createTotpSetup(token: string) {
         setIsStartingTotp(true);
         try {
-            const session = await multiFactor(user).getSession();
-            const secret = await TotpMultiFactorGenerator.generateSecret(session);
-            const qrUrl = secret.generateQrCodeUrl(user.email, "My Account");
-            const dataUrl = await QRCode.toDataURL(qrUrl, { margin: 1, width: 220 });
-
-            setTotpSecret(secret);
+            const response = await fetch(apiUrl("/auth/security/totp/setup"), {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-chefu-app": appId,
+                },
+                body: JSON.stringify({ reauthToken: token }),
+            });
+            const data = (await response.json().catch(() => null)) as
+                | { setupId?: string; secret?: string; otpauthUrl?: string; error?: string; message?: string }
+                | null;
+            if (!response.ok || !data?.setupId || !data.secret || !data.otpauthUrl) {
+                throw new Error(formatApiError(data, "Unable to start authenticator setup."));
+            }
+            const dataUrl = await QRCode.toDataURL(data.otpauthUrl, { margin: 1, width: 220 });
+            setTotpSetupId(data.setupId);
+            setSecretText(data.secret);
             setQrDataUrl(dataUrl);
-            setSecretText(secret.secretKey);
             setTotpCode("");
         } catch (error) {
-            if (isRecentLoginRequiredError(error)) {
-                requestReauthentication("start-setup");
-                return;
-            }
-
             toast.error("Unable to start 2FA setup.", {
-                description: readFirebaseMfaError(error),
+                description: error instanceof Error ? error.message : "Please try again.",
             });
+            resetReauthentication();
         } finally {
             setIsStartingTotp(false);
         }
     }
 
     async function verifyTotpSetup() {
-        const user = currentUser;
-
-        if (!user || !totpSecret) {
-            toast.error("Please restart 2FA setup.");
-            return;
-        }
-
-        if (totpCode.length !== 6) {
+        if (!totpSetupId || !reauthToken || totpCode.length !== 6) {
             toast.error("Enter the 6-digit authenticator code.");
             return;
         }
-
         setIsVerifyingTotp(true);
         try {
-            const assertion = TotpMultiFactorGenerator.assertionForEnrollment(
-                totpSecret,
-                totpCode,
-            );
-
-            await multiFactor(user).enroll(assertion, "My Account TOTP");
-            const refreshedUser = await refreshFirebaseUser();
-            const enrolledUser = refreshedUser ?? auth.currentUser ?? user;
-            const idToken = await enrolledUser.getIdToken(true);
-            await syncChefuSession(idToken);
-            await recordSecurityActivity("mfa_enabled");
-            setSummary((currentSummary) =>
-                securitySummaryFromFirebaseUser(enrolledUser, currentSummary),
-            );
-            cancelTotpSetup();
-            toast.success("2FA enabled.");
-            await notifyMfaChanged("enabled", idToken);
-            await generateBackupCodes("Recovery codes generated.", idToken);
-        } catch (error) {
-            if (isRecentLoginRequiredError(error)) {
-                requestReauthentication("verify-setup");
-                return;
+            const response = await fetch(apiUrl("/auth/security/totp/verify"), {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-chefu-app": appId,
+                },
+                body: JSON.stringify({
+                    setupId: totpSetupId,
+                    reauthToken,
+                    verificationCode: totpCode,
+                }),
+            });
+            const data = (await response.json().catch(() => null)) as
+                | SecuritySummary
+                | ApiError
+                | null;
+            if (!response.ok) {
+                throw new Error(formatApiError(data as ApiError | null, "Unable to enable 2FA."));
             }
-
+            setSummary(data as SecuritySummary);
+            cancelTotpSetup();
+            resetReauthentication();
+            toast.success("2FA enabled.");
+            await notifyMfaChanged("enabled");
+            await generateBackupCodes("Recovery codes generated.");
+        } catch (error) {
             toast.error("Unable to enable 2FA.", {
-                description: readFirebaseMfaError(error),
+                description: error instanceof Error ? error.message : "Check the code and try again.",
             });
         } finally {
             setIsVerifyingTotp(false);
@@ -306,91 +285,81 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
     }
 
     async function disableTotp() {
-        const user = currentUser;
-
-        if (!user || !totpFactorUid) {
+        if (!totpFactorUid) {
             toast.error("No authenticator factor is enrolled for this session.");
             return;
         }
+        await requestReauthentication("disable");
+    }
 
+    async function performTotpDisable(token: string) {
+        if (!totpFactorUid) throw new Error("No authenticator factor is enrolled.");
         setIsDisablingTotp(true);
         try {
-            await multiFactor(user).unenroll(totpFactorUid);
-            const refreshedUser = await refreshFirebaseUser();
-            const idToken = await (refreshedUser ?? auth.currentUser ?? user).getIdToken(true);
-            await syncChefuSession(idToken);
-            await recordSecurityActivity("mfa_disabled");
-            setCodes([]);
-            await loadSecuritySummary(idToken);
-            await notifyMfaChanged("disabled", idToken);
-            toast.success("2FA disabled.");
-        } catch (error) {
-            if (isRecentLoginRequiredError(error)) {
-                requestReauthentication("disable");
-                return;
-            }
-
-            toast.error("Unable to disable 2FA.", {
-                description: readFirebaseMfaError(error),
+            const response = await fetch(apiUrl("/auth/security/totp/disable"), {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-chefu-app": appId,
+                },
+                body: JSON.stringify({ reauthToken: token, factorUid: totpFactorUid }),
             });
+            const data = (await response.json().catch(() => null)) as
+                | SecuritySummary
+                | ApiError
+                | null;
+            if (!response.ok) {
+                throw new Error(formatApiError(data as ApiError | null, "Unable to disable 2FA."));
+            }
+            setSummary(data as SecuritySummary);
+            setCodes([]);
+            toast.success("2FA disabled.");
+            await notifyMfaChanged("disabled");
         } finally {
             setIsDisablingTotp(false);
         }
     }
 
-    function cancelTotpSetup() {
-        setTotpSecret(null);
-        setQrDataUrl(null);
-        setSecretText("");
-        setTotpCode("");
-    }
-
-    function requestReauthentication(action: PendingMfaAction) {
-        setPendingReauthAction(action);
-        setReauthPassword("");
-        setReauthCode("");
-        setReauthResolver(null);
-        if (action === "change-password") {
-            setNewPassword("");
-            setConfirmNewPassword("");
+    async function notifyMfaChanged(action: "enabled" | "disabled") {
+        try {
+            const response = await fetch(apiUrl("/email/mfa-changed"), {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-chefu-app": appId,
+                },
+                body: JSON.stringify({
+                    action,
+                    location: accountLocationLabel(account.profile),
+                    userName: currentUser.displayName || undefined,
+                }),
+            });
+            const data = (await response.json().catch(() => null)) as
+                | { reason?: string; sent?: boolean; error?: string; message?: string }
+                | null;
+            if (!response.ok || data?.sent === false) {
+                throw new Error(data?.reason || data?.message || "Could not send security email.");
+            }
+        } catch (error) {
+            toast.warning("2FA changed, but the security email could not send.", {
+                description: error instanceof Error ? error.message : "Please try again.",
+            });
         }
-        toast.info("Confirm your sign-in to continue.");
     }
 
-    function resetReauthentication() {
-        setPendingReauthAction(null);
-        setReauthPassword("");
-        setReauthCode("");
-        setReauthResolver(null);
-        setNewPassword("");
-        setConfirmNewPassword("");
-    }
-
-    function startPasswordChange() {
-        if (!currentUser?.email) {
-            toast.error("Sign in again before changing your password.");
-            return;
-        }
-        if (!currentUser.providerData.some((provider) => provider.providerId === "password")) {
+    async function startPasswordChange() {
+        if (!summary?.hasPasswordProvider) {
             toast.error("This account does not have a password sign-in. Use password reset to set one.");
             return;
         }
-        requestReauthentication("change-password");
+        await requestReauthentication("change-password");
     }
 
     async function submitReauthentication(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
-
-        const user = currentUser;
-        if (!user?.email || !pendingReauthAction) {
-            toast.error("Your session could not be confirmed. Refresh and try again.");
-            return;
-        }
-
-        if (reauthResolver && reauthCode.length !== 6) {
-            toast.error("Enter the 6-digit authenticator code.");
-            return;
-        }
+        if (!pendingReauthAction) return;
         if (
             pendingReauthAction === "change-password" &&
             (newPassword.length < 8 || newPassword !== confirmNewPassword)
@@ -402,160 +371,88 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
             );
             return;
         }
-
+        if (reauthPendingCredential && reauthCode.length !== 6) {
+            toast.error("Enter the 6-digit authenticator code.");
+            return;
+        }
         setIsReauthenticating(true);
         try {
-            if (reauthResolver) {
-                const totpHint = reauthResolver.hints.find(
-                    (hint) => hint.factorId === TotpMultiFactorGenerator.FACTOR_ID,
-                );
-
-                if (!totpHint) throw new Error("No authenticator factor is available.");
-
-                const assertion = TotpMultiFactorGenerator.assertionForSignIn(
-                    totpHint.uid,
-                    reauthCode,
-                );
-                await reauthResolver.resolveSignIn(assertion);
-            } else {
-                const credential = EmailAuthProvider.credential(user.email, reauthPassword);
-                await reauthenticateWithCredential(user, credential);
+            const response = await fetch(apiUrl("/auth/security/reauthenticate"), {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-chefu-app": appId,
+                },
+                body: JSON.stringify(
+                    reauthPendingCredential
+                        ? {
+                              mfaPendingCredential: reauthPendingCredential,
+                              mfaEnrollmentId: reauthEnrollmentId,
+                              verificationCode: reauthCode,
+                          }
+                        : { password: reauthPassword },
+                ),
+            });
+            const data = (await response.json().catch(() => null)) as ReauthenticationResult | null;
+            if (!response.ok) {
+                throw new Error(formatApiError(data as ApiError | null, "Unable to confirm your sign-in."));
             }
-
-            await refreshFirebaseUser();
-            const action = pendingReauthAction;
-            const passwordToSet = newPassword;
-            resetReauthentication();
-            if (action !== "change-password") toast.success("Sign-in confirmed.");
-            try {
-                await resumeMfaAction(action, passwordToSet);
-            } catch (error) {
-                toast.error(
-                    action === "change-password"
-                        ? "Unable to change your password."
-                        : "Unable to complete the security change.",
-                    {
-                        description: readReauthenticationError(error),
-                    },
-                );
-            }
-        } catch (error) {
-            if (!reauthResolver && isMfaRequiredError(error)) {
-                const resolver = getMultiFactorResolver(auth, error);
-                const totpHint = resolver.hints.find(
-                    (hint) => hint.factorId === TotpMultiFactorGenerator.FACTOR_ID,
-                );
-
-                if (!totpHint) {
-                    toast.error("No authenticator factor is available for this account.");
-                    return;
+            if (data?.mfaRequired) {
+                const factor = data.mfaInfo?.find((item) => item.mfaEnrollmentId);
+                if (!data.mfaPendingCredential || !factor?.mfaEnrollmentId) {
+                    throw new Error("No authenticator factor is available for this account.");
                 }
-
-                setReauthResolver(resolver);
+                setReauthPendingCredential(data.mfaPendingCredential);
+                setReauthEnrollmentId(factor.mfaEnrollmentId);
                 setReauthCode("");
                 toast.info("Enter your authenticator code to finish confirming.");
                 return;
             }
-
-            toast.error("Unable to confirm your sign-in.", {
-                description: readReauthenticationError(error),
-            });
-        } finally {
-            setIsReauthenticating(false);
-        }
-    }
-
-    async function resumeMfaAction(action: PendingMfaAction, passwordToSet?: string) {
-        if (action === "change-password") {
-            const user = currentUser;
-            if (!user) throw new Error("Sign in again before changing your password.");
-            await updatePassword(user, passwordToSet || "");
-            const refreshedUser = await refreshFirebaseUser();
-            const activeUser = refreshedUser ?? auth.currentUser ?? user;
-            const idToken = await activeUser.getIdToken(true);
-            await syncChefuSession(idToken);
-            await recordSecurityActivity("password_changed");
-            await notifyPasswordChanged(activeUser, idToken);
-            setNewPassword("");
-            setConfirmNewPassword("");
-            toast.success("Your password has been changed.");
-            return;
-        }
-        if (action === "start-setup") {
-            await startTotpSetup();
-            return;
-        }
-
-        if (action === "verify-setup") {
-            await verifyTotpSetup();
-            return;
-        }
-
-        await disableTotp();
-    }
-
-    async function notifyMfaChanged(action: "enabled" | "disabled", idToken: string) {
-        try {
-            const response = await fetch(apiUrl("/email/mfa-changed"), {
-                method: "POST",
+            if (!data?.reauthToken) throw new Error("The server did not confirm your sign-in.");
+            setReauthToken(data.reauthToken);
+            const action = pendingReauthAction;
+            if (action === "start-setup") {
+                await createTotpSetup(data.reauthToken);
+                toast.success("Sign-in confirmed. Scan the QR code to finish 2FA setup.");
+                return;
+            }
+            if (action === "disable") {
+                await performTotpDisable(data.reauthToken);
+                resetReauthentication();
+                return;
+            }
+            const passwordResponse = await fetch(apiUrl("/auth/security/password"), {
+                method: "PATCH",
                 credentials: "include",
                 headers: {
-                    Authorization: `Bearer ${idToken}`,
                     "Content-Type": "application/json",
                     "x-chefu-app": appId,
                 },
                 body: JSON.stringify({
-                    action,
-                    location: accountLocationLabel(account.profile),
-                    userName: account.profile.fullname || account.user.displayName || undefined,
+                    reauthToken: data.reauthToken,
+                    newPassword,
                 }),
             });
-            const data = (await response.json().catch(() => null)) as {
-                error?: string;
-                message?: string;
-                reason?: string;
-                requestId?: string;
-                sent?: boolean;
-            } | null;
-
-            if (!response.ok) {
-                throw new Error(formatApiError(data, "Could not send security email."));
+            const passwordResult = (await passwordResponse.json().catch(() => null)) as ApiError | null;
+            if (!passwordResponse.ok) {
+                throw new Error(formatApiError(passwordResult, "Unable to change your password."));
             }
-
-            if (
-                data?.sent === false &&
-                data.reason !== "Security emails are disabled for this account."
-            ) {
-                toast.warning("2FA changed, but the security email could not send.", {
-                    description: data.reason || "Please check your email settings.",
+            resetReauthentication();
+            toast.success("Your password has been changed.");
+            try {
+                await notifyPasswordChanged();
+            } catch (error) {
+                toast.warning("Password changed, but the notification email could not be sent.", {
+                    description: error instanceof Error ? error.message : "Please try again later.",
                 });
             }
         } catch (error) {
-            toast.warning("2FA changed, but the security email could not send.", {
+            toast.error("Unable to confirm your sign-in.", {
                 description: error instanceof Error ? error.message : "Please try again.",
             });
-        }
-    }
-
-    async function getFreshIdToken() {
-        const user = currentUser;
-        if (!user) return "";
-
-        try {
-            return await user.getIdToken(true);
-        } catch {
-            return "";
-        }
-    }
-
-    async function syncChefuSession(idToken: string) {
-        try {
-            await syncChefuAccountSession(idToken, appId);
-        } catch (error) {
-            toast.warning("Two-factor authentication was updated, but your session could not be refreshed. Please sign in again.", {
-                description:
-                    error instanceof Error ? error.message : "Sign in again if the page feels stale.",
-            });
+        } finally {
+            setIsReauthenticating(false);
         }
     }
 
@@ -565,12 +462,20 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         toast.success("Recovery codes copied.");
     }
 
+    function cancelTotpSetup() {
+        setTotpSetupId("");
+        setQrDataUrl(null);
+        setSecretText("");
+        setTotpCode("");
+    }
+
     return {
         codes,
         copyCodes,
         currentUser,
-        firebaseReady,
+        sessionReady: isReady,
         generateBackupCodes,
+        hasPasswordProvider: summary?.hasPasswordProvider || false,
         isDisablingTotp,
         isGeneratingCodes,
         isLoading,
@@ -585,7 +490,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         isChangingPassword: pendingReauthAction === "change-password",
         newPassword,
         reauthenticationOpen: Boolean(pendingReauthAction),
-        reauthenticationRequiresMfa: Boolean(reauthResolver),
+        reauthenticationRequiresMfa: Boolean(reauthPendingCredential),
         resetReauthentication,
         secretText,
         sendVerificationEmail,
@@ -599,7 +504,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         submitReauthentication,
         totpCode,
         totpFactorUid,
-        totpSetup: totpSecret && qrDataUrl && secretText ? { qrDataUrl, secretText } : null,
+        totpSetup: qrDataUrl && secretText ? { qrDataUrl, secretText } : null,
         verifyTotpSetup,
         cancelTotpSetup,
         disableTotp,

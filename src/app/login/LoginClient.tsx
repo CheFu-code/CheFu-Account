@@ -1,33 +1,21 @@
 "use client";
 
-import { FirebaseError } from "firebase/app";
-import {
-    getMultiFactorResolver,
-    onAuthStateChanged,
-    signInWithEmailAndPassword,
-    signOut,
-    TotpMultiFactorGenerator,
-    type MultiFactorError,
-    type MultiFactorResolver,
-} from "firebase/auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
-    useCallback,
-    useEffect,
     useMemo,
-    useRef,
     useState,
     type FormEvent,
 } from "react";
 import { toast } from "sonner";
 import {
     chefuAppLabel,
+    completePasswordMfaSession,
+    loginWithPassword,
+    MfaRequiredLoginError,
     preserveAuthParams,
     resolveChefuApp,
     safeReturnTo,
-    syncChefuAccountSession,
 } from "../../lib/chefu-account";
-import { auth } from "../../lib/firebase";
 import { AccountAuthScreen } from "../_components/AccountAuthScreen";
 import { MfaChallengeDialog } from "./MfaChallengeDialog";
 import { usePasskeySignIn } from "./usePasskeySignIn";
@@ -40,8 +28,8 @@ export function LoginClient() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [mfaCode, setMfaCode] = useState("");
     const [mfaEmail, setMfaEmail] = useState("");
-    const [mfaResolver, setMfaResolver] = useState<MultiFactorResolver | null>(null);
-    const attemptedExistingSession = useRef(false);
+    const [mfaPendingCredential, setMfaPendingCredential] = useState("");
+    const [mfaEnrollmentId, setMfaEnrollmentId] = useState("");
     const passkey = usePasskeySignIn();
 
     const appId = resolveChefuApp(searchParams.get("app"));
@@ -64,36 +52,6 @@ export function LoginClient() {
         [searchParams],
     );
 
-    const createBackendSession = useCallback(
-        async (user: NonNullable<typeof auth.currentUser>) => {
-            const idToken = await user.getIdToken(true);
-            await syncChefuAccountSession(idToken, appId);
-            toast.success(`Signed in to ${appName}.`);
-            completeAuthRedirect(fromPath, router.replace);
-        },
-        [appId, appName, fromPath, router],
-    );
-
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (!user || isSubmitting || attemptedExistingSession.current) return;
-
-            attemptedExistingSession.current = true;
-            setIsSubmitting(true);
-            createBackendSession(user)
-                .then(() => setIsSubmitting(false))
-                .catch(async (error) => {
-                    await signOut(auth).catch(() => undefined);
-                    toast.error(`Unable to continue to ${appName}.`, {
-                        description: readContinuationError(error),
-                    });
-                    setIsSubmitting(false);
-                });
-        });
-
-        return () => unsubscribe();
-    }, [appName, createBackendSession, isSubmitting]);
-
     const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
@@ -104,36 +62,19 @@ export function LoginClient() {
 
         setIsSubmitting(true);
 
-        let signedIn = false;
-
         try {
-            const credential = await signInWithEmailAndPassword(auth, email, password);
-            signedIn = true;
-            await createBackendSession(credential.user);
+            await loginWithPassword(email, password, appId);
+            toast.success(`Signed in to ${appName}.`);
+            completeAuthRedirect(fromPath, router.replace);
         } catch (error) {
-            if (signedIn) {
-                attemptedExistingSession.current = true;
-                await signOut(auth).catch(() => undefined);
-                toast.error(`Unable to continue to ${appName}.`, {
-                    description: readContinuationError(error),
-                });
-            } else if (isMfaRequiredError(error)) {
-                const resolver = getMultiFactorResolver(auth, error);
-                const totpHint = resolver.hints.find(
-                    (hint) => hint.factorId === TotpMultiFactorGenerator.FACTOR_ID,
-                );
-
-                if (!totpHint) {
-                    toast.error("This account requires MFA, but no authenticator factor is available.");
-                    return;
-                }
-
-                setMfaResolver(resolver);
+            if (error instanceof MfaRequiredLoginError) {
+                setMfaPendingCredential(error.pendingCredential);
+                setMfaEnrollmentId(error.enrollmentId);
                 setMfaEmail(email);
                 setMfaCode("");
                 toast.info("Enter your authenticator code to finish signing in.");
             } else {
-                toast.error(readFirebaseLoginError(error));
+                toast.error(readLoginError(error));
             }
         } finally {
             setIsSubmitting(false);
@@ -143,34 +84,29 @@ export function LoginClient() {
     const onMfaSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        if (!mfaResolver || mfaCode.length !== 6) {
+        if (!mfaPendingCredential || !mfaEnrollmentId || mfaCode.length !== 6) {
             toast.error("Enter the 6-digit authenticator code.");
-            return;
-        }
-
-        const totpHint = mfaResolver.hints.find(
-            (hint) => hint.factorId === TotpMultiFactorGenerator.FACTOR_ID,
-        );
-
-        if (!totpHint) {
-            toast.error("No authenticator factor is available for this sign-in.");
             return;
         }
 
         setIsSubmitting(true);
 
         try {
-            const assertion = TotpMultiFactorGenerator.assertionForSignIn(
-                totpHint.uid,
+            await completePasswordMfaSession(
+                mfaEmail,
+                mfaPendingCredential,
+                mfaEnrollmentId,
                 mfaCode,
+                appId,
             );
-            const credential = await mfaResolver.resolveSignIn(assertion);
-            await createBackendSession(credential.user);
-            setMfaResolver(null);
+            toast.success(`Signed in to ${appName}.`);
+            completeAuthRedirect(fromPath, router.replace);
+            setMfaPendingCredential("");
+            setMfaEnrollmentId("");
             setMfaCode("");
         } catch (error) {
             toast.error("Unable to verify your 2FA code.", {
-                description: readFirebaseMfaError(error),
+                description: readMfaError(error),
             });
         } finally {
             setIsSubmitting(false);
@@ -181,13 +117,14 @@ export function LoginClient() {
         setIsSubmitting(true);
 
         try {
-            const credential = await passkey.signInWithPasskey();
-            if (!credential) {
+            const signedIn = await passkey.signInWithPasskey(appId);
+            if (!signedIn) {
                 setIsSubmitting(false);
                 return;
             }
 
-            await createBackendSession(credential.user);
+            toast.success(`Signed in to ${appName}.`);
+            completeAuthRedirect(fromPath, router.replace);
         } catch (error) {
             toast.error("Passkey sign-in failed.", {
                 description: error instanceof Error ? error.message : "Please try again.",
@@ -217,9 +154,10 @@ export function LoginClient() {
                 code={mfaCode}
                 email={mfaEmail}
                 isSubmitting={isSubmitting}
-                open={Boolean(mfaResolver)}
+                open={Boolean(mfaPendingCredential)}
                 onCancel={() => {
-                    setMfaResolver(null);
+                    setMfaPendingCredential("");
+                    setMfaEnrollmentId("");
                     setMfaCode("");
                 }}
                 onCodeChange={setMfaCode}
@@ -227,10 +165,6 @@ export function LoginClient() {
             />
         </>
     );
-}
-
-function isMfaRequiredError(error: unknown): error is MultiFactorError {
-    return error instanceof FirebaseError && error.code === "auth/multi-factor-auth-required";
 }
 
 function completeAuthRedirect(target: string, replace: (href: string) => void) {
@@ -242,52 +176,16 @@ function completeAuthRedirect(target: string, replace: (href: string) => void) {
     window.location.assign(target);
 }
 
-function readContinuationError(error: unknown) {
-    if (!(error instanceof Error)) return "Please sign in again.";
-    return error.message.replace(/\s*Request ID:\s*\S+/gi, "").trim() || "Please sign in again.";
-}
-
-function readFirebaseLoginError(error: unknown) {
-    if (!(error instanceof FirebaseError)) {
+function readLoginError(error: unknown) {
+    if (!(error instanceof Error)) {
         return "Unable to login. Please try again.";
     }
-
-    switch (error.code) {
-        case "auth/invalid-email":
-            return "Invalid email format. Please check your email.";
-        case "auth/user-disabled":
-            return "This account has been disabled. Contact support.";
-        case "auth/user-not-found":
-        case "auth/wrong-password":
-        case "auth/invalid-credential":
-            return "Invalid email or password.";
-        case "auth/too-many-requests":
-            return "Too many login attempts. Please wait and try again later.";
-        case "auth/network-request-failed":
-            return "Network error. Check your internet connection.";
-        case "auth/operation-not-allowed":
-            return "Email/password login is not enabled for this project.";
-        case "auth/invalid-api-key":
-            return "Invalid Firebase API key. Contact support.";
-        default:
-            return "Login failed. Please try again.";
-    }
+    return error.message || "Login failed. Please try again.";
 }
 
-function readFirebaseMfaError(error: unknown) {
-    if (!(error instanceof FirebaseError)) {
-        return error instanceof Error ? error.message : "Check the code and try again.";
+function readMfaError(error: unknown) {
+    if (!(error instanceof Error)) {
+        return "Check the code and try again.";
     }
-
-    switch (error.code) {
-        case "auth/invalid-verification-code":
-        case "auth/invalid-totp-code":
-            return "The authenticator code is incorrect.";
-        case "auth/code-expired":
-            return "That code expired. Try the next code.";
-        case "auth/too-many-requests":
-            return "Too many attempts. Please wait and try again.";
-        default:
-            return error.message || "Check the code and try again.";
-    }
+    return error.message || "Check the code and try again.";
 }
