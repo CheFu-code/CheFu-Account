@@ -1,7 +1,6 @@
 "use client";
 
-import { FirebaseError } from "firebase/app";
-import { createUserWithEmailAndPassword, signOut, updateProfile } from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState, type FormEvent } from "react";
 import { toast } from "sonner";
@@ -54,28 +53,16 @@ export function RegisterClient() {
 
         setIsSubmitting(true);
 
-        let registered = false;
-
         try {
-            const credential = await createUserWithEmailAndPassword(auth, email, password);
-            registered = true;
-            await updateProfile(credential.user, {
-                displayName: `${trimmedFirstName} ${trimmedLastName}`,
-            });
-            const idToken = await credential.user.getIdToken(true);
-            await sendEmailVerificationCode(idToken, appName);
-            setVerificationEmail(credential.user.email || email);
+            const normalizedEmail = email.trim().toLowerCase();
+            const displayName = `${trimmedFirstName} ${trimmedLastName}`;
+            await sendEmailVerificationCode(normalizedEmail, displayName);
+            setVerificationEmail(normalizedEmail);
             setVerificationOpen(true);
         } catch (error) {
-            if (registered) {
-                await signOut(auth).catch(() => undefined);
-                toast.error(`Unable to continue to ${appName}.`, {
-                    description:
-                        error instanceof Error ? error.message : "Please sign in again.",
-                });
-            } else {
-                toast.error(readFirebaseRegisterError(error));
-            }
+            toast.error(`Unable to send a verification code to ${appName}.`, {
+                description: error instanceof Error ? error.message : "Please try again.",
+            });
         } finally {
             setIsSubmitting(false);
         }
@@ -102,16 +89,17 @@ export function RegisterClient() {
             <EmailVerificationDialog
                 email={verificationEmail}
                 isSubmitting={isSubmitting}
-                onCancel={async () => {
+                onCancel={() => {
                     setVerificationOpen(false);
-                    await signOut(auth).catch(() => undefined);
+                    setPassword("");
                 }}
                 onResend={async () => {
-                    const user = auth.currentUser;
-                    if (!user) return;
                     setIsSubmitting(true);
                     try {
-                        await sendEmailVerificationCode(await user.getIdToken(true), appName);
+                        await sendEmailVerificationCode(
+                            verificationEmail,
+                            `${firstName.trim()} ${lastName.trim()}`,
+                        );
                         toast.success("A new verification code was sent.");
                     } catch (error) {
                         toast.error("Unable to resend the verification code.", {
@@ -122,15 +110,24 @@ export function RegisterClient() {
                     }
                 }}
                 onSubmit={async (code) => {
-                    const user = auth.currentUser;
-                    if (!user || !/^\d{6}$/.test(code)) {
+                    if (!/^\d{6}$/.test(code)) {
                         toast.error("Enter the 6-digit verification code.");
                         return;
                     }
                     setIsSubmitting(true);
                     try {
-                        await verifyEmailVerificationCode(await user.getIdToken(true), code);
-                        await syncChefuAccountSession(await user.getIdToken(true), appId);
+                        await verifyEmailVerificationCode(
+                            verificationEmail,
+                            code,
+                            password,
+                            `${firstName.trim()} ${lastName.trim()}`,
+                        );
+                        const credential = await signInWithEmailAndPassword(
+                            auth,
+                            verificationEmail,
+                            password,
+                        );
+                        await syncChefuAccountSession(await credential.user.getIdToken(true), appId);
                         toast.success(`Account created for ${appName}.`);
                         completeAuthRedirect(fromPath, router.replace);
                     } catch (error) {
@@ -154,27 +151,4 @@ function completeAuthRedirect(target: string, replace: (href: string) => void) {
     }
 
     window.location.assign(target);
-}
-
-function readFirebaseRegisterError(error: unknown) {
-    if (!(error instanceof FirebaseError)) {
-        return "Unable to register. Please try again.";
-    }
-
-    switch (error.code) {
-        case "auth/email-already-in-use":
-            return "This email is already registered. Try logging in.";
-        case "auth/invalid-email":
-            return "Invalid email format. Please check your email.";
-        case "auth/operation-not-allowed":
-            return "Email/password registration is not enabled for this project.";
-        case "auth/weak-password":
-            return "Password is too weak. Use at least 6 characters.";
-        case "auth/network-request-failed":
-            return "Network error. Check your internet connection.";
-        case "auth/invalid-api-key":
-            return "Invalid Firebase API key. Contact support.";
-        default:
-            return "Registration failed. Please try again.";
-    }
 }

@@ -120,28 +120,53 @@ export async function syncChefuAccountSession(idToken: string, appId: ChefuAppId
     }
 }
 
-export async function sendEmailVerificationCode(idToken: string, appName: string) {
+export async function sendEmailVerificationCode(
+    email: string,
+    userName: string,
+) {
     const response = await fetch(apiUrl("/auth/email-verification/send"), {
         method: "POST",
         headers: {
-            Authorization: `Bearer ${idToken}`,
             "Content-Type": "application/json",
         },
-        credentials: "include",
-        body: JSON.stringify({ appName }),
+        body: JSON.stringify({ email, userName }),
     });
     if (!response.ok) throw new Error(await readApiError(response));
 }
 
-export async function verifyEmailVerificationCode(idToken: string, code: string) {
+export async function requestPasswordResetEmail(
+    email: string,
+    appId: ChefuAppId,
+    returnTo: string,
+) {
+    const response = await fetch(apiUrl("/auth/password-reset/request"), {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            [CHEFU_APP_HEADER]: appId,
+        },
+        body: JSON.stringify({ email, appId, returnTo }),
+    });
+    if (response.ok) return;
+
+    if (response.status === 429) {
+        throw new Error("Too many reset attempts. Please wait and try again later.");
+    }
+    throw new Error(await readApiError(response));
+}
+
+export async function verifyEmailVerificationCode(
+    email: string,
+    code: string,
+    password: string,
+    displayName: string,
+) {
     const response = await fetch(apiUrl("/auth/email-verification/verify"), {
         method: "POST",
         headers: {
-            Authorization: `Bearer ${idToken}`,
             "Content-Type": "application/json",
         },
-        credentials: "include",
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({ email, code, password, displayName }),
     });
     if (!response.ok) throw new Error(await readApiError(response));
 }
