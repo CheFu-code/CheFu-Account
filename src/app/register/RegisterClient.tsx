@@ -14,6 +14,7 @@ import {
     verifyEmailVerificationCode,
 } from "../../lib/chefu-account";
 import { EmailVerificationDialog } from "./EmailVerificationDialog";
+import { PasskeyOfferDialog } from "./PasskeyOfferDialog";
 
 export function RegisterClient() {
     const router = useRouter();
@@ -24,6 +25,7 @@ export function RegisterClient() {
     const [password, setPassword] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [verificationOpen, setVerificationOpen] = useState(false);
+    const [passkeyOfferOpen, setPasskeyOfferOpen] = useState(false);
     const [verificationEmail, setVerificationEmail] = useState("");
     const [resendCooldownSeconds, setResendCooldownSeconds] = useState(0);
     const [resendsRemaining, setResendsRemaining] = useState(0);
@@ -147,7 +149,9 @@ export function RegisterClient() {
                             appId,
                         );
                         toast.success(`Account created for ${appName}.`);
-                        completeAuthRedirect(fromPath, router.replace);
+                        setVerificationOpen(false);
+                        setPassword("");
+                        setPasskeyOfferOpen(true);
                     } catch (error) {
                         if (error instanceof EmailVerificationCodeError) {
                             setVerificationCodeResetKey((key) => key + 1);
@@ -166,6 +170,21 @@ export function RegisterClient() {
                     } finally {
                         setIsSubmitting(false);
                     }
+                }}
+            />
+        ) : null}
+        {passkeyOfferOpen ? (
+            <PasskeyOfferDialog
+                appName={appName}
+                isSubmitting={isSubmitting}
+                onSkip={() => {
+                    setPasskeyOfferOpen(false);
+                    completeAuthRedirect(fromPath, router.replace);
+                }}
+                onComplete={() => {
+                    toast.success("Passkey created successfully.");
+                    setPasskeyOfferOpen(false);
+                    completeAuthRedirect(fromPath, router.replace);
                 }}
             />
         ) : null}

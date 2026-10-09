@@ -4,6 +4,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiUrl } from "../../../../lib/chefu-account";
+import { getPasskeyDeviceName } from "../../../../lib/passkey-device";
 
 export type PasskeyCredential = {
     credentialId: string;
@@ -93,31 +94,12 @@ export function usePasskeyManagement() {
                 body: JSON.stringify({
                     challengeId,
                     response: attResponse,
-                    deviceName: getDeviceName(),
+                    deviceName: getPasskeyDeviceName(),
                 }),
             });
 
             if (!verifyResponse.ok) {
                 throw new Error("Failed to verify registration");
-            }
-
-            function getDeviceName() {
-                const userAgent = navigator.userAgent;
-                const platform = navigator.platform || "Unknown device";
-                const androidModel = userAgent.match(/Android[^;)]*;\s*(?:[a-z]{2}-[A-Z]{2};\s*)?([^;)]+?)(?:\s+Build\/[^;)]+)?[;)]/i)?.[1];
-                const appleDevice = /iPhone/i.test(userAgent)
-                    ? "iPhone"
-                    : /iPad/i.test(userAgent)
-                      ? "iPad"
-                      : /Mac/i.test(platform)
-                        ? "Mac"
-                        : null;
-
-                if (androidModel) return `${androidModel.trim()} (Android)`;
-                if (appleDevice) return appleDevice;
-                if (/Windows/i.test(userAgent)) return "Windows device";
-                if (/Linux/i.test(userAgent)) return "Linux device";
-                return platform;
             }
 
             toast.success("Passkey registered successfully!");

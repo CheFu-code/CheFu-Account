@@ -29,7 +29,7 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                         className="mt-8 space-y-5"
                     >
                         {mode === "register" ? (
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="account-auth-register-names grid grid-cols-2 gap-3">
                                 <div>
                                     <label htmlFor="first-name" className="account-auth-label mb-1.5 block text-sm font-medium">
                                         First name
