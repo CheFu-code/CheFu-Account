@@ -1,4 +1,4 @@
-export type ChefuAppId = "academy" | "admin" | "merchant" | "flow" | "quantum" | "infinity" | "logix" | "logix-dash" | "cloudence" | "nook";
+export type ChefuAppId = "root" | "academy" | "admin" | "merchant" | "flow" | "quantum" | "infinity" | "logix" | "logix-dash" | "cloudence" | "nook";
 
 export type RedirectTargetKind = "relative" | "app-origin" | "oauth-authorize";
 
@@ -37,6 +37,14 @@ type OauthClientRedirectPolicy = {
 const MAX_RETURN_TO_LENGTH = 2048;
 
 const CHEFU_APP_RETURN_TO_POLICY: Record<ChefuAppId, AppRedirectPolicy> = {
+    root: {
+        allowedOrigins: [
+            "https://chefu.co.za",
+            "https://www.chefu.co.za",
+            "https://myaccount.chefu.co.za",
+        ],
+        oauthClientIds: ["chefu-technologies"],
+    },
     academy: {
         allowedOrigins: [
             "https://academy.chefu.co.za",
@@ -181,6 +189,8 @@ const ENCODED_UNSAFE_CHARACTER_PATTERN = /%(?:00|0a|0d|5c)/i;
 export function resolveChefuAppId(value?: string | null): ChefuAppId {
     const normalized = value?.trim().toLowerCase();
 
+    if (normalized === "root") return "root";
+    if (normalized === "academy") return "academy";
     if (normalized === "admin" || normalized === "internal") return "admin";
     if (normalized === "flow") return "flow";
     if (normalized === "quantum") return "quantum";
@@ -190,7 +200,7 @@ export function resolveChefuAppId(value?: string | null): ChefuAppId {
     if (normalized === "cloudence") return "cloudence";
     if (normalized === "nook") return "nook";
     if (normalized === "merchant") return "merchant";
-    return "academy";
+    return "root";
 }
 
 export function isKnownChefuAppParam(value?: string | null) {
@@ -198,6 +208,7 @@ export function isKnownChefuAppParam(value?: string | null) {
 
     const normalized = value.trim().toLowerCase();
     return (
+        normalized === "root" ||
         normalized === "admin" ||
         normalized === "internal" ||
         normalized === "flow" ||

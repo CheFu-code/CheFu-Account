@@ -9,6 +9,7 @@ export type { ChefuAppId };
 const CHEFU_APP_HEADER = "x-chefu-app";
 
 const appLabels: Record<ChefuAppId, string> = {
+    root: "Chefu Technologies",
     academy: "Chefu Technologies",
     admin: "Chefu Admin",
     flow: "Flow Mail",
@@ -52,10 +53,10 @@ export function safeReturnTo(
 ): string;
 export function safeReturnTo(
     value?: string | null,
-    appIdOrFallback: ChefuAppId | string = "academy",
+    appIdOrFallback: ChefuAppId | string = "root",
     fallback = "/account",
 ) {
-    const appId = isChefuAppId(appIdOrFallback) ? appIdOrFallback : "academy";
+    const appId = isChefuAppId(appIdOrFallback) ? appIdOrFallback : "root";
     const fallbackTarget = isChefuAppId(appIdOrFallback)
         ? fallback
         : appIdOrFallback;
@@ -66,6 +67,7 @@ export function safeReturnTo(
 
 function isChefuAppId(value: string): value is ChefuAppId {
     return (
+        value === "root" ||
         value === "academy" ||
         value === "admin" ||
         value === "flow" ||
@@ -121,15 +123,24 @@ export async function syncChefuAccountSession(idToken: string, appId: ChefuAppId
 export async function sendEmailVerificationCode(
     email: string,
     userName: string,
-) {
+    appId: ChefuAppId,
+): Promise<{ cooldownSeconds: number; resendsRemaining: number }> {
     const response = await fetch(apiUrl("/auth/email-verification/send"), {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, userName }),
+        body: JSON.stringify({ email, userName, appId }),
     });
     if (!response.ok) throw new Error(await readApiError(response));
+    const result = (await response.json()) as {
+        cooldownSeconds?: number;
+        resendsRemaining?: number;
+    };
+    return {
+        cooldownSeconds: Number(result.cooldownSeconds || 0),
+        resendsRemaining: Number(result.resendsRemaining || 0),
+    };
 }
 
 export async function requestPasswordResetEmail(
@@ -166,7 +177,32 @@ export async function verifyEmailVerificationCode(
         },
         body: JSON.stringify({ email, code, password, displayName }),
     });
-    if (!response.ok) throw new Error(await readApiError(response));
+    if (!response.ok) {
+        const data = (await response.json().catch(() => ({}))) as {
+            message?: string;
+            error?: string;
+            attemptsRemaining?: number;
+        };
+        if (typeof data.attemptsRemaining === "number") {
+            throw new EmailVerificationCodeError(
+                data.message || "Incorrect verification code.",
+                data.attemptsRemaining,
+            );
+        }
+        throw new Error(
+            data.message || data.error || "Unable to complete email verification.",
+        );
+    }
+}
+
+export class EmailVerificationCodeError extends Error {
+    constructor(
+        message: string,
+        public readonly attemptsRemaining: number,
+    ) {
+        super(message);
+        this.name = "EmailVerificationCodeError";
+    }
 }
 
 async function readApiError(response: Response) {

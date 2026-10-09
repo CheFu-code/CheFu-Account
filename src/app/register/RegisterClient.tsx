@@ -8,6 +8,7 @@ import { AccountAuthScreen } from "../_components/AccountAuthScreen";
 import { auth } from "../../lib/firebase";
 import {
     chefuAppLabel,
+    EmailVerificationCodeError,
     preserveAuthParams,
     resolveChefuApp,
     safeReturnTo,
@@ -27,6 +28,10 @@ export function RegisterClient() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [verificationOpen, setVerificationOpen] = useState(false);
     const [verificationEmail, setVerificationEmail] = useState("");
+    const [resendCooldownSeconds, setResendCooldownSeconds] = useState(0);
+    const [resendsRemaining, setResendsRemaining] = useState(0);
+    const [verificationAttemptsRemaining, setVerificationAttemptsRemaining] = useState(3);
+    const [verificationMessage, setVerificationMessage] = useState("");
 
     const appId = resolveChefuApp(searchParams.get("app"));
     const appName = chefuAppLabel(appId);
@@ -56,8 +61,16 @@ export function RegisterClient() {
         try {
             const normalizedEmail = email.trim().toLowerCase();
             const displayName = `${trimmedFirstName} ${trimmedLastName}`;
-            await sendEmailVerificationCode(normalizedEmail, displayName);
+            const sendResult = await sendEmailVerificationCode(
+                normalizedEmail,
+                displayName,
+                appId,
+            );
             setVerificationEmail(normalizedEmail);
+            setResendCooldownSeconds(sendResult.cooldownSeconds);
+            setResendsRemaining(sendResult.resendsRemaining);
+            setVerificationAttemptsRemaining(3);
+            setVerificationMessage("");
             setVerificationOpen(true);
         } catch (error) {
             toast.error(`Unable to send a verification code to ${appName}.`, {
@@ -89,6 +102,10 @@ export function RegisterClient() {
             <EmailVerificationDialog
                 email={verificationEmail}
                 isSubmitting={isSubmitting}
+                initialCooldownSeconds={resendCooldownSeconds}
+                initialResendsRemaining={resendsRemaining}
+                attemptsRemaining={verificationAttemptsRemaining}
+                verificationMessage={verificationMessage}
                 onCancel={() => {
                     setVerificationOpen(false);
                     setPassword("");
@@ -96,15 +113,22 @@ export function RegisterClient() {
                 onResend={async () => {
                     setIsSubmitting(true);
                     try {
-                        await sendEmailVerificationCode(
+                        const sendResult = await sendEmailVerificationCode(
                             verificationEmail,
                             `${firstName.trim()} ${lastName.trim()}`,
+                            appId,
                         );
+                        setResendCooldownSeconds(sendResult.cooldownSeconds);
+                        setResendsRemaining(sendResult.resendsRemaining);
+                        setVerificationAttemptsRemaining(3);
+                        setVerificationMessage("");
                         toast.success("A new verification code was sent.");
+                        return sendResult;
                     } catch (error) {
                         toast.error("Unable to resend the verification code.", {
                             description: error instanceof Error ? error.message : "Please try again.",
                         });
+                        throw error;
                     } finally {
                         setIsSubmitting(false);
                     }
@@ -131,6 +155,16 @@ export function RegisterClient() {
                         toast.success(`Account created for ${appName}.`);
                         completeAuthRedirect(fromPath, router.replace);
                     } catch (error) {
+                        if (error instanceof EmailVerificationCodeError) {
+                            setVerificationAttemptsRemaining(error.attemptsRemaining);
+                            setVerificationMessage(
+                                error.attemptsRemaining > 0
+                                    ? `${error.message} ${error.attemptsRemaining} ${
+                                          error.attemptsRemaining === 1 ? "attempt" : "attempts"
+                                      } remaining.`
+                                    : "No attempts remaining. Request a new code to continue.",
+                            );
+                        }
                         toast.error("Unable to verify your email.", {
                             description: error instanceof Error ? error.message : "Please try again.",
                         });
