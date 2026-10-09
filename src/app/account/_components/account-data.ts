@@ -54,12 +54,7 @@ export const connectedApps: Array<{
             description: "Private email and campaign workspace.",
             href: "https://flow.chefu.co.za",
         },
-        {
-            id: "muzalo",
-            name: "Muzalo",
-            description: "Music discovery and listening experience.",
-            href: "https://muzalo.chefu.co.za",
-        },
+
         {
             id: "quantum",
             name: "Quantum",

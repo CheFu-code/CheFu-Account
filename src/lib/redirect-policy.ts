@@ -1,4 +1,4 @@
-export type ChefuAppId = "academy" | "admin" | "merchant" | "flow" | "muzalo" | "quantum" | "infinity" | "logix" | "logix-dash" | "cloudence" | "nook";
+export type ChefuAppId = "academy" | "admin" | "merchant" | "flow" | "quantum" | "infinity" | "logix" | "logix-dash" | "cloudence" | "nook";
 
 export type RedirectTargetKind = "relative" | "app-origin" | "oauth-authorize";
 
@@ -63,12 +63,7 @@ const CHEFU_APP_RETURN_TO_POLICY: Record<ChefuAppId, AppRedirectPolicy> = {
         ],
         oauthClientIds: ["flow-web"],
     },
-    muzalo: {
-        allowedOrigins: [
-            "https://muzalo.chefu.co.za",
-        ],
-        oauthClientIds: ["muzalo-web"],
-    },
+
     quantum: {
         allowedOrigins: [
             "https://quantum.chefu.co.za",
@@ -142,12 +137,7 @@ const OAUTH_CLIENT_RETURN_TO_POLICY: Record<string, OauthClientRedirectPolicy> =
             "https://flow.chefu.co.za/auth/callback",
         ],
     },
-    "muzalo-web": {
-        appId: "muzalo",
-        redirectUris: [
-            "https://muzalo.chefu.co.za/auth/callback",
-        ],
-    },
+
     "quantum-mobile": {
         appId: "quantum",
         redirectUris: ["quantum://auth"],
@@ -193,7 +183,6 @@ export function resolveChefuAppId(value?: string | null): ChefuAppId {
 
     if (normalized === "admin" || normalized === "internal") return "admin";
     if (normalized === "flow") return "flow";
-    if (normalized === "muzalo" || normalized === "music") return "muzalo";
     if (normalized === "quantum") return "quantum";
     if (normalized === "infinity") return "infinity";
     if (normalized === "logix") return "logix";
@@ -212,8 +201,6 @@ export function isKnownChefuAppParam(value?: string | null) {
         normalized === "admin" ||
         normalized === "internal" ||
         normalized === "flow" ||
-        normalized === "muzalo" ||
-        normalized === "music" ||
         normalized === "quantum" ||
         normalized === "infinity" ||
         normalized === "logix" ||

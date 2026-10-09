@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 
-export type AppId = "academy" | "flow" | "muzalo" | "quantum";
+export type AppId = "academy" | "flow" | "quantum";
 
 export type AccountUser = {
     uid: string;

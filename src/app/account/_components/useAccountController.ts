@@ -1,6 +1,6 @@
 "use client";
 
-import { sendPasswordResetEmail, signOut, updateProfile } from "firebase/auth";
+import { signOut, updateProfile } from "firebase/auth";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { toast } from "sonner";
@@ -19,6 +19,7 @@ import type {
 import {
     apiUrl,
     clearChefuAccountSession,
+    requestPasswordResetEmail,
     resolveChefuApp,
 } from "../../../lib/chefu-account";
 import { auth } from "../../../lib/firebase";
@@ -203,6 +204,7 @@ export function useAccountController() {
             firstName?: string;
             lastName?: string;
             phone?: string;
+            bio?: string;
             website?: string;
             location?: string;
             academyProfile?: {
@@ -218,7 +220,7 @@ export function useAccountController() {
                 profileUpdates.lastName = trimmedLastName;
             }
             if (phoneChanged) profileUpdates.phone = phone.trim();
-            if (bioChanged) profileUpdates.academyProfile = { bio: bio.trim() };
+            if (bioChanged) profileUpdates.bio = bio.trim();
             if (websiteChanged) profileUpdates.website = website.trim();
             if (locationChanged) profileUpdates.location = location.trim();
         } else if (activeSection === "privacy" && hasPrivacyChanges) {
@@ -341,7 +343,11 @@ export function useAccountController() {
         setIsSendingReset(true);
 
         try {
-            await sendPasswordResetEmail(auth, account.user.email);
+            await requestPasswordResetEmail(
+                account.user.email,
+                appId,
+                "/account",
+            );
             try {
                 const idToken = await auth.currentUser?.getIdToken(true);
                 const activityResponse = await fetch(apiUrl("/auth/security-activity"), {
@@ -387,7 +393,18 @@ export function useAccountController() {
         setIsSigningOut(true);
 
         try {
-            await Promise.allSettled([clearChefuAccountSession(), signOut(auth)]);
+            const [serverResult, localResult] = await Promise.allSettled([
+                clearChefuAccountSession(),
+                signOut(auth),
+            ]);
+            if (serverResult.status === "rejected") {
+                throw serverResult.reason;
+            }
+            if (localResult.status === "rejected") {
+                throw new Error(
+                    "Shared sessions were revoked, but this app could not clear its local sign-in.",
+                );
+            }
             window.location.replace("/login?returnTo=/account");
         } catch (error) {
             toast.error("Unable to sign out.", {

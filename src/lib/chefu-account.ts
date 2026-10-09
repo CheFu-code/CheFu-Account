@@ -12,7 +12,6 @@ const appLabels: Record<ChefuAppId, string> = {
     academy: "Chefu Technologies",
     admin: "Chefu Admin",
     flow: "Flow Mail",
-    muzalo: "Muzalo",
     quantum: "Quantum",
     infinity: "Infinity",
     logix: "Logix",
@@ -70,7 +69,6 @@ function isChefuAppId(value: string): value is ChefuAppId {
         value === "academy" ||
         value === "admin" ||
         value === "flow" ||
-        value === "muzalo" ||
         value === "quantum" ||
         value === "infinity" ||
         value === "logix" ||
@@ -182,8 +180,20 @@ async function readApiError(response: Response) {
 export async function clearChefuAccountSession(globalLogout = true) {
     const path = globalLogout ? "/auth/session?global=true" : "/auth/session";
 
-    await fetch(apiUrl(path), {
+    const response = await fetch(apiUrl(path), {
         method: "DELETE",
         credentials: "include",
     });
+
+    if (!response.ok) {
+        throw new Error(await readApiError(response));
+    }
+
+    const result = (await response.json()) as {
+        ok?: boolean;
+        revoked?: boolean;
+    };
+    if (!result.ok || (globalLogout && !result.revoked)) {
+        throw new Error("The server could not confirm that all sessions were signed out.");
+    }
 }
