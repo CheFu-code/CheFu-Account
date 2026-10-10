@@ -109,6 +109,8 @@ export class MfaRequiredLoginError extends Error {
 export type SessionTrustResult = {
     trustDeviceVerificationRequired?: boolean;
     trustDeviceRequiresAuthenticator?: boolean;
+    trustDeviceResendCooldownSeconds?: number;
+    trustDeviceResendsRemaining?: number;
 };
 
 export async function loginWithPassword(
@@ -166,7 +168,7 @@ export async function loginWithPassword(
         const requestId = result.requestId ? ` Request ID: ${result.requestId}` : "";
         throw new Error(`${message}${requestId}`);
     }
-    return (await response.json().catch(() => ({}))) as SessionTrustResult;
+    return result as SessionTrustResult;
 }
 
 export async function completePasswordMfaSession(

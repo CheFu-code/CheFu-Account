@@ -3,8 +3,12 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import {
     useMemo,
+    useRef,
     useState,
+    type ClipboardEvent,
     type FormEvent,
+    type KeyboardEvent,
+    useEffect,
 } from "react";
 import { toast } from "sonner";
 import {
@@ -28,6 +32,8 @@ export function LoginClient() {
     const [password, setPassword] = useState("");
     const [trustDevice, setTrustDevice] = useState(false);
     const [trustedDeviceCode, setTrustedDeviceCode] = useState("");
+    const [trustedDeviceResendCooldown, setTrustedDeviceResendCooldown] = useState(0);
+    const [trustedDeviceResendsRemaining, setTrustedDeviceResendsRemaining] = useState(0);
     const [isVerifyingTrustedDevice, setIsVerifyingTrustedDevice] = useState(false);
     const [isResendingTrustedDeviceCode, setIsResendingTrustedDeviceCode] = useState(false);
     const [trustDeviceVerificationOpen, setTrustDeviceVerificationOpen] = useState(false);
@@ -37,6 +43,16 @@ export function LoginClient() {
     const [mfaPendingCredential, setMfaPendingCredential] = useState("");
     const [mfaEnrollmentId, setMfaEnrollmentId] = useState("");
     const passkey = usePasskeySignIn();
+    const trustedDeviceCodeRefs = useRef<Array<HTMLInputElement | null>>([]);
+
+    useEffect(() => {
+        if (trustedDeviceResendCooldown <= 0) return;
+        const timer = window.setTimeout(
+            () => setTrustedDeviceResendCooldown((remaining) => Math.max(0, remaining - 1)),
+            1000,
+        );
+        return () => window.clearTimeout(timer);
+    }, [trustedDeviceResendCooldown]);
 
     const appId = resolveChefuApp(searchParams.get("app"));
     const appName = chefuAppLabel(appId);
@@ -61,11 +77,19 @@ export function LoginClient() {
     function handleSessionComplete(result: {
         trustDeviceVerificationRequired?: boolean;
         trustDeviceRequiresAuthenticator?: boolean;
+        trustDeviceResendCooldownSeconds?: number;
+        trustDeviceResendsRemaining?: number;
     }) {
         if (result.trustDeviceVerificationRequired) {
             setTrustDeviceVerificationOpen(true);
             setTrustedDeviceCode("");
-            toast.info("Enter the code sent to your email to trust this device.");
+            setTrustedDeviceResendCooldown(result.trustDeviceResendCooldownSeconds || 0);
+            setTrustedDeviceResendsRemaining(result.trustDeviceResendsRemaining || 0);
+            if ((result.trustDeviceResendsRemaining || 0) > 0) {
+                toast.info("Enter the code sent to your email to trust this device.");
+            } else {
+                toast.warning("You have reached the daily trusted-device code limit.");
+            }
             return;
         }
         if (result.trustDeviceRequiresAuthenticator) {
@@ -162,7 +186,11 @@ export function LoginClient() {
 
     async function verifyTrustedDevice(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        if (!/^\d{6}$/.test(trustedDeviceCode)) {
+        const normalizedCode = trustedDeviceCode.replace(/\s/g, "");
+        if (
+            trustedDeviceCode.split(" ").length !== 6 ||
+            !/^\d{6}$/.test(normalizedCode)
+        ) {
             toast.error("Enter the 6-digit code from your email.");
             return;
         }
@@ -175,7 +203,7 @@ export function LoginClient() {
                     "Content-Type": "application/json",
                     "x-chefu-app": appId,
                 },
-                body: JSON.stringify({ code: trustedDeviceCode }),
+                body: JSON.stringify({ code: normalizedCode }),
             });
             const result = (await response.json().catch(() => ({}))) as {
                 message?: string;
@@ -196,10 +224,63 @@ export function LoginClient() {
         }
     }
 
+    function updateTrustedDeviceCode(index: number, value: string) {
+        const enteredDigits = value.replace(/\D/g, "");
+        const currentDigits = trustedDeviceCode.split(" ");
+        const nextDigits = Array.from({ length: 6 }, (_, digitIndex) =>
+            currentDigits[digitIndex] && /\d/.test(currentDigits[digitIndex])
+                ? currentDigits[digitIndex]
+                : "",
+        );
+        if (!enteredDigits) {
+            nextDigits[index] = "";
+            setTrustedDeviceCode(nextDigits.join(" "));
+            return;
+        }
+
+        const pastedDigits = enteredDigits.slice(0, 6 - index);
+        for (let offset = 0; offset < pastedDigits.length; offset += 1) {
+            nextDigits[index + offset] = pastedDigits[offset];
+        }
+        setTrustedDeviceCode(nextDigits.join(" "));
+        trustedDeviceCodeRefs.current[Math.min(index + pastedDigits.length, 5)]?.focus();
+    }
+
+    function handleTrustedDeviceCodeKeyDown(
+        index: number,
+        event: KeyboardEvent<HTMLInputElement>,
+    ) {
+        if (
+            event.key === "Backspace" &&
+            !/\d/.test(trustedDeviceCode.split(" ")[index] || "") &&
+            index > 0
+        ) {
+            trustedDeviceCodeRefs.current[index - 1]?.focus();
+        } else if (event.key === "ArrowLeft" && index > 0) {
+            event.preventDefault();
+            trustedDeviceCodeRefs.current[index - 1]?.focus();
+        } else if (event.key === "ArrowRight" && index < 5) {
+            event.preventDefault();
+            trustedDeviceCodeRefs.current[index + 1]?.focus();
+        }
+    }
+
+    function handleTrustedDeviceCodePaste(event: ClipboardEvent<HTMLInputElement>) {
+        event.preventDefault();
+        const pastedCode = event.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+        setTrustedDeviceCode(pastedCode);
+        trustedDeviceCodeRefs.current[Math.min(pastedCode.length, 5)]?.focus();
+    }
+
     async function resendTrustedDeviceCode() {
+        if (
+            isResendingTrustedDeviceCode ||
+            trustedDeviceResendCooldown > 0 ||
+            trustedDeviceResendsRemaining <= 0
+        ) return;
         setIsResendingTrustedDeviceCode(true);
         try {
-            const response = await fetch(apiUrl("/auth/trusted-devices/email-resend"), {
+            const response = await fetch(apiUrl("/auth/trusted-devices/email-challenge"), {
                 method: "POST",
                 credentials: "include",
                 headers: { "x-chefu-app": appId },
@@ -207,10 +288,24 @@ export function LoginClient() {
             const result = (await response.json().catch(() => ({}))) as {
                 message?: string;
                 error?: string;
+                cooldownSeconds?: number;
+                resendsRemaining?: number;
+                retryAfterSeconds?: number;
+                retryAfter?: number;
             };
             if (!response.ok) {
+                const retryAfterSeconds =
+                    result.retryAfterSeconds ?? result.retryAfter;
+                if (typeof retryAfterSeconds === "number") {
+                    setTrustedDeviceResendCooldown(retryAfterSeconds);
+                }
+                if (typeof result.resendsRemaining === "number") {
+                    setTrustedDeviceResendsRemaining(result.resendsRemaining);
+                }
                 throw new Error(result.message || result.error || "Unable to resend the code.");
             }
+            setTrustedDeviceResendCooldown(result.cooldownSeconds || 0);
+            setTrustedDeviceResendsRemaining(result.resendsRemaining || 0);
             setTrustedDeviceCode("");
             toast.success("A new trusted-device code was sent.");
         } catch (error) {
@@ -268,26 +363,45 @@ export function LoginClient() {
                             Enter the 6-digit code sent to {email}. This device will be trusted for 90 days.
                         </p>
                         <form onSubmit={verifyTrustedDevice} className="mt-5 space-y-4">
-                            <label className="block space-y-2" htmlFor="trusted-device-code">
-                                <span className="text-sm font-medium text-stone-800">Email code</span>
-                                <input
-                                    id="trusted-device-code"
-                                    autoComplete="one-time-code"
-                                    autoFocus
-                                    inputMode="numeric"
-                                    maxLength={6}
-                                    value={trustedDeviceCode}
-                                    onChange={(event) =>
-                                        setTrustedDeviceCode(
-                                            event.target.value.replace(/\D/g, "").slice(0, 6),
-                                        )
-                                    }
-                                    className="h-12 w-full rounded-lg border border-stone-300 px-4 text-center text-lg tracking-[0.35em] outline-none focus:border-amber-700 focus:ring-3 focus:ring-amber-700/15"
-                                />
-                            </label>
+                            <fieldset className="space-y-2">
+                                <legend className="text-sm font-medium text-stone-800">
+                                    Email code
+                                </legend>
+                                <div className="flex justify-between gap-2">
+                                    {Array.from({ length: 6 }, (_, index) => (
+                                        <input
+                                            key={index}
+                                            ref={(element) => {
+                                                trustedDeviceCodeRefs.current[index] = element;
+                                            }}
+                                            aria-label={`Email verification code digit ${index + 1}`}
+                                            inputMode="numeric"
+                                            pattern="[0-9]*"
+                                            maxLength={6}
+                                            value={trustedDeviceCode.split(" ")[index] ?? ""}
+                                            onChange={(event) =>
+                                                updateTrustedDeviceCode(index, event.target.value)
+                                            }
+                                            onKeyDown={(event) =>
+                                                handleTrustedDeviceCodeKeyDown(index, event)
+                                            }
+                                            onPaste={handleTrustedDeviceCodePaste}
+                                            className="size-11 rounded-lg border border-stone-300 bg-white text-center text-xl font-semibold text-stone-900 outline-none transition hover:border-stone-400 focus:border-amber-700 focus:ring-3 focus:ring-amber-700/15 sm:size-12"
+                                            autoComplete={index === 0 ? "one-time-code" : "off"}
+                                            autoFocus={index === 0}
+                                        />
+                                    ))}
+                                </div>
+                            </fieldset>
                             <button
                                 type="submit"
-                                disabled={isVerifyingTrustedDevice || trustedDeviceCode.length !== 6}
+                                disabled={
+                                    isVerifyingTrustedDevice ||
+                                    trustedDeviceCode.split(" ").length !== 6 ||
+                                    !/^\d{6}$/.test(
+                                        trustedDeviceCode.replace(/\s/g, ""),
+                                    )
+                                }
                                 className="h-11 w-full rounded-lg bg-amber-800 px-4 text-sm font-semibold text-white hover:bg-amber-900 disabled:opacity-60"
                             >
                                 {isVerifyingTrustedDevice ? "Verifying…" : "Verify and trust device"}
@@ -296,10 +410,21 @@ export function LoginClient() {
                                 <button
                                     type="button"
                                     onClick={() => void resendTrustedDeviceCode()}
-                                    disabled={isResendingTrustedDeviceCode || isVerifyingTrustedDevice}
+                                    disabled={
+                                        isResendingTrustedDeviceCode ||
+                                        isVerifyingTrustedDevice ||
+                                        trustedDeviceResendCooldown > 0 ||
+                                        trustedDeviceResendsRemaining <= 0
+                                    }
                                     className="text-amber-800 underline underline-offset-4 disabled:opacity-50"
                                 >
-                                    {isResendingTrustedDeviceCode ? "Sending…" : "Send a new code"}
+                                    {isResendingTrustedDeviceCode
+                                        ? "Sending…"
+                                        : trustedDeviceResendsRemaining <= 0
+                                          ? "Daily resend limit reached"
+                                          : trustedDeviceResendCooldown > 0
+                                            ? `Send a new code in ${trustedDeviceResendCooldown}s`
+                                            : `Send a new code (${trustedDeviceResendsRemaining} left)`}
                                 </button>
                                 <button
                                     type="button"
