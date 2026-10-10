@@ -1,5 +1,6 @@
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import type { ReactNode } from "react";
 import { ToasterProvider } from "./_components/ToasterProvider";
 import "./globals.css";
@@ -66,11 +67,14 @@ export const viewport: Viewport = {
     ],
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+    const nonce = (await headers()).get("x-nonce") || undefined;
+
     return (
         <html lang="en" suppressHydrationWarning>
             <body>
                 <script
+                    nonce={nonce}
                     dangerouslySetInnerHTML={{
                         __html: `try {
   var theme = window.localStorage.getItem("chefu-account-theme");

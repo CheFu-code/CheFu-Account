@@ -2,10 +2,6 @@ import type { NextConfig } from "next";
 
 const securityHeaders = [
     {
-        key: "Content-Security-Policy",
-        value: "base-uri 'self'; frame-ancestors 'self'; object-src 'none'; upgrade-insecure-requests",
-    },
-    {
         key: "Referrer-Policy",
         value: "strict-origin-when-cross-origin",
     },

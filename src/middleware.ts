@@ -1,6 +1,18 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { validateAuthRedirectParams } from "./lib/redirect-policy";
 
+function createContentSecurityPolicy(nonce: string) {
+    const developmentDirective =
+        process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : "";
+    return [
+        `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${developmentDirective}`,
+        "base-uri 'self'",
+        "frame-ancestors 'self'",
+        "object-src 'none'",
+        "upgrade-insecure-requests",
+    ].join("; ");
+}
+
 const AUTH_REDIRECT_PATHS = new Set([
     "/forgot-password",
     "/login",
@@ -24,7 +36,17 @@ export function middleware(request: NextRequest) {
         }
     }
 
-    const response = NextResponse.next();
+    const nonceBytes = crypto.getRandomValues(new Uint8Array(16));
+    const nonce = btoa(String.fromCharCode(...nonceBytes));
+    const contentSecurityPolicy = createContentSecurityPolicy(nonce);
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-nonce", nonce);
+    requestHeaders.set("Content-Security-Policy", contentSecurityPolicy);
+
+    const response = NextResponse.next({
+        request: { headers: requestHeaders },
+    });
+    response.headers.set("Content-Security-Policy", contentSecurityPolicy);
     response.headers.set(
         "x-request-id",
         request.headers.get("x-request-id") || crypto.randomUUID(),

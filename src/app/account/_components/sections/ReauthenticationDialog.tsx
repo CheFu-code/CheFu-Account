@@ -9,6 +9,7 @@ export function ReauthenticationDialog({
     confirmNewPassword,
     email,
     isChangingPassword,
+    isRevokingTrustedDevices,
     isSubmitting,
     onCancel,
     onCodeChange,
@@ -24,6 +25,7 @@ export function ReauthenticationDialog({
     confirmNewPassword: string;
     email: string;
     isChangingPassword: boolean;
+    isRevokingTrustedDevices: boolean;
     isSubmitting: boolean;
     onCancel: () => void;
     onCodeChange: (value: string) => void;
@@ -56,14 +58,22 @@ export function ReauthenticationDialog({
                         </span>
                         <div>
                             <h3 id="reauth-title" className="text-xl font-semibold">
-                                {isChangingPassword ? "Change your password" : "Confirm your sign-in"}
+                                {isChangingPassword
+                                    ? "Change your password"
+                                    : isRevokingTrustedDevices
+                                      ? "Revoke trusted-device access"
+                                      : "Confirm your sign-in"}
                             </h3>
                             <p className="mt-1 text-sm leading-6 text-[#8f887d]">
                                 {isChangingPassword
                                     ? `Confirm your sign-in for ${email}, then choose a new password.`
-                                    : requiresMfa
-                                      ? "Enter your authenticator code to finish confirming this change."
-                                      : `Enter the password for ${email} to continue.`}
+                                    : isRevokingTrustedDevices
+                                      ? requiresMfa
+                                          ? "Enter your authenticator code to confirm revoking trusted-device access."
+                                          : `Enter the password for ${email} to revoke trusted-device access.`
+                                      : requiresMfa
+                                        ? "Enter your authenticator code to finish confirming this change."
+                                        : `Enter the password for ${email} to continue.`}
                             </p>
                         </div>
                     </div>
@@ -72,7 +82,7 @@ export function ReauthenticationDialog({
                         onClick={onCancel}
                         disabled={isSubmitting}
                         className="account-button-icon"
-                        aria-label="Cancel sign-in confirmation"
+                        aria-label="Cancel security confirmation"
                     >
                         <X className="size-4" aria-hidden="true" />
                     </AccountButton>
@@ -164,7 +174,11 @@ export function ReauthenticationDialog({
                         ) : (
                             <KeyRound className="size-4" aria-hidden="true" />
                         )}
-                        {isChangingPassword ? "Change password" : "Continue"}
+                        {isChangingPassword
+                            ? "Change password"
+                            : isRevokingTrustedDevices
+                              ? "Confirm and revoke"
+                              : "Continue"}
                     </AccountButton>
                 </form>
             </div>

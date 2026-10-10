@@ -13,7 +13,11 @@ export type SecuritySummary = {
     backupCodesLastUsedAt: string | null;
 };
 
-export type PendingMfaAction = "start-setup" | "disable" | "change-password";
+export type PendingMfaAction =
+    | "start-setup"
+    | "disable"
+    | "change-password"
+    | "revoke-trusted-devices";
 
 export function formatApiError(
     data: { error?: string; message?: string; requestId?: string } | null,

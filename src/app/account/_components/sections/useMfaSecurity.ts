@@ -58,6 +58,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
     const [isDisablingTotp, setIsDisablingTotp] = useState(false);
     const [pendingReauthAction, setPendingReauthAction] =
         useState<PendingMfaAction | null>(null);
+    const [pendingTrustedDeviceId, setPendingTrustedDeviceId] = useState<string | undefined>();
     const [reauthPassword, setReauthPassword] = useState("");
     const [reauthCode, setReauthCode] = useState("");
     const [newPassword, setNewPassword] = useState("");
@@ -136,6 +137,10 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
             ? "Remove trust from this device? It will need verification before being trusted again."
             : "Revoke trust from all listed devices?";
         if (!window.confirm(prompt)) return;
+        await requestReauthentication("revoke-trusted-devices", deviceId);
+    }
+
+    async function performTrustedDeviceRevocation(token: string) {
         setRevokingTrustedDevice(true);
         try {
             const response = await fetch(apiUrl("/auth/trusted-devices"), {
@@ -145,13 +150,20 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
                     "Content-Type": "application/json",
                     "x-chefu-app": appId,
                 },
-                body: JSON.stringify(deviceId ? { deviceId } : { all: true }),
+                body: JSON.stringify({
+                    reauthToken: token,
+                    ...(pendingTrustedDeviceId
+                        ? { deviceId: pendingTrustedDeviceId }
+                        : { all: true }),
+                }),
             });
             const data = (await response.json().catch(() => null)) as ApiError | null;
             if (!response.ok) {
                 throw new Error(formatApiError(data, "Could not revoke device trust."));
             }
-            toast.success(deviceId ? "Device trust revoked." : "All device trust revoked.");
+            toast.success(
+                pendingTrustedDeviceId ? "Device trust revoked." : "All device trust revoked.",
+            );
             await loadTrustedDevices();
         } catch (error) {
             toast.error("Unable to revoke device trust.", {
@@ -167,8 +179,12 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         void loadTrustedDevices();
     }, [loadSecuritySummary, loadTrustedDevices]);
 
-    async function requestReauthentication(action: PendingMfaAction) {
+    async function requestReauthentication(
+        action: PendingMfaAction,
+        trustedDeviceId?: string,
+    ) {
         setPendingReauthAction(action);
+        setPendingTrustedDeviceId(trustedDeviceId);
         setReauthPassword("");
         setReauthCode("");
         setReauthPendingCredential("");
@@ -183,6 +199,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
 
     function resetReauthentication() {
         setPendingReauthAction(null);
+        setPendingTrustedDeviceId(undefined);
         setReauthPassword("");
         setReauthCode("");
         setReauthPendingCredential("");
@@ -495,6 +512,11 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
                 resetReauthentication();
                 return;
             }
+            if (action === "revoke-trusted-devices") {
+                await performTrustedDeviceRevocation(data.reauthToken);
+                resetReauthentication();
+                return;
+            }
             const passwordResponse = await fetch(apiUrl("/auth/security/password"), {
                 method: "PATCH",
                 credentials: "include",
@@ -521,9 +543,14 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
                 });
             }
         } catch (error) {
-            toast.error("Unable to confirm your sign-in.", {
-                description: error instanceof Error ? error.message : "Please try again.",
-            });
+            toast.error(
+                pendingReauthAction === "revoke-trusted-devices"
+                    ? "Unable to revoke device trust."
+                    : "Unable to confirm your sign-in.",
+                {
+                    description: error instanceof Error ? error.message : "Please try again.",
+                },
+            );
         } finally {
             setIsReauthenticating(false);
         }
@@ -554,6 +581,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         isLoading,
         isLoadingTrustedDevices,
         isReauthenticating,
+        isRevokingTrustedDevices: pendingReauthAction === "revoke-trusted-devices",
         isSendingVerification,
         isStartingTotp,
         isVerifyingTotp,

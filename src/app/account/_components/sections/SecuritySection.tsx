@@ -1,6 +1,7 @@
 "use client";
 
 import {
+    AlertTriangle,
     CheckCircle2,
     Copy,
     KeyRound,
@@ -12,9 +13,11 @@ import {
     Smartphone,
     Trash2,
 } from "lucide-react";
+import { useState } from "react";
 import { ActionRow } from "../AccountControls";
 import { AccountButton, AccountPanel, SectionHeader } from "../AccountPrimitives";
 import type { AccountSettingsFormProps } from "../account-form-types";
+import { AccountDeletionDialog } from "./AccountDeletionDialog";
 import { PasskeySection } from "./PasskeySection";
 import { ReauthenticationDialog } from "./ReauthenticationDialog";
 import { TotpSetupPanel } from "./TotpSetupPanel";
@@ -27,6 +30,7 @@ export function SecuritySection({
     onSendResetEmail,
 }: AccountSettingsFormProps) {
     const security = useMfaSecurity({ account, appId });
+    const [accountDeletionOpen, setAccountDeletionOpen] = useState(false);
     const mfaDescription = security.summary?.mfaEnabled
         ? `${security.summary.enrolledFactors.length} second factor${
               security.summary.enrolledFactors.length === 1 ? "" : "s"
@@ -92,7 +96,7 @@ export function SecuritySection({
                                         {isSendingReset ? (
                                             <Loader2 className="size-4 animate-spin" />
                                         ) : (
-                                            <Mail className="size-4 mr-1" />
+                                            <Mail className="size-4 mr-1.5" />
                                         )}
                                         Send reset
                                     </AccountButton>
@@ -122,7 +126,7 @@ export function SecuritySection({
                                             {security.isSendingVerification ? (
                                                 <Loader2 className="size-4 animate-spin" />
                                             ) : (
-                                                <Mail className="size-4 mr-1" />
+                                                <Mail className="size-4 mr-1.5" />
                                             )}
                                             Send email
                                         </AccountButton>
@@ -148,7 +152,7 @@ export function SecuritySection({
                                         disabled={security.isLoading}
                                     >
                                         <RotateCcw
-                                            className={`size-4 ${
+                                            className={`size-4 mr-1.5 ${
                                                 security.isLoading ? "animate-spin" : ""
                                             }`}
                                         />
@@ -164,9 +168,9 @@ export function SecuritySection({
                                             }
                                         >
                                             {security.isDisablingTotp ? (
-                                                <Loader2 className="size-4 animate-spin" />
+                                                <Loader2 className="size-4 animate-spin mr-1.5" />
                                             ) : (
-                                                <ShieldCheck className="size-4" />
+                                                <ShieldCheck className="size-4 mr-1.5" />
                                             )}
                                             Disable 2FA
                                         </AccountButton>
@@ -181,9 +185,9 @@ export function SecuritySection({
                                             }
                                         >
                                             {security.isStartingTotp ? (
-                                                <Loader2 className="size-4 animate-spin" />
+                                                <Loader2 className="size-4 animate-spin mr-1.5" />
                                             ) : (
-                                                <Smartphone className="size-4" />
+                                                <Smartphone className="size-4 mr-1.5" />
                                             )}
                                             Enable 2FA
                                         </AccountButton>
@@ -208,9 +212,9 @@ export function SecuritySection({
                                     disabled={security.isGeneratingCodes}
                                 >
                                     {security.isGeneratingCodes ? (
-                                        <Loader2 className="size-4 animate-spin" />
+                                        <Loader2 className="size-4 animate-spin mr-1.5" />
                                     ) : (
-                                        <KeyRound className="size-4" />
+                                        <KeyRound className="size-4 mr-1.5" />
                                     )}
                                     Generate codes
                                 </AccountButton>
@@ -281,7 +285,7 @@ export function SecuritySection({
                                 disabled={security.isLoadingTrustedDevices}
                             >
                                 <RotateCcw
-                                    className={`size-4 ${security.isLoadingTrustedDevices ? "animate-spin" : ""}`}
+                                    className={`size-4 mr-1.5 ${security.isLoadingTrustedDevices ? "animate-spin" : ""}`}
                                 />
                                 Refresh
                             </AccountButton>
@@ -289,12 +293,16 @@ export function SecuritySection({
                                 <AccountButton
                                     variant="danger"
                                     onClick={() => void security.revokeTrustedDevice()}
-                                    disabled={security.revokingTrustedDevice}
+                                    disabled={
+                                        security.revokingTrustedDevice ||
+                                        (security.reauthenticationOpen &&
+                                            security.isRevokingTrustedDevices)
+                                    }
                                 >
                                     {security.revokingTrustedDevice ? (
-                                        <Loader2 className="size-4 animate-spin" />
+                                        <Loader2 className="size-4 animate-spin mr-1.5" />
                                     ) : (
-                                        <Trash2 className="size-4" />
+                                        <Trash2 className="size-4 mr-1.5" />
                                     )}
                                     Revoke all
                                 </AccountButton>
@@ -334,9 +342,13 @@ export function SecuritySection({
                                     <AccountButton
                                         variant="danger"
                                         onClick={() => void security.revokeTrustedDevice(device.id)}
-                                        disabled={security.revokingTrustedDevice}
+                                        disabled={
+                                            security.revokingTrustedDevice ||
+                                            (security.reauthenticationOpen &&
+                                                security.isRevokingTrustedDevices)
+                                        }
                                     >
-                                        <Trash2 className="size-4" />
+                                        <Trash2 className="size-4 mr-1.5" />
                                         Revoke
                                     </AccountButton>
                                 </li>
@@ -351,6 +363,53 @@ export function SecuritySection({
             </AccountPanel>
 
             <PasskeySection />
+
+            <AccountPanel className="account-security-panel">
+                <section
+                    className="rounded-xl border border-[var(--danger)]/35 bg-[var(--danger-soft)] p-4 sm:p-5"
+                    aria-labelledby="security-danger-zone-title"
+                >
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="flex items-start gap-3">
+                            <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl border border-[var(--danger)]/25 bg-[var(--bg)] text-[var(--danger)]">
+                                <AlertTriangle className="size-4" aria-hidden="true" />
+                            </span>
+                            <div>
+                                <h2
+                                    id="security-danger-zone-title"
+                                    className="font-semibold text-[var(--danger)]"
+                                >
+                                    Danger Zone
+                                </h2>
+                                <p className="mt-1 max-w-2xl text-sm leading-6 text-[var(--fg-2)]">
+                                    Delete your shared sign-in sessions and lose access to all our apps,
+                                    tools, and associated data. Some records may be retained under
+                                    product or legal requirements.
+                                </p>
+                                {security.summary && !security.summary.hasPasswordProvider ? (
+                                    <p className="mt-2 text-sm leading-6 text-[var(--fg-muted)]">
+                                        This account has no password sign-in. Set a password above
+                                        before starting deletion verification.
+                                    </p>
+                                ) : null}
+                            </div>
+                        </div>
+                        <AccountButton
+                            variant="danger"
+                            onClick={() => setAccountDeletionOpen(true)}
+                            disabled={
+                                !security.sessionReady ||
+                                security.isLoading ||
+                                !security.summary?.hasPasswordProvider
+                            }
+                            className="shrink-0"
+                        >
+                            <Trash2 className="size-4 mr-1.5" aria-hidden="true" />
+                            Delete account
+                        </AccountButton>
+                    </div>
+                </section>
+            </AccountPanel>
 
             {security.totpSetup ? (
                 <TotpSetupPanel
@@ -370,6 +429,7 @@ export function SecuritySection({
                     confirmNewPassword={security.confirmNewPassword}
                     email={security.currentUser.email}
                     isChangingPassword={security.isChangingPassword}
+                    isRevokingTrustedDevices={security.isRevokingTrustedDevices}
                     isSubmitting={security.isReauthenticating}
                     onCancel={() => {
                         if (!security.isReauthenticating) security.resetReauthentication();
@@ -382,6 +442,13 @@ export function SecuritySection({
                     password={security.reauthPassword}
                     newPassword={security.newPassword}
                     requiresMfa={security.reauthenticationRequiresMfa}
+                />
+            ) : null}
+            {accountDeletionOpen ? (
+                <AccountDeletionDialog
+                    appId={appId}
+                    email={account.user.email}
+                    onCancel={() => setAccountDeletionOpen(false)}
                 />
             ) : null}
         </div>
