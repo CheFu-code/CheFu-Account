@@ -15,7 +15,11 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { ActionRow } from "../AccountControls";
-import { AccountButton, AccountPanel, SectionHeader } from "../AccountPrimitives";
+import {
+    AccountButton,
+    AccountPanel,
+    SectionHeader,
+} from "../AccountPrimitives";
 import type { AccountSettingsFormProps } from "../account-form-types";
 import { AccountDeletionDialog } from "./AccountDeletionDialog";
 import { PasskeySection } from "./PasskeySection";
@@ -32,9 +36,8 @@ export function SecuritySection({
     const security = useMfaSecurity({ account, appId });
     const [accountDeletionOpen, setAccountDeletionOpen] = useState(false);
     const mfaDescription = security.summary?.mfaEnabled
-        ? `${security.summary.enrolledFactors.length} second factor${
-              security.summary.enrolledFactors.length === 1 ? "" : "s"
-          } enrolled.`
+        ? `${security.summary.enrolledFactors.length} second factor${security.summary.enrolledFactors.length === 1 ? "" : "s"
+        } enrolled.`
         : "No second factor is enrolled yet. Add an authenticator app to protect your account sign-ins.";
     const hasPasswordProvider = security.hasPasswordProvider;
 
@@ -53,7 +56,9 @@ export function SecuritySection({
                         <div className="account-security-action-rows">
                             <ActionRow
                                 icon={KeyRound}
-                                title={hasPasswordProvider ? "Change password" : "Set a password"}
+                                title={
+                                    hasPasswordProvider ? "Change password" : "Set a password"
+                                }
                                 description={
                                     hasPasswordProvider
                                         ? "Choose a new password after confirming your sign-in."
@@ -138,7 +143,9 @@ export function SecuritySection({
 
                     <div className="account-security-group">
                         <div className="account-security-subsection-heading">
-                            <h2 className="account-subsection-title">Two-factor authentication</h2>
+                            <h2 className="account-subsection-title">
+                                Two-factor authentication
+                            </h2>
                         </div>
                         <ActionRow
                             icon={Smartphone}
@@ -152,9 +159,8 @@ export function SecuritySection({
                                         disabled={security.isLoading}
                                     >
                                         <RotateCcw
-                                            className={`size-4 mr-1.5 ${
-                                                security.isLoading ? "animate-spin" : ""
-                                            }`}
+                                            className={`size-4 mr-1.5 ${security.isLoading ? "animate-spin" : ""
+                                                }`}
                                         />
                                         Refresh
                                     </AccountButton>
@@ -163,8 +169,7 @@ export function SecuritySection({
                                             variant="danger"
                                             onClick={security.disableTotp}
                                             disabled={
-                                                security.isDisablingTotp ||
-                                                !security.totpFactorUid
+                                                security.isDisablingTotp || !security.totpFactorUid
                                             }
                                         >
                                             {security.isDisablingTotp ? (
@@ -202,8 +207,8 @@ export function SecuritySection({
                                 <div>
                                     <p className="font-semibold text-[#f4f0e8]">Recovery codes</p>
                                     <p className="mt-1 text-sm leading-6 text-[#8f887d]">
-                                        Generate one-time codes for account recovery. We show
-                                        them once and store only hashes.
+                                        Generate one-time codes for account recovery. We show them
+                                        once and store only hashes.
                                     </p>
                                 </div>
                                 <AccountButton
@@ -225,8 +230,8 @@ export function SecuritySection({
                                     {security.summary.backupCodesRemaining} unused codes
                                     {security.summary.backupCodesGeneratedAt
                                         ? `, generated ${new Date(
-                                              security.summary.backupCodesGeneratedAt,
-                                          ).toLocaleDateString()}`
+                                            security.summary.backupCodesGeneratedAt,
+                                        ).toLocaleDateString()}`
                                         : ""}
                                 </p>
                             ) : null}
@@ -271,10 +276,12 @@ export function SecuritySection({
                                 <MonitorSmartphone className="size-4" aria-hidden="true" />
                             </span>
                             <div>
-                                <h2 className="font-semibold text-[#f4f0e8]">Trusted devices</h2>
+                                <h2 className="font-semibold text-[#f4f0e8]">
+                                    Trusted devices
+                                </h2>
                                 <p className="mt-1 max-w-2xl text-sm leading-6 text-[#8f887d]">
-                                    Devices stay trusted for 90 days. New devices require an email code,
-                                    or an authenticator code when 2FA is enabled.
+                                    Devices stay trusted for 90 days. New devices require an email
+                                    code, or an authenticator code when 2FA is enabled.
                                 </p>
                             </div>
                         </div>
@@ -310,8 +317,11 @@ export function SecuritySection({
                         </div>
                     </div>
 
-                    {security.isLoadingTrustedDevices && !security.trustedDevices.length ? (
-                        <p className="py-4 text-sm text-[#8f887d]">Loading trusted devices…</p>
+                    {security.isLoadingTrustedDevices &&
+                        !security.trustedDevices.length ? (
+                        <p className="py-4 text-sm text-[#8f887d]">
+                            Loading trusted devices…
+                        </p>
                     ) : security.trustedDevices.length ? (
                         <ul className="divide-y divide-white/8">
                             {security.trustedDevices.map((device) => (
@@ -334,8 +344,9 @@ export function SecuritySection({
                                                 ) : null}
                                             </p>
                                             <p className="mt-1 text-xs leading-5 text-[#8f887d]">
-                                                Last used {new Date(device.lastSeenAt).toLocaleString()} ·
-                                                Expires {new Date(device.expiresAt).toLocaleDateString()}
+                                                Last used {new Date(device.lastSeenAt).toLocaleString()}{" "}
+                                                · Expires{" "}
+                                                {new Date(device.expiresAt).toLocaleDateString()}
                                             </p>
                                         </div>
                                     </div>
@@ -382,9 +393,11 @@ export function SecuritySection({
                                     Danger Zone
                                 </h2>
                                 <p className="mt-1 max-w-2xl text-sm leading-6 text-[var(--fg-2)]">
-                                    Delete your shared sign-in sessions and lose access to all our apps,
-                                    tools, and associated data. Some records may be retained under
-                                    product or legal requirements.
+                                    Deleting your shared sign-in account will end all active
+                                    sessions and permanently remove your access to our apps,
+                                    tools, and associated data. Certain records may be retained
+                                    where required for legal or operational purposes. This action
+                                    cannot be undone.
                                 </p>
                                 {security.summary && !security.summary.hasPasswordProvider ? (
                                     <p className="mt-2 text-sm leading-6 text-[var(--fg-muted)]">

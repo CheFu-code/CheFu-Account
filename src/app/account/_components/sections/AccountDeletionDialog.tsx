@@ -1,7 +1,8 @@
 "use client";
 
-import { AlertTriangle, Loader2, ShieldAlert, X } from "lucide-react";
+import { AlertTriangle, Eye, EyeOff, Loader2, ShieldAlert, X } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
+import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import { AccountButton } from "../AccountPrimitives";
 import { apiUrl, type ChefuAppId } from "../../../../lib/chefu-account";
@@ -33,6 +34,7 @@ export function AccountDeletionDialog({
     const [phase, setPhase] = useState<Phase>("password");
     const [acknowledged, setAcknowledged] = useState(false);
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [code, setCode] = useState("");
     const [reauthToken, setReauthToken] = useState("");
     const [mfaPendingCredential, setMfaPendingCredential] = useState("");
@@ -40,6 +42,11 @@ export function AccountDeletionDialog({
     const [resendCooldown, setResendCooldown] = useState(0);
     const [resendsRemaining, setResendsRemaining] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     useEffect(() => {
         if (resendCooldown <= 0) return;
@@ -69,7 +76,9 @@ export function AccountDeletionDialog({
                     setResendsRemaining(result.resendsRemaining);
                 }
             }
-            throw new Error(result.message || result.error || "The request could not be completed.");
+            throw new Error(
+                result.message || result.error || "The request could not be completed.",
+            );
         }
         return result;
     }
@@ -111,7 +120,9 @@ export function AccountDeletionDialog({
             if (result.mfaRequired) {
                 const factor = result.mfaInfo?.find((item) => item.mfaEnrollmentId);
                 if (!result.mfaPendingCredential || !factor?.mfaEnrollmentId) {
-                    throw new Error("No authenticator factor is available for this account.");
+                    throw new Error(
+                        "No authenticator factor is available for this account.",
+                    );
                 }
                 setMfaPendingCredential(result.mfaPendingCredential);
                 setMfaEnrollmentId(factor.mfaEnrollmentId);
@@ -120,13 +131,16 @@ export function AccountDeletionDialog({
                 return;
             }
             if (!result.reauthToken) {
-                throw new Error("The server could not confirm your sign-in. Please try again.");
+                throw new Error(
+                    "The server could not confirm your sign-in. Please try again.",
+                );
             }
             setPassword("");
             await requestEmailCode(result.reauthToken);
         } catch (error) {
             toast.error("Unable to continue account deletion.", {
-                description: error instanceof Error ? error.message : "Please try again.",
+                description:
+                    error instanceof Error ? error.message : "Please try again.",
             });
         } finally {
             setIsSubmitting(false);
@@ -148,12 +162,17 @@ export function AccountDeletionDialog({
                 verificationCode: code,
             });
             if (!result.reauthToken) {
-                throw new Error("The server could not confirm your sign-in. Please try again.");
+                throw new Error(
+                    "The server could not confirm your sign-in. Please try again.",
+                );
             }
             token = result.reauthToken;
         } catch (error) {
             toast.error("Unable to verify the authenticator code.", {
-                description: error instanceof Error ? error.message : "Check the code and try again.",
+                description:
+                    error instanceof Error
+                        ? error.message
+                        : "Check the code and try again.",
             });
             setIsSubmitting(false);
             return;
@@ -162,7 +181,16 @@ export function AccountDeletionDialog({
         setReauthToken(token);
         setCode("");
         setPhase("mfa-confirm");
-        setIsSubmitting(false);
+        try {
+            await completeDeletion(token);
+        } catch (error) {
+            toast.error("Unable to delete the account.", {
+                description:
+                    error instanceof Error ? error.message : "Please try again.",
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
     }
 
     async function verifyEmailCode(event: FormEvent<HTMLFormElement>) {
@@ -176,7 +204,10 @@ export function AccountDeletionDialog({
             await completeDeletion(undefined, code);
         } catch (error) {
             toast.error("Unable to verify the email code.", {
-                description: error instanceof Error ? error.message : "Check the code and try again.",
+                description:
+                    error instanceof Error
+                        ? error.message
+                        : "Check the code and try again.",
             });
         } finally {
             setIsSubmitting(false);
@@ -186,7 +217,9 @@ export function AccountDeletionDialog({
     async function retryMfaDeletion(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
         if (!reauthToken) {
-            toast.error("Your confirmation expired. Start the account deletion steps again.");
+            toast.error(
+                "Your confirmation expired. Start the account deletion steps again.",
+            );
             return;
         }
         setIsSubmitting(true);
@@ -194,7 +227,8 @@ export function AccountDeletionDialog({
             await completeDeletion(reauthToken);
         } catch (error) {
             toast.error("Unable to delete the account.", {
-                description: error instanceof Error ? error.message : "Please try again.",
+                description:
+                    error instanceof Error ? error.message : "Please try again.",
             });
         } finally {
             setIsSubmitting(false);
@@ -208,7 +242,8 @@ export function AccountDeletionDialog({
             await requestEmailCode();
         } catch (error) {
             toast.error("Unable to resend the confirmation code.", {
-                description: error instanceof Error ? error.message : "Please try again.",
+                description:
+                    error instanceof Error ? error.message : "Please try again.",
             });
         } finally {
             setIsSubmitting(false);
@@ -219,12 +254,14 @@ export function AccountDeletionDialog({
         phase === "password"
             ? startVerification
             : phase === "mfa"
-              ? verifyMfa
-              : phase === "mfa-confirm"
-                ? retryMfaDeletion
-                : verifyEmailCode;
+                ? verifyMfa
+                : phase === "mfa-confirm"
+                    ? retryMfaDeletion
+                    : verifyEmailCode;
 
-    return (
+    if (!isMounted) return null;
+
+    return createPortal(
         <div
             className="fixed inset-0 z-[80] flex items-center justify-center overflow-y-auto bg-black/70 px-4 py-6 backdrop-blur-sm"
             role="dialog"
@@ -245,23 +282,27 @@ export function AccountDeletionDialog({
                             <h2 id="account-deletion-title" className="text-xl font-semibold">
                                 {phase === "complete"
                                     ? "Shared sign-in deleted"
-                                    : "Delete your CheFu account?"}
+                                    : "Delete your account?"}
                             </h2>
                             {phase !== "complete" ? (
                                 <p className="mt-1 text-sm leading-6 text-[var(--fg-muted)]">
-                                    This permanently deletes your shared sign-in sessions. You will lose
-                                    access to all our apps and tools and the data associated with them.
-                                    Some records may be retained under product or legal requirements.
+                                    This permanently deletes your shared sign-in account and ends
+                                    all active sessions. You will lose access to all our apps and
+                                    tools, along with the data associated with them. Certain
+                                    records may be retained where required for legal or
+                                    operational purposes.
                                 </p>
                             ) : (
                                 <p className="mt-1 text-sm leading-6 text-[var(--fg-muted)]">
-                                    Your shared sign-in has been deleted. You have been signed out.
+                                    Your shared sign-in account has been deleted, and you have
+                                    been signed out of all sessions.
                                 </p>
                             )}
                         </div>
                     </div>
                     {phase !== "complete" ? (
                         <AccountButton
+                            type="button"
                             variant="secondary"
                             onClick={onCancel}
                             disabled={isSubmitting}
@@ -275,6 +316,7 @@ export function AccountDeletionDialog({
 
                 {phase === "complete" ? (
                     <AccountButton
+                        type="button"
                         variant="danger"
                         className="mt-6 w-full"
                         onClick={() => window.location.assign("/login")}
@@ -285,8 +327,8 @@ export function AccountDeletionDialog({
                     <>
                         {phase === "password" ? (
                             <p className="mt-4 rounded-xl border border-[var(--danger)]/20 bg-[var(--danger-soft)] p-3 text-sm leading-6 text-[var(--danger)]">
-                                Deleting your sign-in removes your access to our services. Access
-                                to some associated content may not be recoverable.
+                                Deleting your sign-in removes your access to our services.
+                                Access to some associated content may not be recoverable.
                             </p>
                         ) : null}
                         <label className="mt-5 flex items-start gap-3 text-sm leading-6">
@@ -297,35 +339,66 @@ export function AccountDeletionDialog({
                                 className="account-auth-checkbox mt-1 size-4 shrink-0"
                             />
                             <span>
-                                I acknowledge that I will lose access to my shared sign-in sessions,
-                                apps, tools, and associated data.
+                                I acknowledge that I will lose access to my shared sign-in
+                                sessions, apps, tools, and associated data.
                             </span>
                         </label>
 
-                        <form onSubmit={submitHandler} className="mt-5 space-y-4">
+                        <form
+                            onSubmit={(event) => {
+                                event.stopPropagation();
+                                void submitHandler(event);
+                            }}
+                            className="mt-5 space-y-4"
+                        >
                             {phase === "password" ? (
-                                <label className="block space-y-2" htmlFor="delete-account-password">
-                                    <span className="text-sm font-medium">Confirm your password</span>
-                                    <input
-                                        id="delete-account-password"
-                                        type="password"
-                                        value={password}
-                                        onChange={(event) => setPassword(event.target.value)}
-                                        className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--fg)] outline-none focus:border-[var(--danger)] focus:ring-3 focus:ring-[var(--danger)]/15"
-                                        autoComplete="current-password"
-                                        autoFocus
-                                        required
-                                    />
+                                <label
+                                    className="block space-y-2"
+                                    htmlFor="delete-account-password"
+                                >
+                                    <span className="text-sm font-medium">
+                                        Confirm your password
+                                    </span>
+                                    <div className="relative">
+                                        <input
+                                            id="delete-account-password"
+                                            type={showPassword ? "text" : "password"}
+                                            value={password}
+                                            onChange={(event) => setPassword(event.target.value)}
+                                            className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 pr-12 text-sm text-[var(--fg)] outline-none focus:border-[var(--danger)] focus:ring-3 focus:ring-[var(--danger)]/15"
+                                            autoComplete="current-password"
+                                            autoFocus
+                                            required
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword((visible) => !visible)}
+                                            className="absolute inset-y-0 right-0 flex items-center px-3 text-[var(--fg-muted)] transition hover:text-[var(--fg)] focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-[var(--accent)]"
+                                            aria-label={showPassword ? "Hide password" : "Show password"}
+                                            aria-pressed={showPassword}
+                                        >
+                                            {showPassword ? (
+                                                <EyeOff className="size-4" aria-hidden="true" />
+                                            ) : (
+                                                <Eye className="size-4" aria-hidden="true" />
+                                            )}
+                                        </button>
+                                    </div>
                                 </label>
                             ) : phase === "mfa-confirm" ? (
                                 <p className="rounded-xl border border-[var(--danger)]/20 bg-[var(--danger-soft)] p-3 text-sm leading-6 text-[var(--fg-muted)]">
-                                    Your authenticator code was verified. Confirm below to permanently
-                                    delete the shared sign-in.
+                                    Your authenticator code was verified. Confirm below to
+                                    permanently delete the shared sign-in.
                                 </p>
                             ) : (
-                                <label className="block space-y-2" htmlFor="delete-account-code">
+                                <label
+                                    className="block space-y-2"
+                                    htmlFor="delete-account-code"
+                                >
                                     <span className="text-sm font-medium">
-                                        {phase === "mfa" ? "Authenticator code" : "Email confirmation code"}
+                                        {phase === "mfa"
+                                            ? "Authenticator code"
+                                            : "Email confirmation code"}
                                     </span>
                                     <input
                                         id="delete-account-code"
@@ -343,7 +416,8 @@ export function AccountDeletionDialog({
                                     />
                                     {phase === "email" ? (
                                         <p className="text-xs leading-5 text-[var(--fg-muted)]">
-                                            This code expires in 10 minutes. Incorrect codes are limited.
+                                            This code expires in 10 minutes. Incorrect codes are
+                                            limited.
                                         </p>
                                     ) : null}
                                 </label>
@@ -358,8 +432,8 @@ export function AccountDeletionDialog({
                                     (phase === "password"
                                         ? !password
                                         : phase === "mfa-confirm"
-                                          ? !reauthToken
-                                          : !/^\d{6}$/.test(code))
+                                            ? !reauthToken
+                                            : !/^\d{6}$/.test(code))
                                 }
                             >
                                 {isSubmitting ? (
@@ -368,10 +442,10 @@ export function AccountDeletionDialog({
                                 {phase === "password"
                                     ? "Continue securely"
                                     : phase === "mfa"
-                                      ? "Verify and delete account"
-                                      : phase === "mfa-confirm"
-                                        ? "Delete account"
-                                        : "Verify email and delete account"}
+                                        ? "Verify and delete account"
+                                        : phase === "mfa-confirm"
+                                            ? "Delete account"
+                                            : "Verify email and delete account"}
                             </AccountButton>
                         </form>
                         {phase === "email" ? (
@@ -389,13 +463,14 @@ export function AccountDeletionDialog({
                                 {resendsRemaining <= 0
                                     ? "Daily resend limit reached"
                                     : resendCooldown > 0
-                                      ? `Resend code in ${resendCooldown}s`
-                                      : `Resend code (${resendsRemaining} left)`}
+                                        ? `Resend code in ${resendCooldown}s`
+                                        : `Resend code (${resendsRemaining} left)`}
                             </button>
                         ) : null}
                     </>
                 )}
             </div>
-        </div>
+        </div>,
+        document.body,
     );
 }
