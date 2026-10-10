@@ -350,24 +350,24 @@ export function LoginClient() {
             />
             {trustDeviceVerificationOpen ? (
                 <div
-                    className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 px-4"
+                    className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-sm"
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby="trusted-device-title"
                 >
-                    <div className="w-full max-w-md rounded-xl border border-stone-200 bg-white p-6 shadow-xl">
-                        <h2 id="trusted-device-title" className="text-xl font-semibold">
+                    <div className="w-full max-w-md rounded-xl border border-[var(--border)] bg-[var(--bg)] p-5 text-[var(--fg)] shadow-xl sm:p-6">
+                        <h2 id="trusted-device-title" className="text-xl font-semibold text-[var(--fg)]">
                             Verify this device
                         </h2>
-                        <p className="mt-2 text-sm leading-6 text-stone-600">
+                        <p className="mt-2 text-sm leading-6 text-[var(--fg-muted)]">
                             Enter the 6-digit code sent to {email}. This device will be trusted for 90 days.
                         </p>
                         <form onSubmit={verifyTrustedDevice} className="mt-5 space-y-4">
                             <fieldset className="space-y-2">
-                                <legend className="text-sm font-medium text-stone-800">
+                                <legend className="text-sm font-medium text-[var(--fg-2)]">
                                     Email code
                                 </legend>
-                                <div className="flex justify-between gap-2">
+                                <div className="grid grid-cols-6 gap-2">
                                     {Array.from({ length: 6 }, (_, index) => (
                                         <input
                                             key={index}
@@ -386,7 +386,7 @@ export function LoginClient() {
                                                 handleTrustedDeviceCodeKeyDown(index, event)
                                             }
                                             onPaste={handleTrustedDeviceCodePaste}
-                                            className="size-11 rounded-lg border border-stone-300 bg-white text-center text-xl font-semibold text-stone-900 outline-none transition hover:border-stone-400 focus:border-amber-700 focus:ring-3 focus:ring-amber-700/15 sm:size-12"
+                                            className="aspect-square w-full min-w-0 max-w-12 rounded-lg border border-[var(--border-strong)] bg-[var(--surface)] text-center text-xl font-semibold text-[var(--fg)] outline-none transition hover:border-[var(--accent)] focus:border-[var(--accent)] focus:ring-3 focus:ring-[var(--accent)]/15 sm:max-w-14"
                                             autoComplete={index === 0 ? "one-time-code" : "off"}
                                             autoFocus={index === 0}
                                         />
@@ -402,7 +402,7 @@ export function LoginClient() {
                                         trustedDeviceCode.replace(/\s/g, ""),
                                     )
                                 }
-                                className="h-11 w-full rounded-lg bg-amber-800 px-4 text-sm font-semibold text-white hover:bg-amber-900 disabled:opacity-60"
+                                className="h-11 w-full rounded-lg bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--accent-fg)] hover:bg-[var(--accent-hover)] disabled:opacity-60"
                             >
                                 {isVerifyingTrustedDevice ? "Verifying…" : "Verify and trust device"}
                             </button>
@@ -416,7 +416,7 @@ export function LoginClient() {
                                         trustedDeviceResendCooldown > 0 ||
                                         trustedDeviceResendsRemaining <= 0
                                     }
-                                    className="text-amber-800 underline underline-offset-4 disabled:opacity-50"
+                                    className="text-[var(--accent)] underline underline-offset-4 hover:text-[var(--accent-hover)] disabled:opacity-50"
                                 >
                                     {isResendingTrustedDeviceCode
                                         ? "Sending…"
@@ -434,7 +434,7 @@ export function LoginClient() {
                                         completeAuthRedirect(fromPath, router.replace);
                                     }}
                                     disabled={isVerifyingTrustedDevice}
-                                    className="text-stone-600 underline underline-offset-4 disabled:opacity-50"
+                                    className="text-[var(--fg-muted)] underline underline-offset-4 hover:text-[var(--fg)] disabled:opacity-50"
                                 >
                                     Continue without trusting
                                 </button>
