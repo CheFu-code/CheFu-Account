@@ -355,8 +355,8 @@ export function useAccountController() {
                         error instanceof Error ? error.message : "Please refresh and try again.",
                 });
             }
-            toast.success("Password reset email sent.", {
-                description: `Check ${account.user.email}.`,
+            toast.success("Password reset request processed.", {
+                description: `If a password reset is available for ${account.user.email}, an email is on its way. Check your inbox and spam folder.`,
             });
         } catch (error) {
             toast.error("Unable to send password reset email.", {

@@ -39,7 +39,22 @@ export function EmailVerificationDialog({
     const [resendCooldown, setResendCooldown] = useState(initialCooldownSeconds);
     const [resendsRemaining, setResendsRemaining] = useState(initialResendsRemaining);
     const refs = useRef<Array<HTMLInputElement | null>>([]);
+    const formRef = useRef<HTMLFormElement | null>(null);
+    const lastAutoSubmittedCode = useRef("");
     const digits = Array.from({ length: 6 }, (_, index) => code[index] || "");
+
+    useEffect(() => {
+        if (code.length !== 6) {
+            lastAutoSubmittedCode.current = "";
+            return;
+        }
+        if (isSubmitting || lastAutoSubmittedCode.current === code) return;
+
+        const form = formRef.current;
+        if (!form) return;
+        lastAutoSubmittedCode.current = code;
+        form.requestSubmit();
+    }, [code, isSubmitting]);
 
     useEffect(() => {
         if (resendCooldown <= 0) return;
@@ -117,7 +132,14 @@ export function EmailVerificationDialog({
                     </button>
                 </div>
 
-                <form className="mt-7 space-y-5" onSubmit={(event) => { event.preventDefault(); onSubmit(code); }}>
+                <form
+                    ref={formRef}
+                    className="mt-7 space-y-5"
+                    onSubmit={(event) => {
+                        event.preventDefault();
+                        onSubmit(code);
+                    }}
+                >
                     <fieldset className="space-y-2">
                         <legend className="text-xs font-bold uppercase tracking-[0.12em] text-stone-700">Verification code</legend>
                         <p

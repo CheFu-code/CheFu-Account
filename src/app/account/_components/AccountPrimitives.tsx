@@ -55,10 +55,12 @@ export function AccountButton({
     children,
     variant = "secondary",
     className = "",
+    type = "button",
     ...props
 }: AccountButtonProps) {
     return (
         <button
+            type={type}
             {...props}
             className={`account-button account-button-${variant} ${className}`.trim()}
         >

@@ -1,7 +1,13 @@
 "use client";
 
 import { Loader2, ShieldCheck, X } from "lucide-react";
-import { useRef, type ClipboardEvent, type FormEvent, type KeyboardEvent } from "react";
+import {
+    useEffect,
+    useRef,
+    type ClipboardEvent,
+    type FormEvent,
+    type KeyboardEvent,
+} from "react";
 
 export function MfaChallengeDialog({
     code,
@@ -21,7 +27,26 @@ export function MfaChallengeDialog({
     open: boolean;
 }) {
     const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
+    const formRef = useRef<HTMLFormElement | null>(null);
+    const lastAutoSubmittedCode = useRef("");
     const digits = Array.from({ length: 6 }, (_, index) => code[index] ?? "");
+
+    useEffect(() => {
+        if (open && !code) inputRefs.current[0]?.focus();
+    }, [code, open]);
+
+    useEffect(() => {
+        if (!open || code.length !== 6) {
+            lastAutoSubmittedCode.current = "";
+            return;
+        }
+        if (isSubmitting || lastAutoSubmittedCode.current === code) return;
+
+        const form = formRef.current;
+        if (!form) return;
+        lastAutoSubmittedCode.current = code;
+        form.requestSubmit();
+    }, [code, isSubmitting, open]);
 
     function updateDigit(index: number, value: string) {
         const nextDigit = value.replace(/\D/g, "").slice(-1);
@@ -55,16 +80,23 @@ export function MfaChallengeDialog({
     if (!open) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/45 px-4 py-6 backdrop-blur-sm">
-            <div className="w-full max-w-md rounded-xl border border-stone-200 bg-white p-7 text-stone-900 shadow-2xl shadow-stone-900/20 sm:p-9">
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/70 px-4 py-6 backdrop-blur-sm"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="mfa-challenge-title"
+        >
+            <div className="my-auto w-full max-w-md rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-5 text-[var(--fg)] shadow-2xl sm:p-7">
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3">
-                        <span className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-amber-200 bg-amber-50 text-amber-800">
+                        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-[var(--accent)]/25 bg-[var(--surface-alt)] text-[var(--accent)]">
                             <ShieldCheck className="size-5" aria-hidden="true" />
                         </span>
                         <div>
-                            <h2 className="text-xl font-semibold tracking-tight">Verify 2FA</h2>
-                            <p className="mt-1 text-sm leading-6 text-stone-600">
+                            <h2 id="mfa-challenge-title" className="text-xl font-semibold tracking-tight">
+                                Verify 2FA
+                            </h2>
+                            <p className="mt-1 text-sm leading-6 text-[var(--fg-muted)]">
                                 Enter the 6-digit code from your authenticator app
                                 {email ? ` for ${email}` : ""}.
                             </p>
@@ -73,19 +105,19 @@ export function MfaChallengeDialog({
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="rounded-lg p-2 text-stone-500 transition hover:bg-stone-100 hover:text-stone-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700"
+                        className="rounded-lg p-2 text-[var(--fg-muted)] transition hover:bg-[var(--surface-alt)] hover:text-[var(--fg)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
                         aria-label="Cancel MFA verification"
                     >
                         <X className="size-4" aria-hidden="true" />
                     </button>
                 </div>
 
-                <form onSubmit={onSubmit} className="mt-7 space-y-5">
+                <form ref={formRef} onSubmit={onSubmit} className="mt-7 space-y-5">
                     <fieldset className="space-y-2">
-                        <legend className="text-xs font-bold uppercase tracking-[0.12em] text-stone-700">
+                        <legend className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--fg-2)]">
                             Authenticator code
                         </legend>
-                        <div className="flex justify-between gap-2">
+                        <div className="grid grid-cols-6 gap-2">
                             {digits.map((digit, index) => (
                                 <input
                                     key={index}
@@ -100,7 +132,7 @@ export function MfaChallengeDialog({
                                     onChange={(event) => updateDigit(index, event.target.value)}
                                     onKeyDown={(event) => handleKeyDown(index, event)}
                                     onPaste={handlePaste}
-                                    className="size-12 rounded-lg border border-stone-300 bg-white text-center text-xl font-semibold text-stone-900 outline-none transition hover:border-stone-400 focus:border-amber-700 focus:ring-3 focus:ring-amber-700/15 sm:size-14"
+                                    className="aspect-square w-full min-w-0 rounded-lg border border-[var(--border-strong)] bg-[var(--surface)] text-center text-xl font-semibold text-[var(--fg)] outline-none transition hover:border-[var(--accent)] focus:border-[var(--accent)] focus:ring-3 focus:ring-[var(--accent)]/15"
                                     autoComplete={index === 0 ? "one-time-code" : "off"}
                                     autoFocus={index === 0}
                                 />
@@ -111,7 +143,7 @@ export function MfaChallengeDialog({
                     <button
                         type="submit"
                         disabled={isSubmitting || code.length !== 6}
-                        className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-stone-900 px-4 text-sm font-medium text-white transition hover:bg-stone-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--accent-fg)] transition hover:bg-[var(--accent-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         {isSubmitting ? (
                             <Loader2 className="size-4 animate-spin" aria-hidden="true" />

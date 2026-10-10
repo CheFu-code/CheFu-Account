@@ -44,6 +44,8 @@ export function LoginClient() {
     const [mfaEnrollmentId, setMfaEnrollmentId] = useState("");
     const passkey = usePasskeySignIn();
     const trustedDeviceCodeRefs = useRef<Array<HTMLInputElement | null>>([]);
+    const trustedDeviceFormRef = useRef<HTMLFormElement | null>(null);
+    const lastAutoSubmittedTrustedDeviceCode = useRef("");
 
     useEffect(() => {
         if (trustedDeviceResendCooldown <= 0) return;
@@ -53,6 +55,25 @@ export function LoginClient() {
         );
         return () => window.clearTimeout(timer);
     }, [trustedDeviceResendCooldown]);
+
+    useEffect(() => {
+        const code = trustedDeviceCode.replace(/\s/g, "");
+        if (!trustDeviceVerificationOpen || !/^\d{6}$/.test(code)) {
+            lastAutoSubmittedTrustedDeviceCode.current = "";
+            return;
+        }
+        if (
+            isVerifyingTrustedDevice ||
+            lastAutoSubmittedTrustedDeviceCode.current === code
+        ) {
+            return;
+        }
+
+        const form = trustedDeviceFormRef.current;
+        if (!form) return;
+        lastAutoSubmittedTrustedDeviceCode.current = code;
+        form.requestSubmit();
+    }, [isVerifyingTrustedDevice, trustDeviceVerificationOpen, trustedDeviceCode]);
 
     const appId = resolveChefuApp(searchParams.get("app"));
     const appName = chefuAppLabel(appId);
@@ -155,6 +176,7 @@ export function LoginClient() {
             setMfaEnrollmentId("");
             setMfaCode("");
         } catch (error) {
+            setMfaCode("");
             toast.error("Unable to verify your 2FA code.", {
                 description: readMfaError(error),
             });
@@ -187,10 +209,7 @@ export function LoginClient() {
     async function verifyTrustedDevice(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
         const normalizedCode = trustedDeviceCode.replace(/\s/g, "");
-        if (
-            trustedDeviceCode.split(" ").length !== 6 ||
-            !/^\d{6}$/.test(normalizedCode)
-        ) {
+        if (!/^\d{6}$/.test(normalizedCode)) {
             toast.error("Enter the 6-digit code from your email.");
             return;
         }
@@ -216,6 +235,8 @@ export function LoginClient() {
             setTrustDeviceVerificationOpen(false);
             completeAuthRedirect(fromPath, router.replace);
         } catch (error) {
+            setTrustedDeviceCode("");
+            trustedDeviceCodeRefs.current[0]?.focus();
             toast.error("Unable to verify this device.", {
                 description: error instanceof Error ? error.message : "Please try again.",
             });
@@ -268,7 +289,7 @@ export function LoginClient() {
     function handleTrustedDeviceCodePaste(event: ClipboardEvent<HTMLInputElement>) {
         event.preventDefault();
         const pastedCode = event.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
-        setTrustedDeviceCode(pastedCode);
+        setTrustedDeviceCode(pastedCode.split("").join(" "));
         trustedDeviceCodeRefs.current[Math.min(pastedCode.length, 5)]?.focus();
     }
 
@@ -362,7 +383,11 @@ export function LoginClient() {
                         <p className="mt-2 text-sm leading-6 text-[var(--fg-muted)]">
                             Enter the 6-digit code sent to {email}. This device will be trusted for 90 days.
                         </p>
-                        <form onSubmit={verifyTrustedDevice} className="mt-5 space-y-4">
+                        <form
+                            ref={trustedDeviceFormRef}
+                            onSubmit={verifyTrustedDevice}
+                            className="mt-5 space-y-4"
+                        >
                             <fieldset className="space-y-2">
                                 <legend className="text-sm font-medium text-[var(--fg-2)]">
                                     Email code
@@ -397,7 +422,6 @@ export function LoginClient() {
                                 type="submit"
                                 disabled={
                                     isVerifyingTrustedDevice ||
-                                    trustedDeviceCode.split(" ").length !== 6 ||
                                     !/^\d{6}$/.test(
                                         trustedDeviceCode.replace(/\s/g, ""),
                                     )

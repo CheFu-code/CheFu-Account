@@ -1,7 +1,8 @@
 "use client";
 
 import { KeyRound, Loader2, ShieldCheck, X } from "lucide-react";
-import type { FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
+import { createPortal } from "react-dom";
 import { AccountButton } from "../AccountPrimitives";
 
 export function ReauthenticationDialog({
@@ -37,20 +38,28 @@ export function ReauthenticationDialog({
     newPassword: string;
     requiresMfa: boolean;
 }) {
+    const [isMounted, setIsMounted] = useState(false);
     const validNewPassword =
         !isChangingPassword ||
         (newPassword.length >= 8 && newPassword === confirmNewPassword);
     const canSubmit =
         (requiresMfa ? code.length === 6 : password.length > 0) && validNewPassword;
 
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    if (!isMounted) return null;
+
     return (
-        <div
-            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-sm"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="reauth-title"
-        >
-            <div className="w-full max-w-md rounded-[2rem] border border-white/12 bg-[#1a1916] p-6 text-[#f4f0e8] shadow-2xl shadow-black/50">
+        createPortal(
+            <div
+                className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-sm"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="reauth-title"
+            >
+                <div className="w-full max-w-md rounded-[2rem] border border-white/12 bg-[#1a1916] p-6 text-[#f4f0e8] shadow-2xl shadow-black/50">
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3">
                         <span className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-[#e5ad5b]/22 bg-[#e5ad5b]/10 text-[#ffd18a]">
@@ -88,7 +97,13 @@ export function ReauthenticationDialog({
                     </AccountButton>
                 </div>
 
-                <form onSubmit={onSubmit} className="mt-5 space-y-4">
+                <form
+                    onSubmit={(event) => {
+                        event.stopPropagation();
+                        onSubmit(event);
+                    }}
+                    className="mt-5 space-y-4"
+                >
                     {requiresMfa ? (
                         <label className="block space-y-2" htmlFor="reauth-code">
                             <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#bdb5a8]">
@@ -170,9 +185,9 @@ export function ReauthenticationDialog({
                         className="account-button-full"
                     >
                         {isSubmitting ? (
-                            <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                            <Loader2 className="size-4 mr-1.5 animate-spin" aria-hidden="true" />
                         ) : (
-                            <KeyRound className="size-4" aria-hidden="true" />
+                            <KeyRound className="size-4 mr-1.5" aria-hidden="true" />
                         )}
                         {isChangingPassword
                             ? "Change password"
@@ -181,7 +196,9 @@ export function ReauthenticationDialog({
                               : "Continue"}
                     </AccountButton>
                 </form>
-            </div>
-        </div>
+                </div>
+            </div>,
+            document.body,
+        )
     );
 }
