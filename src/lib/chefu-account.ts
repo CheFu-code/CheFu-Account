@@ -20,6 +20,7 @@ const appLabels: Record<ChefuAppId, string> = {
     merchant: "Chefu Merchant",
     cloudence: "Cloudence",
     nook: "Nook",
+    liftwise: "LiftWise",
 };
 
 export function apiUrl(path: string) {
@@ -77,7 +78,8 @@ function isChefuAppId(value: string): value is ChefuAppId {
         value === "logix-dash" ||
         value === "merchant" ||
         value === "cloudence" ||
-        value === "nook"
+        value === "nook" ||
+        value === "liftwise"
     );
 }
 

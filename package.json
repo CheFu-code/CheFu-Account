@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "test:sso": "node --test tests/liftwise-redirect.test.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
