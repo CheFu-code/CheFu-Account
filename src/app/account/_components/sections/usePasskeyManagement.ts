@@ -138,7 +138,13 @@ export function usePasskeyManagement() {
                     throw new Error("Failed to delete credential");
                 }
 
+                const result = (await response.json().catch(() => ({}))) as {
+                    notificationEmailSent?: boolean;
+                };
                 toast.success("Passkey deleted successfully!");
+                if (result.notificationEmailSent === false) {
+                    toast.warning("Passkey deleted, but the security email could not be sent.");
+                }
                 await loadCredentials();
             } catch (error) {
                 const message = error instanceof Error ? error.message : "Failed to delete passkey";
