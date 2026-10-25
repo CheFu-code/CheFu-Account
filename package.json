@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "test:sso": "node --test tests/liftwise-redirect.test.mjs",
+    "test:trusted-browser": "node --test tests/trusted-browser.test.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

@@ -5,6 +5,7 @@ import { Eye, EyeOff, Fingerprint, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { modeCopy } from "../constants/auth";
+import { TrustedBrowserChoice } from "../login/TrustedBrowserChoice";
 
 const inputClass = "account-auth-input";
 
@@ -128,20 +129,12 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                         ) : null}
 
                         {mode === "login" && props.setTrustDevice ? (
-                            <label className="account-auth-trust-device flex items-start gap-2.5 text-sm">
-                                <input
-                                    type="checkbox"
-                                    checked={props.trustDevice ?? false}
-                                    onChange={(event) => props.setTrustDevice?.(event.target.checked)}
-                                    className="account-auth-checkbox mt-0.5 size-4"
-                                />
-                                <span>
-                                    Trust this device for 90 days
-                                    <span className="account-auth-muted mt-0.5 block text-xs">
-                                        Only select this on a private device you control.
-                                    </span>
-                                </span>
-                            </label>
+                            <TrustedBrowserChoice
+                                email={email}
+                                checked={props.trustDevice ?? false}
+                                onChange={props.setTrustDevice}
+                                disabled={isSubmitting || Boolean(props.isPasskeySubmitting)}
+                            />
                         ) : null}
 
                         <button

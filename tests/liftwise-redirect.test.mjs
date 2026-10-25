@@ -21,9 +21,9 @@ function params(client = "liftwise-mobile", redirect = "liftwise://sso-callback"
   return new URLSearchParams({ app: "liftwise", returnTo: url.toString() });
 }
 
-test("LiftWise mobile and local web PKCE flows are accepted", () => {
+test("LiftWise mobile and deployed web PKCE flows are accepted", () => {
   assert.equal(validateAuthRedirectParams(params()), null);
-  assert.equal(validateAuthRedirectParams(params("liftwise-web", "http://localhost:8081/sso-callback")), null);
+  assert.equal(validateAuthRedirectParams(params("liftwise-web", "https://liftwise.chefu.co.za/sso-callback")), null);
 });
 
 test("another client, callback, app, or tampered state is rejected", () => {
