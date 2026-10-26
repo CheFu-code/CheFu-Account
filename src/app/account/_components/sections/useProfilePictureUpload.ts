@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { apiUrl } from "../../../../lib/chefu-account";
+import { authMutationFetch } from "../../../../lib/auth-reads";
 
 export interface ProfilePictureUploadState {
   isUploading: boolean;
@@ -59,7 +60,7 @@ export function useProfilePictureUpload() {
       setState((prev) => ({ ...prev, previewUrl: preview }));
 
       // Upload to backend
-      const response = await fetch(apiUrl("/auth/profile-picture"), {
+      const response = await authMutationFetch(apiUrl("/auth/profile-picture"), {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

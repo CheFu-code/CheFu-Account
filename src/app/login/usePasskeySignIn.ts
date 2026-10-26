@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { startAuthentication } from "@simplewebauthn/browser";
+import { authMutationFetch } from "../../lib/auth-reads";
 import { apiUrl, type ChefuAppId, type SessionTrustResult } from "../../lib/chefu-account";
 
 export type PasskeySignInState = {
@@ -43,7 +44,7 @@ export function usePasskeySignIn() {
         const assertionResponse = await startAuthentication(options);
 
         // Step 3: Verify authentication with server
-        const verifyResponse = await fetch(
+        const verifyResponse = await authMutationFetch(
           apiUrl("/auth/passkey/session/verify"),
           {
             method: "POST",

@@ -9,6 +9,8 @@ import {
     navItems,
 } from "./account-data";
 import { mockAccount } from "./preview-account";
+import { useAccountLoad } from "./useAccountLoad";
+import { authMutationFetch } from "../../../lib/auth-reads";
 import type {
     AccountProfile,
     AccountResponse,
@@ -64,58 +66,11 @@ export function useAccountController() {
     const [activeSection, setActiveSection] = useState(() =>
         resolveAccountSection(sectionParam),
     );
-    const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isSendingReset, setIsSendingReset] = useState(false);
     const [isSigningOut, setIsSigningOut] = useState(false);
 
-    useEffect(() => {
-        let cancelled = false;
-
-        async function loadAccount() {
-            try {
-                if (isDevPreview) {
-                    if (!cancelled) hydrateAccount(mockAccount);
-                    return;
-                }
-
-                const response = await fetch(apiUrl("/auth/me"), {
-                    credentials: "include",
-                    headers: { "x-chefu-app": appId },
-                });
-
-                if (response.status === 401) {
-                    router.replace(
-                        `/login?returnTo=${encodeURIComponent(getCurrentAccountPath())}`,
-                    );
-                    return;
-                }
-
-                if (!response.ok) throw new Error("Could not load your account.");
-
-                const data = (await response.json()) as AccountResponse;
-                if (!cancelled) {
-                    hydrateAccount(data);
-                }
-            } catch (error) {
-                if (cancelled) return;
-                toast.error("Unable to load your account.", {
-                    description:
-                        error instanceof Error ? error.message : "Please refresh and try again.",
-                });
-            } finally {
-                if (!cancelled) setIsLoading(false);
-            }
-        }
-
-        loadAccount();
-
-        return () => {
-            cancelled = true;
-        };
-    // hydrateAccount only updates local state setters and is intentionally stable for this load effect.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [appId, router]);
+    const isLoading = useAccountLoad(appId, hydrateAccount, getCurrentAccountPath, isDevPreview ? mockAccount : undefined);
 
     useEffect(() => {
         setActiveSection(resolveAccountSection(sectionParam));
@@ -284,7 +239,7 @@ export function useAccountController() {
                 return;
             }
 
-            const response = await fetch(apiUrl("/auth/profile"), {
+            const response = await authMutationFetch(apiUrl("/auth/profile"), {
                 method: "PATCH",
                 credentials: "include",
                 headers: {

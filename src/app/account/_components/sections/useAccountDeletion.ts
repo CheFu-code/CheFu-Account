@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { apiUrl, type ChefuAppId } from "../../../../lib/chefu-account";
+import { authMutationFetch } from "../../../../lib/auth-reads";
 
 type ApiResult = {
     error?: string;
@@ -49,7 +50,7 @@ export function useAccountDeletion({
     }, [resendCooldown]);
 
     async function post(path: string, body: Record<string, unknown>) {
-        const response = await fetch(apiUrl(path), {
+        const response = await authMutationFetch(apiUrl(path), {
             method: path === "/auth/account" ? "DELETE" : "POST",
             credentials: "include",
             headers: {

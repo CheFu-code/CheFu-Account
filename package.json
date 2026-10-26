@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "test:sso": "node --test tests/liftwise-redirect.test.mjs",
+    "test:sso": "node --test tests/liftwise-redirect.test.mjs tests/session-reuse.test.mjs tests/auth-reads.test.mjs",
     "test:trusted-browser": "node --test tests/trusted-browser.test.mjs",
     "dev": "next dev",
     "build": "next build",

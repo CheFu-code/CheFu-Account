@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { LoginClient } from "./LoginClient";
+import { ExistingSessionGate } from "../_components/ExistingSessionGate";
 
 export const metadata: Metadata = {
     title: "Sign in",
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
 export default function LoginPage() {
     return (
         <Suspense>
-            <LoginClient />
+            <ExistingSessionGate><LoginClient /></ExistingSessionGate>
         </Suspense>
     );
 }

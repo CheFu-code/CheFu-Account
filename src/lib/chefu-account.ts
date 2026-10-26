@@ -3,6 +3,7 @@ import {
     validateReturnToForApp,
     type ChefuAppId,
 } from "./redirect-policy";
+import { authMutationFetch } from "./auth-reads";
 
 export type { ChefuAppId };
 
@@ -89,7 +90,7 @@ export function preserveAuthParams(
 ) {
     const nextParams = new URLSearchParams();
 
-    for (const key of ["app", "returnTo", "next"]) {
+    for (const key of ["app", "returnTo", "next", "prompt"]) {
         const value = params.get(key);
         if (value) nextParams.set(key, value);
     }
@@ -121,7 +122,7 @@ export async function loginWithPassword(
     appId: ChefuAppId,
     trustDevice = false,
 ): Promise<SessionTrustResult> {
-    const response = await fetch(apiUrl("/auth/session/password"), {
+    const response = await authMutationFetch(apiUrl("/auth/session/password"), {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -181,7 +182,7 @@ export async function completePasswordMfaSession(
     appId: ChefuAppId,
     trustDevice = false,
 ): Promise<SessionTrustResult> {
-    const response = await fetch(apiUrl("/auth/session/mfa"), {
+    const response = await authMutationFetch(apiUrl("/auth/session/mfa"), {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -252,7 +253,7 @@ export async function verifyEmailVerificationCode(
     displayName: string,
     appId: ChefuAppId,
 ) {
-    const response = await fetch(apiUrl("/auth/email-verification/verify"), {
+    const response = await authMutationFetch(apiUrl("/auth/email-verification/verify"), {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -300,7 +301,7 @@ async function readApiError(response: Response) {
 export async function clearChefuAccountSession(globalLogout = true) {
     const path = globalLogout ? "/auth/session?global=true" : "/auth/session";
 
-    const response = await fetch(apiUrl(path), {
+    const response = await authMutationFetch(apiUrl(path), {
         method: "DELETE",
         credentials: "include",
     });
