@@ -196,7 +196,7 @@ const OAUTH_AUTHORIZE_QUERY_KEYS = new Set([
 ]);
 
 const OAUTH_OPAQUE_PARAM_PATTERN = /^[A-Za-z0-9._~:-]+$/;
-const ENCODED_UNSAFE_CHARACTER_PATTERN = /%(?:00|0a|0d|5c)/i;
+const ENCODED_UNSAFE_CHARACTER_PATTERN = /%(?:00|0a|0d|5c|2f|3f|23|25)/i;
 
 export function resolveChefuAppId(value?: string | null): ChefuAppId {
     const normalized = value?.trim().toLowerCase();
@@ -387,12 +387,18 @@ function parseAbsoluteUrl(value: string) {
 }
 
 function isSafeRelativePath(value: string) {
-    return (
-        value.startsWith("/") &&
-        !value.startsWith("//") &&
-        !value.startsWith("/\\") &&
-        !hasUnsafeCharacters(value)
-    );
+    if (!value.startsWith("/") || value.startsWith("//") || hasUnsafeCharacters(value)) return false;
+    try {
+        const base = "https://myaccount.chefu.co.za";
+        const parsed = new URL(value, base);
+        // URL parsing can normalize dot segments, encoded dots and authority separators.
+        // Reject ambiguous paths instead of silently changing their destination.
+        if (parsed.origin !== base || !parsed.pathname.startsWith("/")) return false;
+        if (/(?:^|\\/)(?:\\.|%2e){1,2}(?:\\/|$)/i.test(value.split("?")[0])) return false;
+        return true;
+    } catch {
+        return false;
+    }
 }
 
 function looksLikeRelativePath(value: string) {
@@ -411,7 +417,7 @@ function hasUnsafeCharacters(value: string) {
     return (
         ENCODED_UNSAFE_CHARACTER_PATTERN.test(value) ||
         Array.from(value).some(
-            character => character === "\\" || character.charCodeAt(0) < 0x20,
+            character => character === "\\" || character.charCodeAt(0) < 0x20 || character.charCodeAt(0) === 0x7f,
         )
     );
 }
