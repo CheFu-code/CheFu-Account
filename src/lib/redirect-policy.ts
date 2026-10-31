@@ -196,7 +196,7 @@ const OAUTH_AUTHORIZE_QUERY_KEYS = new Set([
 ]);
 
 const OAUTH_OPAQUE_PARAM_PATTERN = /^[A-Za-z0-9._~:-]+$/;
-const ENCODED_UNSAFE_CHARACTER_PATTERN = /%(?:00|0a|0d|5c|2f|3f|23|25)/i;
+const ENCODED_UNSAFE_CHARACTER_PATTERN = /%(?:00|0a|0d|5c)/i;
 
 export function resolveChefuAppId(value?: string | null): ChefuAppId {
     const normalized = value?.trim().toLowerCase();
@@ -388,13 +388,15 @@ function parseAbsoluteUrl(value: string) {
 
 function isSafeRelativePath(value: string) {
     if (!value.startsWith("/") || value.startsWith("//") || hasUnsafeCharacters(value)) return false;
+    const path = value.split(/[?#]/, 1)[0];
+    if (/%(?:2f|3f|23|25)/i.test(path)) return false;
     try {
         const base = "https://myaccount.chefu.co.za";
         const parsed = new URL(value, base);
         // URL parsing can normalize dot segments, encoded dots and authority separators.
         // Reject ambiguous paths instead of silently changing their destination.
         if (parsed.origin !== base || !parsed.pathname.startsWith("/")) return false;
-        if (/(?:^|\\/)(?:\\.|%2e){1,2}(?:\\/|$)/i.test(value.split("?")[0])) return false;
+        if (path.split("/").some(segment => /^(?:\.|%2e){1,2}$/i.test(segment))) return false;
         return true;
     } catch {
         return false;
