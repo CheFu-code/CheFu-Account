@@ -90,7 +90,7 @@ export function preserveAuthParams(
 ) {
     const nextParams = new URLSearchParams();
 
-    for (const key of ["app", "returnTo", "next", "prompt"]) {
+    for (const key of ["app", "returnTo", "next", "prompt", "flow_id"]) {
         const value = params.get(key);
         if (value) nextParams.set(key, value);
     }

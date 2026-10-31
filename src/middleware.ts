@@ -13,6 +13,9 @@ function createContentSecurityPolicy(nonce: string) {
     ].join("; ");
 }
 
+const FLOW_CONTEXT_PATHS = new Set(["/login", "/register", "/forgot-password"]);
+const FLOW_ID_PATTERN = /^[a-f0-9]{32}$/;
+
 const AUTH_REDIRECT_PATHS = new Set([
     "/forgot-password",
     "/login",
@@ -33,6 +36,16 @@ export function middleware(request: NextRequest) {
                 },
                 { status: 400 },
             );
+        }
+    }
+
+    // A non-secret navigation identifier only: no authentication state or tokens.
+    if (FLOW_CONTEXT_PATHS.has(request.nextUrl.pathname)) {
+        const ids = request.nextUrl.searchParams.getAll("flow_id");
+        if (ids.length !== 1 || !FLOW_ID_PATTERN.test(ids[0])) {
+            const url = request.nextUrl.clone();
+            url.searchParams.set("flow_id", crypto.randomUUID().replace(/-/g, ""));
+            return NextResponse.redirect(url, { status: 307 });
         }
     }
 
