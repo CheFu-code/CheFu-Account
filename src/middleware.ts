@@ -13,7 +13,8 @@ function createContentSecurityPolicy(nonce: string) {
     ].join("; ");
 }
 
-const AUTH_REDIRECT_PATHS = new Set([
+const FLOW_CONTEXT_PATHS = new Set(["/login", "/register", "/forgot-password"]);
+const FLOW_ID_PATTERN = /^[a-f0-9]{32}$/;\n\nconst AUTH_REDIRECT_PATHS = new Set([
     "/forgot-password",
     "/login",
     "/logout",
@@ -36,7 +37,7 @@ export function middleware(request: NextRequest) {
         }
     }
 
-    const nonceBytes = crypto.getRandomValues(new Uint8Array(16));
+    // A non-secret navigation identifier only: no authentication state or tokens.\n    if (FLOW_CONTEXT_PATHS.has(request.nextUrl.pathname)) {\n        const ids = request.nextUrl.searchParams.getAll("flow_id");\n        if (ids.length !== 1 || !FLOW_ID_PATTERN.test(ids[0])) {\n            const url = request.nextUrl.clone();\n            url.searchParams.set("flow_id", crypto.randomUUID().replace(/-/g, ""));\n            return NextResponse.redirect(url, { status: 307 });\n        }\n    }\n\n    const nonceBytes = crypto.getRandomValues(new Uint8Array(16));
     const nonce = btoa(String.fromCharCode(...nonceBytes));
     const contentSecurityPolicy = createContentSecurityPolicy(nonce);
     const requestHeaders = new Headers(request.headers);
