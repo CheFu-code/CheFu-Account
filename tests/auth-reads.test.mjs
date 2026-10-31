@@ -10,7 +10,7 @@ function load(file, dependencies = {}, globals = {}) {
         compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
     }).outputText;
     vm.runInNewContext(code, { module: loaded, exports: loaded.exports,
-        require: name => { assert.ok(name in dependencies, name); return dependencies[name]; }, ...globals });
+        require: name => { assert.ok(name in dependencies, name); return dependencies[name]; }, AbortController, ...globals });
     return loaded.exports;
 }
 function deferred() {
@@ -109,4 +109,18 @@ test('account hook remounts share one read; an unmounted effect cannot hydrate o
     await new Promise(resolve => setImmediate(resolve));
     assert.equal(hydrated.length, 1);
     assert.equal(hydrated[0].user.uid, 'alice');
+});
+
+test('auth invalidation aborts obsolete shared requests', async () => {
+    const reads = load('lib/auth-reads.ts');
+    let signal;
+    const pending = reads.shareAuthRead('account:root', async received => {
+        signal = received;
+        return new Promise((_resolve, reject) => received.addEventListener('abort', () => reject(new Error('aborted')), { once: true }));
+    });
+    const rejected = assert.rejects(pending, reads.SupersededAuthReadError);
+    await Promise.resolve();
+    reads.invalidateAuthReads();
+    assert.equal(signal.aborted, true);
+    await rejected;
 });
