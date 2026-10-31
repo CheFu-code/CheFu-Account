@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: read
 
 jobs:
   dependency-review:
@@ -16,7 +15,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Review dependency changes
-        uses: actions/dependency-review-action@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          fail-on-severity: high
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Audit production dependencies for high and critical vulnerabilities
+        run: npm audit --omit=dev --audit-level=high
