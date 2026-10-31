@@ -7,7 +7,7 @@ function createContentSecurityPolicy(nonce: string) {
     return [
         `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${developmentDirective}`,
         "base-uri 'self'",
-        "frame-ancestors 'self'",
+        "frame-ancestors 'none'",
         "object-src 'none'",
         "upgrade-insecure-requests",
     ].join("; ");
@@ -47,9 +47,13 @@ export function middleware(request: NextRequest) {
         request: { headers: requestHeaders },
     });
     response.headers.set("Content-Security-Policy", contentSecurityPolicy);
+    response.headers.set("X-Content-Type-Options", "nosniff");
+    response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+    response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=(), usb=()");
+    response.headers.set("X-Frame-Options", "DENY");
     response.headers.set(
         "x-request-id",
-        request.headers.get("x-request-id") || crypto.randomUUID(),
+        crypto.randomUUID(),
     );
     return response;
 }
