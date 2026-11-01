@@ -325,14 +325,18 @@ export async function clearChefuAccountSession(globalLogout = true) {
     }
 }
 
-export async function listChefuAccountSessions(): Promise<AccountSession[]> {
+export async function listChefuAccountSessions(appId: ChefuAppId): Promise<AccountSession[]> {
     const response = await fetch(apiUrl("/auth/accounts"), {
         credentials: "include",
         cache: "no-store",
+        headers: { [CHEFU_APP_HEADER]: appId },
     });
     if (!response.ok) throw new Error(await readApiError(response));
     const result = (await response.json()) as { accounts?: AccountSession[] };
-    return Array.isArray(result.accounts) ? result.accounts : [];
+    if (!Array.isArray(result.accounts)) {
+        throw new Error("The account list response was invalid.");
+    }
+    return result.accounts;
 }
 
 export async function switchChefuAccount(slot: number) {

@@ -78,10 +78,19 @@ export function useAccountController() {
 
     useEffect(() => {
         if (!account || isDevPreview) return;
-        void listChefuAccountSessions()
+        void listChefuAccountSessions(appId)
             .then(setAccounts)
-            .catch(() => setAccounts([]));
-    }, [account]);
+            .catch((error) => {
+                setAccounts([{
+                    slot: null,
+                    email: account.user.email,
+                    active: true,
+                }]);
+                toast.error("Unable to load your other accounts.", {
+                    description: error instanceof Error ? error.message : "Please refresh and try again.",
+                });
+            });
+    }, [account, appId]);
 
     async function switchAccount(slot: number) {
         setIsSwitchingAccount(true);
