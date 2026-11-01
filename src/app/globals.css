@@ -344,6 +344,9 @@ body {
 }
 
 .account-sidebar-account-trigger-email {
+    display: block;
+    min-width: 0;
+    max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -456,6 +459,7 @@ button.account-sidebar-account:hover {
     display: grid;
     min-width: 0;
     flex: 1;
+    overflow: hidden;
     gap: 2px;
 }
 
@@ -517,6 +521,228 @@ button.account-sidebar-account:hover {
 
 .account-sidebar-signout-all:hover {
     color: var(--danger, #dc2626);
+}
+
+.account-confirmation-backdrop {
+    position: fixed;
+    z-index: 100;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, .52);
+}
+
+.account-confirmation-dialog {
+    width: min(100%, 400px);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
+    padding: 24px;
+    color: var(--fg);
+    background: var(--surface);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, .3);
+}
+
+.account-confirmation-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: var(--danger);
+    background: var(--danger-soft);
+}
+
+.account-confirmation-dialog h2 {
+    margin: 18px 0 7px;
+    color: var(--fg);
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.account-confirmation-dialog p {
+    margin: 0;
+    color: var(--fg-muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.account-confirmation-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+    margin-top: 24px;
+}
+
+.account-confirmation-actions button {
+    min-width: 90px;
+    border-radius: var(--r);
+    padding: 9px 13px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.account-confirmation-cancel {
+    border: 1px solid var(--border-strong);
+    color: var(--fg-2);
+    background: transparent;
+}
+
+.account-confirmation-cancel:hover {
+    background: var(--surface-alt);
+}
+
+.account-confirmation-confirm {
+    border: 1px solid var(--danger);
+    color: #fff;
+    background: var(--danger);
+}
+
+.account-confirmation-confirm:hover {
+    filter: brightness(1.08);
+}
+
+.account-skeleton-shell {
+    display: flex;
+    width: 100%;
+    height: 100dvh;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--fg);
+}
+
+.account-skeleton-sidebar {
+    display: flex;
+    width: 240px;
+    height: 100dvh;
+    flex: 0 0 240px;
+    flex-direction: column;
+    border-right: 1px solid var(--border);
+    background: var(--surface);
+}
+
+.account-skeleton-sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 24px 20px 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.account-skeleton-logo {
+    width: 29px;
+    height: 22px;
+    flex: 0 0 29px;
+    border-radius: 4px;
+}
+
+.account-skeleton-brand-title {
+    width: 82px;
+    height: 13px;
+    border-radius: 4px;
+}
+
+.account-skeleton-brand-subtitle {
+    width: 72px;
+    height: 9px;
+    margin-top: 6px;
+    border-radius: 3px;
+}
+
+.account-skeleton-nav {
+    display: grid;
+    gap: 5px;
+    flex: 1;
+    padding: 12px 0;
+}
+
+.account-skeleton-nav-item {
+    width: 100%;
+    height: 35px;
+    border-radius: 0;
+}
+
+.account-skeleton-nav-item-active {
+    width: calc(100% - 20px);
+    margin-left: 20px;
+    border-radius: 5px 0 0 5px;
+}
+
+.account-skeleton-theme {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+}
+
+.account-skeleton-theme-label {
+    width: 70px;
+    height: 11px;
+    border-radius: 3px;
+}
+
+.account-skeleton-toggle {
+    width: 34px;
+    height: 19px;
+    border-radius: 999px;
+}
+
+.account-skeleton-switcher {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 8px;
+}
+
+.account-skeleton-switcher .account-skeleton-avatar {
+    width: 27px;
+    height: 27px;
+    flex-basis: 27px;
+}
+
+.account-skeleton-account-label {
+    width: 52px;
+    height: 10px;
+    border-radius: 3px;
+}
+
+.account-skeleton-account-email {
+    width: 90px;
+    height: 8px;
+    margin-top: 5px;
+    border-radius: 3px;
+}
+
+.account-skeleton-chevron {
+    width: 12px;
+    height: 8px;
+    margin-left: auto;
+    border-radius: 3px;
+}
+
+.account-skeleton-signout {
+    width: calc(100% - 32px);
+    height: 38px;
+    margin: 0 16px 16px;
+    border-radius: var(--r);
+}
+
+.account-skeleton-main {
+    min-width: 0;
+    flex: 1;
+    height: 100dvh;
+    overflow-y: auto;
+}
+
+.account-skeleton-mobile-header {
+    display: none;
 }
 
 .account-skeleton-page {
@@ -648,6 +874,59 @@ button.account-sidebar-account:hover {
 @keyframes account-skeleton-shimmer {
     from { background-position: 200% 0; }
     to { background-position: -200% 0; }
+}
+
+@media (max-width: 767px) {
+    .account-skeleton-shell {
+        display: block;
+        overflow: auto;
+    }
+
+    .account-skeleton-mobile-header {
+        display: flex;
+        height: 52px;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
+    }
+
+    .account-skeleton-brand {
+        width: 112px;
+        height: 17px;
+        border-radius: 4px;
+    }
+
+    .account-skeleton-menu {
+        width: 32px;
+        height: 32px;
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+    }
+
+    .account-skeleton-sidebar {
+        display: none;
+    }
+
+    .account-skeleton-main {
+        height: auto;
+        overflow: visible;
+    }
+
+    .account-skeleton-page {
+        padding: 28px 16px 40px;
+    }
+
+    .account-skeleton-identity {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .account-skeleton-button {
+        width: 100%;
+        margin-left: 0;
+    }
 }
 
 .account-main {

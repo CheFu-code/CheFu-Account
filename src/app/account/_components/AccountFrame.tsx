@@ -1,6 +1,14 @@
 "use client";
 
-import { ChevronDown, Loader2, LogOut, Menu, Plus, X } from "lucide-react";
+import {
+    AlertTriangle,
+    ChevronDown,
+    Loader2,
+    LogOut,
+    Menu,
+    Plus,
+    X,
+} from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { navItems } from "./account-data";
@@ -25,6 +33,7 @@ export function AccountFrame(props: AccountFrameProps) {
     const [darkMode, setDarkMode] = useState(false);
     const [themeLoaded, setThemeLoaded] = useState(false);
     const [accountSwitcherOpen, setAccountSwitcherOpen] = useState(false);
+    const [signOutConfirmationOpen, setSignOutConfirmationOpen] = useState(false);
     const accountSwitcherRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -43,10 +52,11 @@ export function AccountFrame(props: AccountFrameProps) {
 
     useEffect(() => {
         if (!accountSwitcherOpen) {
-            return;
+            if (!signOutConfirmationOpen) return;
         }
 
         const closeOnOutsideClick = (event: PointerEvent) => {
+            if (signOutConfirmationOpen) return;
             if (
                 accountSwitcherRef.current &&
                 !accountSwitcherRef.current.contains(event.target as Node)
@@ -56,7 +66,11 @@ export function AccountFrame(props: AccountFrameProps) {
         };
         const closeOnEscape = (event: KeyboardEvent) => {
             if (event.key === "Escape") {
-                setAccountSwitcherOpen(false);
+                if (signOutConfirmationOpen) {
+                    setSignOutConfirmationOpen(false);
+                } else {
+                    setAccountSwitcherOpen(false);
+                }
             }
         };
 
@@ -66,7 +80,7 @@ export function AccountFrame(props: AccountFrameProps) {
             document.removeEventListener("pointerdown", closeOnOutsideClick);
             document.removeEventListener("keydown", closeOnEscape);
         };
-    }, [accountSwitcherOpen]);
+    }, [accountSwitcherOpen, signOutConfirmationOpen]);
     const navigate = (id: string) => {
         props.onSelectSection(id);
         setMobileNavOpen(false);
@@ -144,7 +158,10 @@ export function AccountFrame(props: AccountFrameProps) {
                         <AccountAvatar account={getActiveAccount(props.accounts)} />
                         <span className="account-sidebar-account-details">
                             <span className="account-sidebar-account-name">Account</span>
-                            <span className="account-sidebar-account-status account-sidebar-account-trigger-email">
+                            <span
+                                className="account-sidebar-account-status account-sidebar-account-trigger-email"
+                                title={getActiveAccountEmail(props.accounts)}
+                            >
                                 {getActiveAccountEmail(props.accounts)}
                             </span>
                         </span>
@@ -184,8 +201,8 @@ export function AccountFrame(props: AccountFrameProps) {
                                         >
                                             <AccountAvatar account={account} />
                                             <span className="account-sidebar-account-details">
-                                                <span className="account-sidebar-account-name">{label}</span>
-                                                <span className="account-sidebar-account-status">{account.email}</span>
+                                                <span className="account-sidebar-account-name" title={label}>{label}</span>
+                                                <span className="account-sidebar-account-status" title={account.email}>{account.email}</span>
                                             </span>
                                             <span className="account-sidebar-account-dot" aria-label="Current account" />
                                         </div>
@@ -202,8 +219,8 @@ export function AccountFrame(props: AccountFrameProps) {
                                         >
                                             <AccountAvatar account={account} />
                                             <span className="account-sidebar-account-details">
-                                                <span className="account-sidebar-account-name">{label}</span>
-                                                <span className="account-sidebar-account-status">{account.email}</span>
+                                                <span className="account-sidebar-account-name" title={label}>{label}</span>
+                                                <span className="account-sidebar-account-status" title={account.email}>{account.email}</span>
                                             </span>
                                         </button>
                                     );
@@ -220,7 +237,10 @@ export function AccountFrame(props: AccountFrameProps) {
                             <button
                                 type="button"
                                 className="account-sidebar-signout-all"
-                                onClick={props.onSignOut}
+                                onClick={() => {
+                                    setAccountSwitcherOpen(false);
+                                    setSignOutConfirmationOpen(true);
+                                }}
                                 disabled={props.isSigningOut}
                             >
                                 <LogOut size={15} aria-hidden="true" />
@@ -233,7 +253,7 @@ export function AccountFrame(props: AccountFrameProps) {
                     <button
                         type="button"
                         className="account-signout-button"
-                        onClick={props.onSignOut}
+                        onClick={() => setSignOutConfirmationOpen(true)}
                         disabled={props.isSigningOut}
                     >
                         {props.isSigningOut ? (
@@ -250,6 +270,54 @@ export function AccountFrame(props: AccountFrameProps) {
             </aside>
 
             <main className="account-main">{props.children}</main>
+            {signOutConfirmationOpen ? (
+                <div
+                    className="account-confirmation-backdrop"
+                    role="presentation"
+                    onMouseDown={(event) => {
+                        if (event.currentTarget === event.target) {
+                            setSignOutConfirmationOpen(false);
+                        }
+                    }}
+                >
+                    <div
+                        className="account-confirmation-dialog"
+                        role="alertdialog"
+                        aria-modal="true"
+                        aria-labelledby="sign-out-confirmation-title"
+                        aria-describedby="sign-out-confirmation-description"
+                    >
+                        <div className="account-confirmation-icon">
+                            <AlertTriangle size={20} aria-hidden="true" />
+                        </div>
+                        <h2 id="sign-out-confirmation-title">Sign out of all accounts?</h2>
+                        <p id="sign-out-confirmation-description">
+                            This will sign you out of every account saved on this browser.
+                        </p>
+                        <div className="account-confirmation-actions">
+                            <button
+                                type="button"
+                                className="account-confirmation-cancel"
+                                onClick={() => setSignOutConfirmationOpen(false)}
+                                disabled={props.isSigningOut}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                className="account-confirmation-confirm"
+                                onClick={() => {
+                                    setSignOutConfirmationOpen(false);
+                                    props.onSignOut();
+                                }}
+                                disabled={props.isSigningOut}
+                            >
+                                {props.isSigningOut ? "Signing out..." : "Sign out"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            ) : null}
         </div>
     );
 }
