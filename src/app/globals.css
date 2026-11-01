@@ -599,6 +599,7 @@ button.account-sidebar-account:hover {
     border: 1px solid var(--danger);
     color: #fff;
     background: var(--danger);
+    cursor: pointer;
 }
 
 .account-confirmation-confirm:hover {

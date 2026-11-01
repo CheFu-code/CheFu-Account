@@ -232,7 +232,7 @@ export function SaveButton({ isSaving, label }: { isSaving: boolean; label: stri
             {isSaving ? (
                 <Loader2 className="size-4 animate-spin" aria-hidden="true" />
             ) : (
-                <Save className="size-4" aria-hidden="true" />
+                <Save className="size-4  mr-1.5" aria-hidden="true" />
             )}
             {label}
         </AccountButton>

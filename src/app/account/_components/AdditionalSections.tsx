@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import type { AccountResponse, EmailPreferences } from "./account-types";
 import { apiUrl, type ChefuAppId } from "../../../lib/chefu-account";
 import {
@@ -101,40 +101,28 @@ export function ActivitySection({
     account: AccountResponse;
     appId: ChefuAppId;
 }) {
-    const [securityEvents, setSecurityEvents] = useState<SecurityActivity[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        let active = true;
-        async function loadActivity() {
-            try {
-                const response = await fetch(apiUrl("/auth/activity"), {
+    const activityQuery = useQuery({
+        queryKey: ["security-activity", appId, account.user.email],
+        queryFn: async () => {
+            const response = await fetch(apiUrl("/auth/activity"), {
                     credentials: "include",
                     headers: { "x-chefu-app": appId },
                 });
-                if (!response.ok) {
-                    throw new Error("Could not load security activity.");
-                }
-                const data = (await response.json()) as SecurityActivity[];
-                if (active) setSecurityEvents(data);
-            } catch (loadError) {
-                if (active) {
-                    setError(
-                        loadError instanceof Error
-                            ? loadError.message
-                            : "Could not load security activity.",
-                    );
-                }
-            } finally {
-                if (active) setIsLoading(false);
+            if (!response.ok) {
+                throw new Error("Could not load security activity.");
             }
-        }
-        void loadActivity();
-        return () => {
-            active = false;
-        };
-    }, [appId]);
+            return (await response.json()) as SecurityActivity[];
+        },
+        staleTime: 30_000,
+    });
+
+    const securityEvents = activityQuery.data || [];
+    const error = activityQuery.error
+        ? activityQuery.error instanceof Error
+            ? activityQuery.error.message
+            : "Could not load security activity."
+        : null;
+    const isLoading = activityQuery.isPending;
 
     const events = [
         ...securityEvents.flatMap((event) =>

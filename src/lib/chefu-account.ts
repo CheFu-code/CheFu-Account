@@ -350,3 +350,14 @@ export async function switchChefuAccount(slot: number) {
     });
     if (!response.ok) throw new Error(await readApiError(response));
 }
+
+export async function revokeChefuConnectedApp(appId: string) {
+    const response = await authMutationFetch(
+        apiUrl(`/auth/connected-apps/${encodeURIComponent(appId)}`),
+        {
+            method: "DELETE",
+            credentials: "include",
+        },
+    );
+    if (!response.ok) throw new Error(await readApiError(response));
+}

@@ -78,5 +78,13 @@ export function AccountHomePanel({
 }
 
 function formatAccountDate(value?: string | null) {
-    return value || "Not recorded";
+    if (!value) return "Not recorded";
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+
+    return new Intl.DateTimeFormat(undefined, {
+        dateStyle: "long",
+        timeStyle: "short",
+    }).format(date);
 }

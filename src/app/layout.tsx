@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import type { ReactNode } from "react";
 import { ToasterProvider } from "./_components/ToasterProvider";
+import { QueryProvider } from "./_components/QueryProvider";
 import "./globals.css";
 
 const appUrl =
@@ -91,7 +92,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
 } catch (_) {}`,
                     }}
                 />
-                {children}
+                <QueryProvider>{children}</QueryProvider>
                 <Analytics />
                 <ToasterProvider />
             </body>

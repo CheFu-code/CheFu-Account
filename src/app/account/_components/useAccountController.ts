@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
     defaultEmailPreferences,
@@ -71,26 +72,47 @@ export function useAccountController() {
     const [isSaving, setIsSaving] = useState(false);
     const [isSendingReset, setIsSendingReset] = useState(false);
     const [isSigningOut, setIsSigningOut] = useState(false);
-    const [accounts, setAccounts] = useState<Awaited<ReturnType<typeof listChefuAccountSessions>>>([]);
     const [isSwitchingAccount, setIsSwitchingAccount] = useState(false);
 
     const isLoading = useAccountLoad(appId, hydrateAccount, getCurrentAccountPath, isDevPreview ? mockAccount : undefined);
 
+    const accountsQuery = useQuery({
+        queryKey: ["account-sessions", appId],
+        queryFn: () => listChefuAccountSessions(appId),
+        enabled: Boolean(account) && !isDevPreview,
+        staleTime: 5 * 60_000,
+    });
+
     useEffect(() => {
         if (!account || isDevPreview) return;
-        void listChefuAccountSessions(appId)
-            .then(setAccounts)
-            .catch((error) => {
-                setAccounts([{
-                    slot: null,
-                    email: account.user.email,
-                    active: true,
-                }]);
-                toast.error("Unable to load your other accounts.", {
-                    description: error instanceof Error ? error.message : "Please refresh and try again.",
-                });
-            });
-    }, [account, appId]);
+        if (!accountsQuery.error) return;
+        toast.error("Unable to load your other accounts.", {
+            description:
+                accountsQuery.error instanceof Error
+                    ? accountsQuery.error.message
+                    : "Please refresh and try again.",
+        });
+    }, [account, accountsQuery.error]);
+
+    const accounts = useMemo(() => {
+        if (!account) return [];
+        if (!accountsQuery.data) {
+            return [{
+                slot: null,
+                email: account.user.email,
+                active: true,
+            }];
+        }
+        return accountsQuery.data.map((session) =>
+            session.active
+                ? {
+                    ...session,
+                    fullName: account.profile.fullname || undefined,
+                    profilePicture: account.profile.profilePicture || undefined,
+                }
+                : session,
+        );
+    }, [account, accountsQuery.data]);
 
     async function switchAccount(slot: number) {
         setIsSwitchingAccount(true);
