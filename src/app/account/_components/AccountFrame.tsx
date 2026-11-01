@@ -1,10 +1,11 @@
 "use client";
 
-import { Loader2, LogOut, Menu, X } from "lucide-react";
+import { Loader2, LogOut, Menu, Users, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { navItems } from "./account-data";
 import { Toggle } from "./Toggle";
+import type { AccountSession } from "../../../lib/chefu-account";
 
 const THEME_STORAGE_KEY = "chefu-account-theme";
 
@@ -14,6 +15,9 @@ type AccountFrameProps = {
   isSigningOut: boolean;
   onSelectSection: (id: string) => void;
   onSignOut: () => void;
+  accounts: AccountSession[];
+  onSwitchAccount: (slot: number) => void;
+  isSwitchingAccount: boolean;
 };
 
 export function AccountFrame(props: AccountFrameProps) {
@@ -91,6 +95,35 @@ export function AccountFrame(props: AccountFrameProps) {
         <div className="account-theme-row">
           <span>{darkMode ? "Dark mode" : "Light mode"}</span>
           <Toggle checked={darkMode} onChange={setDarkMode} id="theme-toggle" />
+        </div>
+        <div className="account-sidebar-accounts">
+            <div className="flex items-center gap-2 text-xs font-semibold text-[var(--fg-muted)]">
+              <Users size={14} aria-hidden="true" />
+              Signed-in accounts
+            </div>
+            {props.accounts.map((account) =>
+              account.active ? (
+                <div key={`${account.slot}-${account.email}`} className="mt-2 truncate text-xs text-[var(--fg)]">
+                  {account.email}
+                </div>
+              ) : (
+                <button
+                  key={`${account.slot}-${account.email}`}
+                  type="button"
+                  className="mt-2 block max-w-full truncate text-left text-xs text-[var(--fg-muted)] hover:text-[var(--fg)]"
+                  disabled={props.isSwitchingAccount}
+                  onClick={() => account.slot !== null && props.onSwitchAccount(account.slot)}
+                >
+                  {account.email}
+                </button>
+              ),
+            )}
+            <Link
+              href="/login?prompt=select_account&returnTo=%2Faccount"
+              className="mt-3 block text-xs font-semibold text-[var(--accent)] hover:underline"
+            >
+              Add another account
+            </Link>
         </div>
         <div className="account-sidebar-signout">
           <button

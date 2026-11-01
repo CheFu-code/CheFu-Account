@@ -48,6 +48,9 @@ export function AccountPageClient() {
             isSigningOut={account.isSigningOut}
             onSelectSection={account.goToSection}
             onSignOut={account.handleSignOut}
+            accounts={account.accounts}
+            onSwitchAccount={account.switchAccount}
+            isSwitchingAccount={account.isSwitchingAccount}
         >
             {account.activeSection === "home" ? (
                 <AccountHomePanel

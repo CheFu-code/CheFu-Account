@@ -20,8 +20,10 @@ import type {
 import {
     apiUrl,
     clearChefuAccountSession,
+    listChefuAccountSessions,
     requestPasswordResetEmail,
     resolveChefuApp,
+    switchChefuAccount,
 } from "../../../lib/chefu-account";
 
 const isDevPreview =
@@ -69,8 +71,28 @@ export function useAccountController() {
     const [isSaving, setIsSaving] = useState(false);
     const [isSendingReset, setIsSendingReset] = useState(false);
     const [isSigningOut, setIsSigningOut] = useState(false);
+    const [accounts, setAccounts] = useState<Awaited<ReturnType<typeof listChefuAccountSessions>>>([]);
+    const [isSwitchingAccount, setIsSwitchingAccount] = useState(false);
 
     const isLoading = useAccountLoad(appId, hydrateAccount, getCurrentAccountPath, isDevPreview ? mockAccount : undefined);
+
+    useEffect(() => {
+        if (!account || isDevPreview) return;
+        void listChefuAccountSessions()
+            .then(setAccounts)
+            .catch(() => setAccounts([]));
+    }, [account]);
+
+    async function switchAccount(slot: number) {
+        setIsSwitchingAccount(true);
+        try {
+            await switchChefuAccount(slot);
+            window.location.reload();
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Unable to switch account.");
+            setIsSwitchingAccount(false);
+        }
+    }
 
     useEffect(() => {
         setActiveSection(resolveAccountSection(sectionParam));
@@ -424,6 +446,7 @@ export function useAccountController() {
 
     return {
         account,
+        accounts,
         accountSearch,
         activeSection,
         appId,
@@ -441,6 +464,7 @@ export function useAccountController() {
         isSaving,
         isSendingReset,
         isSigningOut,
+        isSwitchingAccount,
         language,
         learningGoal,
         learningInterestsInput,
@@ -476,6 +500,7 @@ export function useAccountController() {
         setSkillLevel,
         setWeeklyLearningGoal,
         skillLevel,
+        switchAccount,
         weeklyLearningGoal,
     };
 }

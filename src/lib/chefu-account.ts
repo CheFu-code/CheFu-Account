@@ -7,6 +7,12 @@ import { authMutationFetch } from "./auth-reads";
 
 export type { ChefuAppId };
 
+export type AccountSession = {
+    slot: number | null;
+    email: string;
+    active: boolean;
+};
+
 const CHEFU_APP_HEADER = "x-chefu-app";
 
 const appLabels: Record<ChefuAppId, string> = {
@@ -317,4 +323,24 @@ export async function clearChefuAccountSession(globalLogout = true) {
     if (!result.ok || (globalLogout && !result.revoked)) {
         throw new Error("The server could not confirm that all sessions were signed out.");
     }
+}
+
+export async function listChefuAccountSessions(): Promise<AccountSession[]> {
+    const response = await fetch(apiUrl("/auth/accounts"), {
+        credentials: "include",
+        cache: "no-store",
+    });
+    if (!response.ok) throw new Error(await readApiError(response));
+    const result = (await response.json()) as { accounts?: AccountSession[] };
+    return Array.isArray(result.accounts) ? result.accounts : [];
+}
+
+export async function switchChefuAccount(slot: number) {
+    const response = await authMutationFetch(apiUrl("/auth/accounts/switch"), {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slot }),
+    });
+    if (!response.ok) throw new Error(await readApiError(response));
 }
