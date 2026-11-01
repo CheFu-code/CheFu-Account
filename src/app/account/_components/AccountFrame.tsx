@@ -2,7 +2,7 @@
 
 import { ChevronDown, Loader2, LogOut, Menu, Plus, X } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { navItems } from "./account-data";
 import { Toggle } from "./Toggle";
 import type { AccountSession } from "../../../lib/chefu-account";
@@ -25,6 +25,7 @@ export function AccountFrame(props: AccountFrameProps) {
     const [darkMode, setDarkMode] = useState(false);
     const [themeLoaded, setThemeLoaded] = useState(false);
     const [accountSwitcherOpen, setAccountSwitcherOpen] = useState(false);
+    const accountSwitcherRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         setDarkMode(window.localStorage.getItem(THEME_STORAGE_KEY) === "dark");
@@ -39,6 +40,33 @@ export function AccountFrame(props: AccountFrameProps) {
         document.documentElement.setAttribute("data-theme", theme);
         window.localStorage.setItem(THEME_STORAGE_KEY, theme);
     }, [darkMode, themeLoaded]);
+
+    useEffect(() => {
+        if (!accountSwitcherOpen) {
+            return;
+        }
+
+        const closeOnOutsideClick = (event: PointerEvent) => {
+            if (
+                accountSwitcherRef.current &&
+                !accountSwitcherRef.current.contains(event.target as Node)
+            ) {
+                setAccountSwitcherOpen(false);
+            }
+        };
+        const closeOnEscape = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                setAccountSwitcherOpen(false);
+            }
+        };
+
+        document.addEventListener("pointerdown", closeOnOutsideClick);
+        document.addEventListener("keydown", closeOnEscape);
+        return () => {
+            document.removeEventListener("pointerdown", closeOnOutsideClick);
+            document.removeEventListener("keydown", closeOnEscape);
+        };
+    }, [accountSwitcherOpen]);
     const navigate = (id: string) => {
         props.onSelectSection(id);
         setMobileNavOpen(false);
@@ -105,7 +133,7 @@ export function AccountFrame(props: AccountFrameProps) {
                         id="theme-toggle"
                     />
                 </div>
-                <div className="account-sidebar-account-switcher">
+                <div className="account-sidebar-account-switcher" ref={accountSwitcherRef}>
                     <button
                         type="button"
                         className="account-sidebar-account-trigger"
@@ -113,9 +141,7 @@ export function AccountFrame(props: AccountFrameProps) {
                         aria-haspopup="dialog"
                         onClick={() => setAccountSwitcherOpen((open) => !open)}
                     >
-                        <span className="account-sidebar-account-avatar">
-                            {getAccountInitial(props.accounts)}
-                        </span>
+                        <AccountAvatar account={getActiveAccount(props.accounts)} />
                         <span className="account-sidebar-account-details">
                             <span className="account-sidebar-account-name">Account</span>
                             <span className="account-sidebar-account-status account-sidebar-account-trigger-email">
@@ -148,17 +174,15 @@ export function AccountFrame(props: AccountFrameProps) {
                             <div className="account-sidebar-account-list">
                                 {props.accounts.map((account) => {
                                     const label =
-                                        account.email.split("@")[0] || account.email;
-                                    const initial = label.charAt(0).toUpperCase();
-
+                                        account.fullName?.trim() ||
+                                        account.email.split("@")[0] ||
+                                        account.email;
                                     return account.active ? (
                                         <div
                                             key={`${account.slot}-${account.email}`}
                                             className="account-sidebar-account account-sidebar-account-active"
                                         >
-                                            <span className="account-sidebar-account-avatar">
-                                                {initial}
-                                            </span>
+                                            <AccountAvatar account={account} />
                                             <span className="account-sidebar-account-details">
                                                 <span className="account-sidebar-account-name">{label}</span>
                                                 <span className="account-sidebar-account-status">{account.email}</span>
@@ -176,7 +200,7 @@ export function AccountFrame(props: AccountFrameProps) {
                                                 props.onSwitchAccount(account.slot)
                                             }
                                         >
-                                            <span className="account-sidebar-account-avatar">{initial}</span>
+                                            <AccountAvatar account={account} />
                                             <span className="account-sidebar-account-details">
                                                 <span className="account-sidebar-account-name">{label}</span>
                                                 <span className="account-sidebar-account-status">{account.email}</span>
@@ -270,6 +294,31 @@ function getActiveAccountEmail(accounts: AccountSession[]) {
     return accounts.find((account) => account.active)?.email || "Signed-in account";
 }
 
-function getAccountInitial(accounts: AccountSession[]) {
-    return getActiveAccountEmail(accounts).charAt(0).toUpperCase() || "A";
+function getActiveAccount(accounts: AccountSession[]) {
+    return accounts.find((account) => account.active);
+}
+
+function AccountAvatar({ account }: { account?: AccountSession }) {
+    const [imageFailed, setImageFailed] = useState(false);
+    const label =
+        account?.fullName?.trim() ||
+        account?.email.split("@")[0] ||
+        account?.email ||
+        "Account";
+    const initial = label.charAt(0).toUpperCase() || "A";
+
+    if (!account?.profilePicture || imageFailed) {
+        return <span className="account-sidebar-account-avatar">{initial}</span>;
+    }
+
+    return (
+        <span className="account-sidebar-account-avatar account-sidebar-account-avatar-image">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+                src={account.profilePicture}
+                alt=""
+                onError={() => setImageFailed(true)}
+            />
+        </span>
+    );
 }

@@ -10,6 +10,8 @@ export type { ChefuAppId };
 export type AccountSession = {
     slot: number | null;
     email: string;
+    fullName?: string;
+    profilePicture?: string;
     active: boolean;
 };
 

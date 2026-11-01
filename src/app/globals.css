@@ -442,6 +442,16 @@ button.account-sidebar-account:hover {
     font-weight: 700;
 }
 
+.account-sidebar-account-avatar-image {
+    overflow: hidden;
+}
+
+.account-sidebar-account-avatar-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 .account-sidebar-account-details {
     display: grid;
     min-width: 0;
@@ -507,6 +517,137 @@ button.account-sidebar-account:hover {
 
 .account-sidebar-signout-all:hover {
     color: var(--danger, #dc2626);
+}
+
+.account-skeleton-page {
+    width: min(100%, 920px);
+    margin: 0 auto;
+    padding: 88px clamp(24px, 5vw, 72px) 40px;
+}
+
+.account-skeleton-heading,
+.account-skeleton-identity,
+.account-skeleton-field {
+    display: flex;
+}
+
+.account-skeleton-heading {
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 30px;
+}
+
+.account-skeleton-line,
+.account-skeleton-avatar,
+.account-skeleton-button,
+.account-skeleton-status {
+    display: block;
+    background: linear-gradient(90deg, var(--surface-alt) 25%, var(--border) 50%, var(--surface-alt) 75%);
+    background-size: 200% 100%;
+    animation: account-skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+.account-skeleton-title {
+    width: min(220px, 55%);
+    height: 29px;
+    border-radius: 6px;
+}
+
+.account-skeleton-description {
+    width: min(390px, 80%);
+    height: 14px;
+    border-radius: 4px;
+}
+
+.account-skeleton-identity {
+    align-items: center;
+    gap: 16px;
+    padding: 12px 0 24px;
+}
+
+.account-skeleton-avatar {
+    width: 72px;
+    height: 72px;
+    flex: 0 0 72px;
+    border-radius: 50%;
+}
+
+.account-skeleton-identity-copy {
+    display: grid;
+    flex: 1;
+    gap: 9px;
+}
+
+.account-skeleton-name {
+    width: min(230px, 70%);
+    height: 20px;
+    border-radius: 5px;
+}
+
+.account-skeleton-email {
+    width: min(280px, 85%);
+    height: 14px;
+    border-radius: 4px;
+}
+
+.account-skeleton-status {
+    width: 58px;
+    height: 18px;
+    border-radius: 999px;
+}
+
+.account-skeleton-button {
+    width: 112px;
+    height: 38px;
+    border-radius: var(--r);
+}
+
+.account-skeleton-divider {
+    height: 1px;
+    margin-bottom: 24px;
+    background: var(--border);
+}
+
+.account-skeleton-section-title {
+    width: 90px;
+    height: 18px;
+    margin-bottom: 14px;
+    border-radius: 5px;
+}
+
+.account-skeleton-panel {
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 6px 20px;
+}
+
+.account-skeleton-field {
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    min-height: 57px;
+    border-bottom: 1px solid var(--border);
+}
+
+.account-skeleton-field:last-child {
+    border-bottom: 0;
+}
+
+.account-skeleton-label {
+    width: 100px;
+    height: 12px;
+    border-radius: 4px;
+}
+
+.account-skeleton-value {
+    width: min(210px, 45%);
+    height: 14px;
+    border-radius: 4px;
+}
+
+@keyframes account-skeleton-shimmer {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
 }
 
 .account-main {

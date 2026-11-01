@@ -1,24 +1,18 @@
 "use client";
 
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { AccountFrame } from "./_components/AccountFrame";
 import { AccountHomePanel } from "./_components/AccountHomePanel";
 import { AccountSettingsForm } from "./_components/AccountSettingsForm";
+import { AccountHomeSkeleton } from "./_components/AccountHomeSkeleton";
 import { useAccountController } from "./_components/useAccountController";
 
 export function AccountPageClient() {
     const account = useAccountController();
 
     if (account.isLoading) {
-        return (
-            <section className="account-public-state flex min-h-dvh items-center justify-center px-5">
-                <div className="flex items-center gap-3 rounded border border-[var(--border)] bg-[var(--surface)] px-5 py-4 text-sm font-semibold text-[var(--fg)] shadow-sm">
-                    <Loader2 className="size-4 animate-spin text-[var(--accent)]" aria-hidden="true" />
-                    Opening your account
-                </div>
-            </section>
-        );
+        return <AccountHomeSkeleton />;
     }
 
     if (!account.account) {
