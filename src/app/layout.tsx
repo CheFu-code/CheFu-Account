@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import type { ReactNode } from "react";
 import { ToasterProvider } from "./_components/ToasterProvider";
 import { QueryProvider } from "./_components/QueryProvider";
+import { ServiceWorkerRegistration } from "./_components/ServiceWorkerRegistration";
 import "./globals.css";
 
 const appUrl =
@@ -58,6 +59,9 @@ export const metadata: Metadata = {
         title: "My Account",
         description: "One secure account for all your products.",
     },
+    icons: {
+        icon: "/favicon.ico",
+    },
 };
 
 export const viewport: Viewport = {
@@ -92,7 +96,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
 } catch (_) {}`,
                     }}
                 />
-                <QueryProvider>{children}</QueryProvider>
+                <QueryProvider>
+                    <ServiceWorkerRegistration />
+                    {children}
+                </QueryProvider>
                 <Analytics />
                 <ToasterProvider />
             </body>
