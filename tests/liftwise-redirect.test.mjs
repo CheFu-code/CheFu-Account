@@ -39,3 +39,17 @@ test("another client, callback, app, or tampered state is rejected", () => {
   invalid.set("returnTo", authorize.toString());
   assert.equal(validateAuthRedirectParams(invalid).ok, false);
 });
+
+test("relative redirect normalization and authority bypasses are rejected", () => {
+  const { validateReturnToForApp } = loadedModule.exports;
+  for (const target of [
+    "//evil.example", "/\\\\evil.example", "/%2f%2fevil.example",
+    "/%252f%252fevil.example", "/a/../account", "/%2e%2e/account",
+    "/a/%2e%2e/account", "/a/%5cadmin", "/a%00b",
+  ]) {
+    assert.equal(validateReturnToForApp(target, "root").ok, false, target);
+  }
+  for (const target of ["/account", "/account?tab=security", "/account?next=https%3A%2F%2Fchefu.co.za"]) {
+    assert.equal(validateReturnToForApp(target, "root").ok, true, target);
+  }
+});

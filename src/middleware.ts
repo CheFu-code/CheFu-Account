@@ -7,11 +7,14 @@ function createContentSecurityPolicy(nonce: string) {
     return [
         `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${developmentDirective}`,
         "base-uri 'self'",
-        "frame-ancestors 'self'",
+        "frame-ancestors 'none'",
         "object-src 'none'",
         "upgrade-insecure-requests",
     ].join("; ");
 }
+
+const FLOW_CONTEXT_PATHS = new Set(["/login", "/register", "/forgot-password"]);
+const FLOW_ID_PATTERN = /^[a-f0-9]{32}$/;
 
 const AUTH_REDIRECT_PATHS = new Set([
     "/forgot-password",
@@ -36,6 +39,16 @@ export function middleware(request: NextRequest) {
         }
     }
 
+    // A non-secret navigation identifier only: no authentication state or tokens.
+    if (FLOW_CONTEXT_PATHS.has(request.nextUrl.pathname)) {
+        const ids = request.nextUrl.searchParams.getAll("flow_id");
+        if (ids.length !== 1 || !FLOW_ID_PATTERN.test(ids[0])) {
+            const url = request.nextUrl.clone();
+            url.searchParams.set("flow_id", crypto.randomUUID().replace(/-/g, ""));
+            return NextResponse.redirect(url, { status: 307 });
+        }
+    }
+
     const nonceBytes = crypto.getRandomValues(new Uint8Array(16));
     const nonce = btoa(String.fromCharCode(...nonceBytes));
     const contentSecurityPolicy = createContentSecurityPolicy(nonce);
@@ -47,9 +60,13 @@ export function middleware(request: NextRequest) {
         request: { headers: requestHeaders },
     });
     response.headers.set("Content-Security-Policy", contentSecurityPolicy);
+    response.headers.set("X-Content-Type-Options", "nosniff");
+    response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+    response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=(), usb=()");
+    response.headers.set("X-Frame-Options", "DENY");
     response.headers.set(
         "x-request-id",
-        request.headers.get("x-request-id") || crypto.randomUUID(),
+        crypto.randomUUID(),
     );
     return response;
 }

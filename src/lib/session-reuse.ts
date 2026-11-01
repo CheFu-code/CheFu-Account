@@ -17,8 +17,11 @@ export function sessionReuseTarget(params: URLSearchParams) {
 // Share only concurrent checks (including React StrictMode remounts). Never
 // persist or cache authentication decisions across navigation or sign-out.
 export function hasReusableSession(appId: ChefuAppId): Promise<boolean> {
-    return shareAuthRead(`session:${appId}`, async () => {
+    return shareAuthRead(`session:${appId}`, async signal => {
         const controller = new AbortController();
+        const abort = () => controller.abort();
+        signal.addEventListener("abort", abort, { once: true });
+        if (signal.aborted) controller.abort();
         const timeout = setTimeout(() => controller.abort(), 3_000);
         try {
             const response = await fetch(apiUrl("/auth/session/status"), {
@@ -33,6 +36,7 @@ export function hasReusableSession(appId: ChefuAppId): Promise<boolean> {
             return false;
         } finally {
             clearTimeout(timeout);
+            signal.removeEventListener("abort", abort);
         }
     }).catch(() => false);
 }
