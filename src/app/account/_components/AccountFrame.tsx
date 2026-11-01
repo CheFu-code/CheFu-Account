@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, LogOut, Menu, Plus, Users, X } from "lucide-react";
+import { ChevronDown, Loader2, LogOut, Menu, Plus, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { navItems } from "./account-data";
@@ -24,6 +24,7 @@ export function AccountFrame(props: AccountFrameProps) {
     const [mobileNavOpen, setMobileNavOpen] = useState(false);
     const [darkMode, setDarkMode] = useState(false);
     const [themeLoaded, setThemeLoaded] = useState(false);
+    const [accountSwitcherOpen, setAccountSwitcherOpen] = useState(false);
 
     useEffect(() => {
         setDarkMode(window.localStorage.getItem(THEME_STORAGE_KEY) === "dark");
@@ -104,78 +105,105 @@ export function AccountFrame(props: AccountFrameProps) {
                         id="theme-toggle"
                     />
                 </div>
-                <div className="account-sidebar-accounts">
-                    <div className="account-sidebar-accounts-heading">
-                        <span className="flex items-center gap-2">
-                            <Users size={14} aria-hidden="true" />
-                            Accounts
-                        </span>
-                        <span className="account-sidebar-accounts-count">
-                            {props.accounts.length}
-                        </span>
-                    </div>
-                    <div className="account-sidebar-account-list">
-                        {props.accounts.map((account) => {
-                            const label =
-                                account.email.split("@")[0] || account.email;
-                            const initial = label.charAt(0).toUpperCase();
-
-                            return account.active ? (
-                                <div
-                                    key={`${account.slot}-${account.email}`}
-                                    className="account-sidebar-account account-sidebar-account-active"
-                                    title={account.email}
-                                >
-                                    <span className="account-sidebar-account-avatar">
-                                        {initial}
-                                    </span>
-                                    <span className="account-sidebar-account-details">
-                                        <span className="account-sidebar-account-name">
-                                            {label}
-                                        </span>
-                                        <span className="account-sidebar-account-status">
-                                            Current account
-                                        </span>
-                                    </span>
-                                    <span
-                                        className="account-sidebar-account-dot"
-                                        aria-label="Active account"
-                                    />
-                                </div>
-                            ) : (
-                                <button
-                                    key={`${account.slot}-${account.email}`}
-                                    type="button"
-                                    className="account-sidebar-account"
-                                    disabled={props.isSwitchingAccount}
-                                    onClick={() =>
-                                        account.slot !== null &&
-                                        props.onSwitchAccount(account.slot)
-                                    }
-                                    title={`Switch to ${account.email}`}
-                                >
-                                    <span className="account-sidebar-account-avatar">
-                                        {initial}
-                                    </span>
-                                    <span className="account-sidebar-account-details">
-                                        <span className="account-sidebar-account-name">
-                                            {label}
-                                        </span>
-                                        <span className="account-sidebar-account-status">
-                                            {account.email}
-                                        </span>
-                                    </span>
-                                </button>
-                            );
-                        })}
-                    </div>
-                    <Link
-                        href="/login?prompt=select_account&returnTo=%2Faccount"
-                        className="account-sidebar-add-account"
+                <div className="account-sidebar-account-switcher">
+                    <button
+                        type="button"
+                        className="account-sidebar-account-trigger"
+                        aria-expanded={accountSwitcherOpen}
+                        aria-haspopup="dialog"
+                        onClick={() => setAccountSwitcherOpen((open) => !open)}
                     >
-                        <Plus size={14} aria-hidden="true" />
-                        Add account
-                    </Link>
+                        <span className="account-sidebar-account-avatar">
+                            {getAccountInitial(props.accounts)}
+                        </span>
+                        <span className="account-sidebar-account-details">
+                            <span className="account-sidebar-account-name">Account</span>
+                            <span className="account-sidebar-account-status account-sidebar-account-trigger-email">
+                                {getActiveAccountEmail(props.accounts)}
+                            </span>
+                        </span>
+                        <ChevronDown
+                            size={15}
+                            className={accountSwitcherOpen ? "rotate-180" : ""}
+                            aria-hidden="true"
+                        />
+                    </button>
+                    {accountSwitcherOpen ? (
+                        <div
+                            className="account-sidebar-account-popover"
+                            role="dialog"
+                            aria-label="Account switcher"
+                        >
+                            <div className="account-sidebar-account-popover-heading">
+                                <span>Choose an account</span>
+                                <button
+                                    type="button"
+                                    className="account-sidebar-account-popover-close"
+                                    aria-label="Close account switcher"
+                                    onClick={() => setAccountSwitcherOpen(false)}
+                                >
+                                    <X size={15} aria-hidden="true" />
+                                </button>
+                            </div>
+                            <div className="account-sidebar-account-list">
+                                {props.accounts.map((account) => {
+                                    const label =
+                                        account.email.split("@")[0] || account.email;
+                                    const initial = label.charAt(0).toUpperCase();
+
+                                    return account.active ? (
+                                        <div
+                                            key={`${account.slot}-${account.email}`}
+                                            className="account-sidebar-account account-sidebar-account-active"
+                                        >
+                                            <span className="account-sidebar-account-avatar">
+                                                {initial}
+                                            </span>
+                                            <span className="account-sidebar-account-details">
+                                                <span className="account-sidebar-account-name">{label}</span>
+                                                <span className="account-sidebar-account-status">{account.email}</span>
+                                            </span>
+                                            <span className="account-sidebar-account-dot" aria-label="Current account" />
+                                        </div>
+                                    ) : (
+                                        <button
+                                            key={`${account.slot}-${account.email}`}
+                                            type="button"
+                                            className="account-sidebar-account"
+                                            disabled={props.isSwitchingAccount}
+                                            onClick={() =>
+                                                account.slot !== null &&
+                                                props.onSwitchAccount(account.slot)
+                                            }
+                                        >
+                                            <span className="account-sidebar-account-avatar">{initial}</span>
+                                            <span className="account-sidebar-account-details">
+                                                <span className="account-sidebar-account-name">{label}</span>
+                                                <span className="account-sidebar-account-status">{account.email}</span>
+                                            </span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            <Link
+                                href="/login?prompt=select_account&returnTo=%2Faccount"
+                                className="account-sidebar-add-account"
+                                onClick={() => setAccountSwitcherOpen(false)}
+                            >
+                                <Plus size={15} aria-hidden="true" />
+                                Add another account
+                            </Link>
+                            <button
+                                type="button"
+                                className="account-sidebar-signout-all"
+                                onClick={props.onSignOut}
+                                disabled={props.isSigningOut}
+                            >
+                                <LogOut size={15} aria-hidden="true" />
+                                Sign out of all accounts
+                            </button>
+                        </div>
+                    ) : null}
                 </div>
                 <div className="account-sidebar-signout">
                     <button
@@ -236,4 +264,12 @@ function Brand({ compact = false }: { compact?: boolean }) {
             )}
         </Link>
     );
+}
+
+function getActiveAccountEmail(accounts: AccountSession[]) {
+    return accounts.find((account) => account.active)?.email || "Signed-in account";
+}
+
+function getAccountInitial(accounts: AccountSession[]) {
+    return getActiveAccountEmail(accounts).charAt(0).toUpperCase() || "A";
 }

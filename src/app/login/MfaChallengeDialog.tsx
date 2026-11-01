@@ -150,7 +150,7 @@ export function MfaChallengeDialog({
                         ) : (
                             <ShieldCheck className="size-4" aria-hidden="true" />
                         )}
-                        Verify and continue
+                        {isSubmitting ? "Verifying..." : "Verify and continue"}
                     </button>
                 </form>
             </div>
