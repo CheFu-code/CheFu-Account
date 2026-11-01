@@ -316,6 +316,130 @@ body {
     font-size: 12px;
 }
 
+.account-sidebar-accounts {
+    padding: 14px 12px 12px;
+    border-top: 1px solid var(--border);
+}
+
+.account-sidebar-accounts-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px 9px;
+    color: var(--fg-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.account-sidebar-accounts-count {
+    display: inline-flex;
+    min-width: 20px;
+    height: 20px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    color: var(--fg-2);
+    background: var(--surface-alt);
+    font-size: 10px;
+    letter-spacing: 0;
+}
+
+.account-sidebar-account-list {
+    display: grid;
+    gap: 4px;
+}
+
+.account-sidebar-account {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    align-items: center;
+    gap: 9px;
+    border: 1px solid transparent;
+    border-radius: var(--r);
+    padding: 7px 8px;
+    color: var(--fg-2);
+    background: transparent;
+    text-align: left;
+}
+
+button.account-sidebar-account {
+    cursor: pointer;
+}
+
+button.account-sidebar-account:hover {
+    border-color: var(--border);
+    background: var(--surface-alt);
+}
+
+.account-sidebar-account-active {
+    border-color: var(--border);
+    background: var(--surface-alt);
+}
+
+.account-sidebar-account-avatar {
+    display: inline-flex;
+    width: 27px;
+    height: 27px;
+    flex: 0 0 27px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: var(--accent-ink);
+    background: var(--accent);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.account-sidebar-account-details {
+    display: grid;
+    min-width: 0;
+    flex: 1;
+    gap: 2px;
+}
+
+.account-sidebar-account-name,
+.account-sidebar-account-status {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.account-sidebar-account-name {
+    color: var(--fg);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.account-sidebar-account-status {
+    color: var(--fg-muted);
+    font-size: 10px;
+}
+
+.account-sidebar-account-dot {
+    width: 7px;
+    height: 7px;
+    flex: 0 0 7px;
+    border-radius: 50%;
+    background: var(--accent);
+}
+
+.account-sidebar-add-account {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 8px 8px 0;
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.account-sidebar-add-account:hover {
+    color: var(--accent-hover);
+}
+
 .account-main {
     min-width: 0;
     flex: 1;
