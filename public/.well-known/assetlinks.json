@@ -1,10 +1,17 @@
 [
     {
-        "relation": ["delegate_permission/common.handle_all_urls"],
-        "target": {
-            "namespace": "android_app",
-            "package_name": "co.za.chefu.liftwise",
-            "sha256_cert_fingerprints": ["D3:38:F2:04:E5:63:A2:74:64:EE:34:FE:25:81:67:CD:6A:DD:D4:9E:5E:09:F8:D2:EC:EB:66:4C:3E:66:26:9E"]
-        }
+      "relation": [
+        "delegate_permission/common.handle_all_urls",
+        "delegate_permission/common.get_login_creds"
+      ],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "co.za.chefu.liftwise",
+        "sha256_cert_fingerprints": [
+          "D3:38:F2:04:E5:63:A2:74:64:EE:34:FE:25:81:67:CD:6A:DD:D4:9E:5E:09:F8:D2:EC:EB:66:4C:3E:66:26:9E",
+          "60:32:BE:2B:04:B5:98:10:E7:F5:23:52:E9:24:AD:07:70:12:FF:62:65:AA:C2:50:FF:48:0B:B1:E0:C5:09:AB",
+          "7B:D3:E9:FD:70:ED:60:F3:D6:8F:47:12:70:28:F4:3D:BF:55:42:25:C6:F4:2A:10:4D:18:0D:80:48:FB:7D:17"
+        ]
+      }
     }
-]
+  ]
