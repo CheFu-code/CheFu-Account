@@ -23,11 +23,12 @@ function params(client = "liftwise-mobile", redirect = "liftwise://sso-callback"
 
 test("LiftWise mobile and deployed web PKCE flows are accepted", () => {
   assert.equal(validateAuthRedirectParams(params()), null);
+  assert.equal(validateAuthRedirectParams(params("liftwise-mobile", "https://myaccount.chefu.co.za/app/liftwise/sso-callback")), null);
   assert.equal(validateAuthRedirectParams(params("liftwise-web", "https://liftwise.chefu.co.za/sso-callback")), null);
 });
 
 test("another client, callback, app, or tampered state is rejected", () => {
-  for (const value of [params("nook-mobile", "nook://sso-callback"), params("liftwise-mobile", "liftwise://evil"), params("liftwise-web", "https://evil.example/sso-callback")]) {
+  for (const value of [params("nook-mobile", "nook://sso-callback"), params("liftwise-mobile", "https://evil.example/app/liftwise/sso-callback"), params("liftwise-web", "https://evil.example/sso-callback")]) {
     assert.equal(validateAuthRedirectParams(value).ok, false);
   }
   const value = params();

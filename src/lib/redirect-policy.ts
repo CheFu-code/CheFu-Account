@@ -170,7 +170,10 @@ const OAUTH_CLIENT_RETURN_TO_POLICY: Record<string, OauthClientRedirectPolicy> =
     },
     "liftwise-mobile": {
         appId: "liftwise",
-        redirectUris: ["liftwise://sso-callback"],
+        redirectUris: [
+            "liftwise://sso-callback",
+            "https://myaccount.chefu.co.za/app/liftwise/sso-callback",
+        ],
     },
     "liftwise-web": {
         appId: "liftwise",
