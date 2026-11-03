@@ -25,6 +25,7 @@ import { AccountAuthScreen } from "../_components/AccountAuthScreen";
 import { MfaChallengeDialog } from "./MfaChallengeDialog";
 import { usePasskeySignIn } from "./usePasskeySignIn";
 import { AccountChooser } from "./AccountChooser";
+import { completeAuthRedirect, readLoginError, readMfaError } from "./login-helpers";
 
 export function LoginClient() {
     const router = useRouter();
@@ -367,6 +368,12 @@ export function LoginClient() {
                 setPassword={setPassword}
                 trustDevice={trustDevice}
                 setTrustDevice={setTrustDevice}
+                onReturnToPicker={selectAccount ? () => {
+                    setPassword("");
+                    setEmail("");
+                    setTrustDevice(false);
+                    setShowAccountChooser(true);
+                } : undefined}
             /> : null}
             <MfaChallengeDialog
                 code={mfaCode}
@@ -481,27 +488,4 @@ export function LoginClient() {
             ) : null}
         </>
     );
-}
-
-function completeAuthRedirect(target: string, replace: (href: string) => void) {
-    if (target.startsWith("/")) {
-        replace(target);
-        return;
-    }
-
-    window.location.assign(target);
-}
-
-function readLoginError(error: unknown) {
-    if (!(error instanceof Error)) {
-        return "Unable to login. Please try again.";
-    }
-    return error.message || "Login failed. Please try again.";
-}
-
-function readMfaError(error: unknown) {
-    if (!(error instanceof Error)) {
-        return "Check the code and try again.";
-    }
-    return error.message || "Check the code and try again.";
 }

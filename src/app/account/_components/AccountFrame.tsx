@@ -311,7 +311,7 @@ export function AccountFrame(props: AccountFrameProps) {
                         type="button"
                         className="account-signout-button"
                         onClick={() => setSignOutConfirmationOpen(true)}
-                        disabled={props.isSigningOut}
+                        disabled={accountBusy}
                     >
                         {props.isSigningOut ? (
                             <Loader2
@@ -321,7 +321,7 @@ export function AccountFrame(props: AccountFrameProps) {
                         ) : (
                             <LogOut className="size-4" aria-hidden="true" />
                         )}
-                        {props.isSigningOut ? "Signing out..." : "Sign out"}
+                        {props.isSigningOut ? "Signing out..." : "Sign out of all accounts"}
                     </button>
                 </div>
             </aside>
@@ -351,8 +351,10 @@ export function AccountFrame(props: AccountFrameProps) {
                             Sign out of all accounts?
                         </h2>
                         <p id="sign-out-confirmation-description">
-                            This will sign you out of every account saved on
-                            this browser.
+                            This removes all saved sign-ins from this browser.
+                            Your current account will also be signed out of other
+                            sessions and connected apps. Other saved accounts
+                            stay signed in on their other devices.
                         </p>
                         <div className="account-confirmation-actions">
                             <button
@@ -376,7 +378,7 @@ export function AccountFrame(props: AccountFrameProps) {
                             >
                                 {props.isSigningOut
                                     ? "Signing out..."
-                                    : "Sign out"}
+                                    : "Sign out of all accounts"}
                             </button>
                         </div>
                     </div>

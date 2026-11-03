@@ -24,6 +24,14 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                     <h1 className="text-2xl font-semibold tracking-tight">{copy.eyebrow}</h1>
                     <p className="account-auth-muted mt-1.5 text-sm">Continue to {appName}</p>
 
+                    {props.onReturnToPicker && (
+                        <button type="button" onClick={props.onReturnToPicker}
+                            disabled={isSubmitting || props.isPasskeySubmitting}
+                            className="account-auth-link mt-4 min-h-11 text-sm font-medium underline underline-offset-4 disabled:opacity-50">
+                            Back to saved accounts
+                        </button>
+                    )}
+
                     <form
                         onSubmit={onSubmit}
                         autoComplete={mode === "register" ? "off" : undefined}

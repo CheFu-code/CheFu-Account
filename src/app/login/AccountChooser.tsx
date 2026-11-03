@@ -8,6 +8,7 @@ import {
     type ChefuAppId,
 } from "../../lib/chefu-account";
 import { removeSavedAccount } from "../../lib/saved-accounts";
+import { AccountChooserSkeleton } from "./AccountChooserSkeleton";
 import {
     SavedAccountAvatar,
     SavedAccountRemoveButton,
@@ -126,12 +127,7 @@ export function AccountChooser({
                 )}
                 <div className="mt-6 space-y-2">
                     {isLoading ? (
-                        <p
-                            role="status"
-                            className="account-auth-muted py-4 text-sm"
-                        >
-                            Loading your accounts…
-                        </p>
+                        <AccountChooserSkeleton />
                     ) : accounts.length ? (
                         accounts.map((account) => (
                             <div
