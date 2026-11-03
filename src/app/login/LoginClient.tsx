@@ -24,6 +24,7 @@ import {
 import { AccountAuthScreen } from "../_components/AccountAuthScreen";
 import { MfaChallengeDialog } from "./MfaChallengeDialog";
 import { usePasskeySignIn } from "./usePasskeySignIn";
+import { AccountChooser } from "./AccountChooser";
 
 export function LoginClient() {
     const router = useRouter();
@@ -38,6 +39,9 @@ export function LoginClient() {
     const [isResendingTrustedDeviceCode, setIsResendingTrustedDeviceCode] = useState(false);
     const [trustDeviceVerificationOpen, setTrustDeviceVerificationOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showAccountChooser, setShowAccountChooser] = useState(
+        () => searchParams.get("prompt") === "select_account",
+    );
     const [mfaCode, setMfaCode] = useState("");
     const [mfaEmail, setMfaEmail] = useState("");
     const [mfaPendingCredential, setMfaPendingCredential] = useState("");
@@ -82,6 +86,7 @@ export function LoginClient() {
         appId,
         "/account",
     );
+    const selectAccount = searchParams.get("prompt") === "select_account";
     const registerHref = useMemo(
         () => preserveAuthParams("/register", new URLSearchParams(searchParams.toString())),
         [searchParams],
@@ -340,7 +345,14 @@ export function LoginClient() {
 
     return (
         <>
-            <AccountAuthScreen
+            {selectAccount && showAccountChooser ? (
+                <AccountChooser
+                    appId={appId}
+                    onAddAccount={() => setShowAccountChooser(false)}
+                    onSelected={() => completeAuthRedirect(fromPath, router.replace)}
+                />
+            ) : null}
+            {!selectAccount || !showAccountChooser ? <AccountAuthScreen
                 alternateHref={registerHref}
                 appName={appName}
                 email={email}
@@ -355,7 +367,7 @@ export function LoginClient() {
                 setPassword={setPassword}
                 trustDevice={trustDevice}
                 setTrustDevice={setTrustDevice}
-            />
+            /> : null}
             <MfaChallengeDialog
                 code={mfaCode}
                 email={mfaEmail}
