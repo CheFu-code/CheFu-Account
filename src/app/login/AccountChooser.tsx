@@ -1,7 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { listChefuAccountSessions, switchChefuAccount, type AccountSession, type ChefuAppId } from "../../lib/chefu-account";
+import { useEffect, useRef, useState } from "react";
+import {
+    listChefuAccountSessions,
+    switchChefuAccount,
+    type AccountSession,
+    type ChefuAppId,
+} from "../../lib/chefu-account";
+import { removeSavedAccount } from "../../lib/saved-accounts";
+import {
+    SavedAccountAvatar,
+    SavedAccountRemoveButton,
+} from "../_components/SavedAccountRemoveButton";
 
 export function AccountChooser({
     appId,
@@ -16,6 +26,8 @@ export function AccountChooser({
     const [isLoading, setIsLoading] = useState(true);
     const [isSwitching, setIsSwitching] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [notice, setNotice] = useState<string | null>(null);
+    const actionLock = useRef(false);
 
     useEffect(() => {
         let active = true;
@@ -25,7 +37,11 @@ export function AccountChooser({
             })
             .catch((cause) => {
                 if (active) {
-                    setError(cause instanceof Error ? cause.message : "Unable to load your accounts.");
+                    setError(
+                        cause instanceof Error
+                            ? cause.message
+                            : "Unable to load your accounts.",
+                    );
                 }
             })
             .finally(() => {
@@ -37,14 +53,47 @@ export function AccountChooser({
     }, [appId]);
 
     async function selectAccount(account: AccountSession) {
-        if (isSwitching) return;
+        if (actionLock.current) return;
+        actionLock.current = true;
         setIsSwitching(true);
         setError(null);
         try {
             if (account.slot !== null) await switchChefuAccount(account.slot);
             onSelected(account);
         } catch (cause) {
-            setError(cause instanceof Error ? cause.message : "Unable to switch account.");
+            setError(
+                cause instanceof Error
+                    ? cause.message
+                    : "Unable to switch account.",
+            );
+            setIsSwitching(false);
+            actionLock.current = false;
+        }
+    }
+
+    async function removeAccount(account: AccountSession) {
+        if (actionLock.current || account.active || account.slot === null)
+            return;
+        actionLock.current = true;
+        setIsSwitching(true);
+        setError(null);
+        setNotice(null);
+        try {
+            await removeSavedAccount(account.slot);
+            setAccounts((current) =>
+                current.filter((item) => item.slot !== account.slot),
+            );
+            setNotice(
+                `${account.email} was removed from this browser. You can add it again anytime.`,
+            );
+        } catch (cause) {
+            setError(
+                cause instanceof Error
+                    ? cause.message
+                    : "Unable to remove saved account.",
+            );
+        } finally {
+            actionLock.current = false;
             setIsSwitching(false);
         }
     }
@@ -52,49 +101,78 @@ export function AccountChooser({
     return (
         <main className="account-auth-screen flex min-h-dvh flex-col items-center justify-center px-4 py-12">
             <section className="account-auth-card w-full max-w-105 rounded-xl border p-7 shadow-sm sm:p-9">
-                <h1 className="text-2xl font-semibold tracking-tight">Choose an account</h1>
+                <h1 className="text-2xl font-semibold tracking-tight">
+                    Choose an account
+                </h1>
                 <p className="account-auth-muted mt-1.5 text-sm">
-                    Continue to use {appId === "liftwise" ? "LiftWise" : "your app"}.
+                    Continue to use{" "}
+                    {appId === "liftwise" ? "LiftWise" : "your app"}.
                 </p>
                 {error ? (
-                    <p role="alert" className="mt-5 rounded-lg border border-red-300/40 bg-red-500/10 p-3 text-sm text-red-700">
+                    <p
+                        role="alert"
+                        className="mt-5 rounded-lg border border-red-300/40 bg-red-500/10 p-3 text-sm text-red-700"
+                    >
                         {error}
                     </p>
                 ) : null}
+                {notice && (
+                    <p
+                        role="status"
+                        className="account-auth-muted mt-4 text-sm"
+                    >
+                        {notice}
+                    </p>
+                )}
                 <div className="mt-6 space-y-2">
                     {isLoading ? (
-                        <p role="status" className="account-auth-muted py-4 text-sm">Loading your accounts…</p>
+                        <p
+                            role="status"
+                            className="account-auth-muted py-4 text-sm"
+                        >
+                            Loading your accounts…
+                        </p>
                     ) : accounts.length ? (
                         accounts.map((account) => (
-                            <button
+                            <div
                                 key={`${account.slot ?? "active"}:${account.email}`}
-                                type="button"
-                                disabled={isSwitching}
-                                onClick={() => void selectAccount(account)}
-                                className="flex w-full items-center gap-3 rounded-lg border border-[var(--border)] p-3 text-left transition hover:border-[var(--accent)] disabled:opacity-60"
+                                className="flex items-center rounded-lg border border-[var(--border)]"
                             >
-                                <span className="grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-[var(--accent)]/15 text-sm font-semibold text-[var(--accent)]">
-                                    {account.profilePicture ? (
-                                        // eslint-disable-next-line @next/next/no-img-element
-                                        <img src={account.profilePicture} alt="" className="size-full object-cover" />
-                                    ) : (
-                                        (account.fullName || account.email)
-                                            .split(/\s|@/)
-                                            .filter(Boolean)
-                                            .slice(0, 2)
-                                            .map((part) => part[0]?.toUpperCase())
-                                            .join("")
-                                    )}
-                                </span>
-                                <span className="min-w-0 flex-1">
-                                    <span className="block truncate text-sm font-medium">{account.fullName || account.email}</span>
-                                    <span className="account-auth-muted block truncate text-xs">{account.email}</span>
-                                </span>
-                                {account.active ? <span className="text-xs text-[var(--accent)]">Current</span> : null}
-                            </button>
+                                <button
+                                    key={`${account.slot ?? "active"}:${account.email}`}
+                                    type="button"
+                                    disabled={isSwitching}
+                                    onClick={() => void selectAccount(account)}
+                                    className="flex min-w-0 flex-1 items-center gap-3 rounded-lg p-3 text-left transition hover:bg-[var(--accent)]/5 disabled:opacity-60"
+                                >
+                                    <SavedAccountAvatar account={account} />
+                                    <span className="min-w-0 flex-1">
+                                        <span className="block truncate text-sm font-medium">
+                                            {account.fullName || account.email}
+                                        </span>
+                                        <span className="account-auth-muted block truncate text-xs">
+                                            {account.email}
+                                        </span>
+                                    </span>
+                                    {account.active ? (
+                                        <span className="text-xs text-[var(--accent)]">
+                                            Current
+                                        </span>
+                                    ) : null}
+                                </button>
+                                <SavedAccountRemoveButton
+                                    account={account}
+                                    disabled={isSwitching}
+                                    onRemove={(item) =>
+                                        void removeAccount(item)
+                                    }
+                                />
+                            </div>
                         ))
                     ) : (
-                        <p className="account-auth-muted py-4 text-sm">No saved accounts found.</p>
+                        <p className="account-auth-muted py-4 text-sm">
+                            No saved accounts found.
+                        </p>
                     )}
                 </div>
                 <button

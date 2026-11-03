@@ -14,6 +14,8 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { navItems } from "./account-data";
 import { Toggle } from "./Toggle";
 import type { AccountSession } from "../../../lib/chefu-account";
+import { SavedAccountRemoveButton } from "../../_components/SavedAccountRemoveButton";
+import { useSavedAccountRemoval } from "./useSavedAccountRemoval";
 
 const THEME_STORAGE_KEY = "chefu-account-theme";
 
@@ -29,11 +31,15 @@ type AccountFrameProps = {
 };
 
 export function AccountFrame(props: AccountFrameProps) {
+    const { isRemoving, removeAccount } = useSavedAccountRemoval();
+    const accountBusy =
+        props.isSwitchingAccount || props.isSigningOut || isRemoving;
     const [mobileNavOpen, setMobileNavOpen] = useState(false);
     const [darkMode, setDarkMode] = useState(false);
     const [themeLoaded, setThemeLoaded] = useState(false);
     const [accountSwitcherOpen, setAccountSwitcherOpen] = useState(false);
-    const [signOutConfirmationOpen, setSignOutConfirmationOpen] = useState(false);
+    const [signOutConfirmationOpen, setSignOutConfirmationOpen] =
+        useState(false);
     const accountSwitcherRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -147,7 +153,10 @@ export function AccountFrame(props: AccountFrameProps) {
                         id="theme-toggle"
                     />
                 </div>
-                <div className="account-sidebar-account-switcher" ref={accountSwitcherRef}>
+                <div
+                    className="account-sidebar-account-switcher"
+                    ref={accountSwitcherRef}
+                >
                     <button
                         type="button"
                         className="account-sidebar-account-trigger"
@@ -155,9 +164,13 @@ export function AccountFrame(props: AccountFrameProps) {
                         aria-haspopup="dialog"
                         onClick={() => setAccountSwitcherOpen((open) => !open)}
                     >
-                        <AccountAvatar account={getActiveAccount(props.accounts)} />
+                        <AccountAvatar
+                            account={getActiveAccount(props.accounts)}
+                        />
                         <span className="account-sidebar-account-details">
-                            <span className="account-sidebar-account-name">Account</span>
+                            <span className="account-sidebar-account-name">
+                                Account
+                            </span>
                             <span
                                 className="account-sidebar-account-status account-sidebar-account-trigger-email"
                                 title={getActiveAccountEmail(props.accounts)}
@@ -183,7 +196,9 @@ export function AccountFrame(props: AccountFrameProps) {
                                     type="button"
                                     className="account-sidebar-account-popover-close"
                                     aria-label="Close account switcher"
-                                    onClick={() => setAccountSwitcherOpen(false)}
+                                    onClick={() =>
+                                        setAccountSwitcherOpen(false)
+                                    }
                                 >
                                     <X size={15} aria-hidden="true" />
                                 </button>
@@ -201,35 +216,77 @@ export function AccountFrame(props: AccountFrameProps) {
                                         >
                                             <AccountAvatar account={account} />
                                             <span className="account-sidebar-account-details">
-                                                <span className="account-sidebar-account-name" title={label}>{label}</span>
-                                                <span className="account-sidebar-account-status" title={account.email}>{account.email}</span>
+                                                <span
+                                                    className="account-sidebar-account-name"
+                                                    title={label}
+                                                >
+                                                    {label}
+                                                </span>
+                                                <span
+                                                    className="account-sidebar-account-status"
+                                                    title={account.email}
+                                                >
+                                                    {account.email}
+                                                </span>
                                             </span>
-                                            <span className="account-sidebar-account-dot" aria-label="Current account" />
+                                            <span
+                                                className="account-sidebar-account-dot"
+                                                aria-label="Current account"
+                                            />
                                         </div>
                                     ) : (
-                                        <button
+                                        <div
                                             key={`${account.slot}-${account.email}`}
-                                            type="button"
-                                            className="account-sidebar-account"
-                                            disabled={props.isSwitchingAccount}
-                                            onClick={() =>
-                                                account.slot !== null &&
-                                                props.onSwitchAccount(account.slot)
-                                            }
+                                            className="flex items-center"
                                         >
-                                            <AccountAvatar account={account} />
-                                            <span className="account-sidebar-account-details">
-                                                <span className="account-sidebar-account-name" title={label}>{label}</span>
-                                                <span className="account-sidebar-account-status" title={account.email}>{account.email}</span>
-                                            </span>
-                                        </button>
+                                            <button
+                                                key={`${account.slot}-${account.email}`}
+                                                type="button"
+                                                className="account-sidebar-account min-w-0 flex-1"
+                                                disabled={accountBusy}
+                                                onClick={() =>
+                                                    account.slot !== null &&
+                                                    props.onSwitchAccount(
+                                                        account.slot,
+                                                    )
+                                                }
+                                            >
+                                                <AccountAvatar
+                                                    account={account}
+                                                />
+                                                <span className="account-sidebar-account-details">
+                                                    <span
+                                                        className="account-sidebar-account-name"
+                                                        title={label}
+                                                    >
+                                                        {label}
+                                                    </span>
+                                                    <span
+                                                        className="account-sidebar-account-status"
+                                                        title={account.email}
+                                                    >
+                                                        {account.email}
+                                                    </span>
+                                                </span>
+                                            </button>
+                                            <SavedAccountRemoveButton
+                                                account={account}
+                                                disabled={accountBusy}
+                                                onRemove={(item) =>
+                                                    void removeAccount(item)
+                                                }
+                                            />
+                                        </div>
                                     );
                                 })}
                             </div>
                             <Link
                                 href="/login?prompt=select_account&returnTo=%2Faccount"
                                 className="account-sidebar-add-account"
-                                onClick={() => setAccountSwitcherOpen(false)}
+                                onClick={(event) => {
+                                    if (accountBusy) event.preventDefault();
+                                    else setAccountSwitcherOpen(false);
+                                }}
                             >
                                 <Plus size={15} aria-hidden="true" />
                                 Add another account
@@ -241,7 +298,7 @@ export function AccountFrame(props: AccountFrameProps) {
                                     setAccountSwitcherOpen(false);
                                     setSignOutConfirmationOpen(true);
                                 }}
-                                disabled={props.isSigningOut}
+                                disabled={accountBusy}
                             >
                                 <LogOut size={15} aria-hidden="true" />
                                 Sign out of all accounts
@@ -290,15 +347,20 @@ export function AccountFrame(props: AccountFrameProps) {
                         <div className="account-confirmation-icon">
                             <AlertTriangle size={20} aria-hidden="true" />
                         </div>
-                        <h2 id="sign-out-confirmation-title">Sign out of all accounts?</h2>
+                        <h2 id="sign-out-confirmation-title">
+                            Sign out of all accounts?
+                        </h2>
                         <p id="sign-out-confirmation-description">
-                            This will sign you out of every account saved on this browser.
+                            This will sign you out of every account saved on
+                            this browser.
                         </p>
                         <div className="account-confirmation-actions">
                             <button
                                 type="button"
                                 className="account-confirmation-cancel"
-                                onClick={() => setSignOutConfirmationOpen(false)}
+                                onClick={() =>
+                                    setSignOutConfirmationOpen(false)
+                                }
                                 disabled={props.isSigningOut}
                             >
                                 Cancel
@@ -312,7 +374,9 @@ export function AccountFrame(props: AccountFrameProps) {
                                 }}
                                 disabled={props.isSigningOut}
                             >
-                                {props.isSigningOut ? "Signing out..." : "Sign out"}
+                                {props.isSigningOut
+                                    ? "Signing out..."
+                                    : "Sign out"}
                             </button>
                         </div>
                     </div>
@@ -359,7 +423,9 @@ function Brand({ compact = false }: { compact?: boolean }) {
 }
 
 function getActiveAccountEmail(accounts: AccountSession[]) {
-    return accounts.find((account) => account.active)?.email || "Signed-in account";
+    return (
+        accounts.find((account) => account.active)?.email || "Signed-in account"
+    );
 }
 
 function getActiveAccount(accounts: AccountSession[]) {
@@ -376,7 +442,9 @@ function AccountAvatar({ account }: { account?: AccountSession }) {
     const initial = label.charAt(0).toUpperCase() || "A";
 
     if (!account?.profilePicture || imageFailed) {
-        return <span className="account-sidebar-account-avatar">{initial}</span>;
+        return (
+            <span className="account-sidebar-account-avatar">{initial}</span>
+        );
     }
 
     return (
