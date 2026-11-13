@@ -1,4 +1,4 @@
-export type ChefuAppId = "root" | "academy" | "admin" | "merchant" | "flow" | "quantum" | "infinity" | "logix" | "logix-dash" | "cloudence" | "nook" | "liftwise";
+export type ChefuAppId = "root" | "academy" | "admin" | "merchant" | "flow" | "quantum" | "infinity" | "logix" | "logix-dash" | "cloudence" | "nook" | "liftwise" | "shopyethu";
 
 export type RedirectTargetKind = "relative" | "app-origin" | "oauth-authorize";
 
@@ -37,6 +37,10 @@ type OauthClientRedirectPolicy = {
 const MAX_RETURN_TO_LENGTH = 2048;
 
 const CHEFU_APP_RETURN_TO_POLICY: Record<ChefuAppId, AppRedirectPolicy> = {
+    shopyethu: {
+        allowedOrigins: ["https://shopyethu-admin.chefu.co.za"],
+        oauthClientIds: [],
+    },
     root: {
         allowedOrigins: [
             "https://chefu.co.za",
@@ -215,6 +219,7 @@ export function resolveChefuAppId(value?: string | null): ChefuAppId {
     if (normalized === "cloudence") return "cloudence";
     if (normalized === "nook") return "nook";
     if (normalized === "liftwise") return "liftwise";
+    if (normalized === "shopyethu") return "shopyethu";
     if (normalized === "merchant") return "merchant";
     return "root";
 }
@@ -235,6 +240,7 @@ export function isKnownChefuAppParam(value?: string | null) {
         normalized === "cloudence" ||
         normalized === "nook" ||
         normalized === "liftwise" ||
+        normalized === "shopyethu" ||
         normalized === "academy" ||
         normalized === "merchant"
     );

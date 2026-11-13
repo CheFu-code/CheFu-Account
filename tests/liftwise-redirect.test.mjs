@@ -27,6 +27,18 @@ test("LiftWise mobile and deployed web PKCE flows are accepted", () => {
   assert.equal(validateAuthRedirectParams(params("liftwise-web", "https://liftwise.chefu.co.za/sso-callback")), null);
 });
 
+test("ShopYethu uses its hosted central-session return origin and no OAuth client", () => {
+  for (const path of ["/", "/login"]) {
+    assert.equal(validateAuthRedirectParams(new URLSearchParams({ app: "shopyethu", returnTo: `https://shopyethu-admin.chefu.co.za${path}` })), null);
+  }
+  for (const returnTo of ["http://localhost:3000/login", "https://shopyethu.chefu.co.za/", "https://evil.example/"]) {
+    assert.equal(validateAuthRedirectParams(new URLSearchParams({ app: "shopyethu", returnTo })).ok, false);
+  }
+  const oauth = params("shopyethu-web", "https://shopyethu-admin.chefu.co.za/auth/callback");
+  oauth.set("app", "shopyethu");
+  assert.equal(validateAuthRedirectParams(oauth).ok, false);
+});
+
 test("another client, callback, app, or tampered state is rejected", () => {
   for (const value of [params("nook-mobile", "nook://sso-callback"), params("liftwise-mobile", "https://evil.example/app/liftwise/sso-callback"), params("liftwise-web", "https://evil.example/sso-callback")]) {
     assert.equal(validateAuthRedirectParams(value).ok, false);
