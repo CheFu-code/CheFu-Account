@@ -39,7 +39,7 @@ const MAX_RETURN_TO_LENGTH = 2048;
 const CHEFU_APP_RETURN_TO_POLICY: Record<ChefuAppId, AppRedirectPolicy> = {
     shopyethu: {
         allowedOrigins: ["https://shopyethu-admin.chefu.co.za"],
-        oauthClientIds: [],
+        oauthClientIds: ["shopyethu-mobile"],
     },
     root: {
         allowedOrigins: [
@@ -118,6 +118,10 @@ const OAUTH_AUTHORIZE_ORIGINS = [
 ];
 
 const OAUTH_CLIENT_RETURN_TO_POLICY: Record<string, OauthClientRedirectPolicy> = {
+    "shopyethu-mobile": {
+        appId: "shopyethu",
+        redirectUris: ["shopyethu://sso-callback"],
+    },
     "chefu-academy-web": {
         appId: "academy",
         redirectUris: [

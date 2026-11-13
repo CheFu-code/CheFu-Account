@@ -27,7 +27,7 @@ test("LiftWise mobile and deployed web PKCE flows are accepted", () => {
   assert.equal(validateAuthRedirectParams(params("liftwise-web", "https://liftwise.chefu.co.za/sso-callback")), null);
 });
 
-test("ShopYethu uses its hosted central-session return origin and no OAuth client", () => {
+test("ShopYethu web uses central sessions; only its registered mobile PKCE callback is accepted", () => {
   for (const path of ["/", "/login"]) {
     assert.equal(validateAuthRedirectParams(new URLSearchParams({ app: "shopyethu", returnTo: `https://shopyethu-admin.chefu.co.za${path}` })), null);
   }
@@ -37,6 +37,12 @@ test("ShopYethu uses its hosted central-session return origin and no OAuth clien
   const oauth = params("shopyethu-web", "https://shopyethu-admin.chefu.co.za/auth/callback");
   oauth.set("app", "shopyethu");
   assert.equal(validateAuthRedirectParams(oauth).ok, false);
+  const mobile = params("shopyethu-mobile", "shopyethu://sso-callback");
+  mobile.set("app", "shopyethu");
+  assert.equal(validateAuthRedirectParams(mobile), null);
+  const untrusted = params("shopyethu-mobile", "shopyethuandroid://sso-callback");
+  untrusted.set("app", "shopyethu");
+  assert.equal(validateAuthRedirectParams(untrusted).ok, false);
 });
 
 test("another client, callback, app, or tampered state is rejected", () => {
