@@ -177,7 +177,7 @@ export function AccountChooser({
                     disabled={isSwitching}
                     className="mt-5 h-11 w-full rounded-lg border border-[var(--border-strong)] px-4 text-sm font-semibold text-[var(--fg)] hover:border-[var(--accent)] disabled:opacity-60"
                 >
-                    Add another account
+                    {accounts.length ? "Add another account" : "Add account"}
                 </button>
             </section>
         </main>
