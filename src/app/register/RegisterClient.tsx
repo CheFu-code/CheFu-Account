@@ -15,6 +15,7 @@ import {
 } from "../../lib/chefu-account";
 import { EmailVerificationDialog } from "./EmailVerificationDialog";
 import { PasskeyOfferDialog } from "./PasskeyOfferDialog";
+import { PhoneVerificationDialog } from "./PhoneVerificationDialog";
 
 export function RegisterClient() {
     const router = useRouter();
@@ -26,6 +27,7 @@ export function RegisterClient() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [verificationOpen, setVerificationOpen] = useState(false);
     const [passkeyOfferOpen, setPasskeyOfferOpen] = useState(false);
+    const [phoneOfferOpen, setPhoneOfferOpen] = useState(false);
     const [verificationEmail, setVerificationEmail] = useState("");
     const [resendCooldownSeconds, setResendCooldownSeconds] = useState(0);
     const [resendsRemaining, setResendsRemaining] = useState(0);
@@ -151,7 +153,7 @@ export function RegisterClient() {
                         toast.success(`Account created for ${appName}.`);
                         setVerificationOpen(false);
                         setPassword("");
-                        setPasskeyOfferOpen(true);
+                        setPhoneOfferOpen(true);
                     } catch (error) {
                         if (error instanceof EmailVerificationCodeError) {
                             setVerificationCodeResetKey((key) => key + 1);
@@ -170,6 +172,20 @@ export function RegisterClient() {
                     } finally {
                         setIsSubmitting(false);
                     }
+                }}
+            />
+        ) : null}
+        {phoneOfferOpen ? (
+            <PhoneVerificationDialog
+                appId={appId}
+                onSkip={() => {
+                    setPhoneOfferOpen(false);
+                    setPasskeyOfferOpen(true);
+                }}
+                onComplete={() => {
+                    toast.success("Phone number verified.");
+                    setPhoneOfferOpen(false);
+                    setPasskeyOfferOpen(true);
                 }}
             />
         ) : null}

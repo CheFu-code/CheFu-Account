@@ -3,7 +3,7 @@ import {
     validateReturnToForApp,
     type ChefuAppId,
 } from "./redirect-policy";
-import { authMutationFetch } from "./auth-reads";
+import { authMutationFetch, shareAuthRead } from "./auth-reads";
 
 export type { ChefuAppId };
 
@@ -330,17 +330,30 @@ export async function clearChefuAccountSession(globalLogout = true) {
 }
 
 export async function listChefuAccountSessions(appId: ChefuAppId): Promise<AccountSession[]> {
-    const response = await fetch(apiUrl("/auth/accounts"), {
-        credentials: "include",
-        cache: "no-store",
-        headers: { [CHEFU_APP_HEADER]: appId },
+    return shareAuthRead(`accounts:${appId}`, async signal => {
+        const controller = new AbortController();
+        const abort = () => controller.abort();
+        signal.addEventListener("abort", abort, { once: true });
+        if (signal.aborted) controller.abort();
+        const timer = setTimeout(abort, 3000);
+        try {
+            const response = await fetch(apiUrl("/auth/accounts"), {
+                credentials: "include", cache: "no-store", signal: controller.signal,
+                headers: { [CHEFU_APP_HEADER]: appId },
+            });
+            if (response.status === 401) return [];
+            if (!response.ok) throw new Error(await readApiError(response));
+            const result = (await response.json()) as { accounts?: AccountSession[] };
+            if (!Array.isArray(result?.accounts) || result.accounts.some(account => !account || typeof account.email !== "string"
+                || !account.email || typeof account.active !== "boolean" || (account.slot !== null && !Number.isInteger(account.slot)))) {
+                throw new Error("The account list response was invalid.");
+            }
+            return result.accounts;
+        } finally {
+            clearTimeout(timer);
+            signal.removeEventListener("abort", abort);
+        }
     });
-    if (!response.ok) throw new Error(await readApiError(response));
-    const result = (await response.json()) as { accounts?: AccountSession[] };
-    if (!Array.isArray(result.accounts)) {
-        throw new Error("The account list response was invalid.");
-    }
-    return result.accounts;
 }
 
 export async function switchChefuAccount(slot: number) {

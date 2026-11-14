@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import {
     listChefuAccountSessions,
     switchChefuAccount,
@@ -16,10 +17,16 @@ import {
 
 export function AccountChooser({
     appId,
+    appName,
+    registerHref,
+    onAvailability,
     onAddAccount,
     onSelected,
 }: {
     appId: ChefuAppId;
+    appName?: string;
+    registerHref?: string;
+    onAvailability?: (available: boolean) => void;
     onAddAccount: () => void;
     onSelected: (account: AccountSession) => void;
 }) {
@@ -34,7 +41,10 @@ export function AccountChooser({
         let active = true;
         void listChefuAccountSessions(appId)
             .then((result) => {
-                if (active) setAccounts(result);
+                if (active) {
+                    setAccounts(result);
+                    onAvailability?.(result.length > 0);
+                }
             })
             .catch((cause) => {
                 if (active) {
@@ -43,6 +53,7 @@ export function AccountChooser({
                             ? cause.message
                             : "Unable to load your accounts.",
                     );
+                    onAvailability?.(false);
                 }
             })
             .finally(() => {
@@ -51,7 +62,7 @@ export function AccountChooser({
         return () => {
             active = false;
         };
-    }, [appId]);
+    }, [appId, onAvailability]);
 
     async function selectAccount(account: AccountSession) {
         if (actionLock.current) return;
@@ -84,6 +95,7 @@ export function AccountChooser({
             setAccounts((current) =>
                 current.filter((item) => item.slot !== account.slot),
             );
+            if (accounts.every(item => item.slot === account.slot)) onAvailability?.(false);
             setNotice(
                 `${account.email} was removed from this browser. You can add it again anytime.`,
             );
@@ -103,11 +115,11 @@ export function AccountChooser({
         <main className="account-auth-screen flex min-h-dvh flex-col items-center justify-center px-4 py-12">
             <section className="account-auth-card w-full max-w-105 rounded-xl border p-7 shadow-sm sm:p-9">
                 <h1 className="text-2xl font-semibold tracking-tight">
-                    Choose an account
+                    {isLoading ? "Continue to sign in" : accounts.length ? "Choose an account" : "Sign in or create an account"}
                 </h1>
                 <p className="account-auth-muted mt-1.5 text-sm">
                     Continue to use{" "}
-                    {appId === "liftwise" ? "LiftWise" : "your app"}.
+                    {appName || (appId === "liftwise" ? "LiftWise" : "your app")}.
                 </p>
                 {error ? (
                     <p
@@ -167,7 +179,7 @@ export function AccountChooser({
                         ))
                     ) : (
                         <p className="account-auth-muted py-4 text-sm">
-                            No saved accounts found.
+                            Sign in with your email or create an account to get started.
                         </p>
                     )}
                 </div>
@@ -177,8 +189,15 @@ export function AccountChooser({
                     disabled={isSwitching}
                     className="mt-5 h-11 w-full rounded-lg border border-[var(--border-strong)] px-4 text-sm font-semibold text-[var(--fg)] hover:border-[var(--accent)] disabled:opacity-60"
                 >
-                    {accounts.length ? "Add another account" : "Add account"}
+                    {accounts.length ? "Sign in with another account" : "Sign in"}
                 </button>
+                {registerHref && <div className="mt-6 border-t border-[var(--border)] pt-5 text-center">
+                    <p className="account-auth-muted text-sm">New here?</p>
+                    <Link href={registerHref} aria-disabled={isSwitching} onClick={event => { if (isSwitching) event.preventDefault(); }}
+                        className="account-auth-link mt-2 inline-flex min-h-11 items-center justify-center rounded-lg px-4 text-sm font-semibold underline underline-offset-4 aria-disabled:opacity-50">
+                        Create account
+                    </Link>
+                </div>}
             </section>
         </main>
     );

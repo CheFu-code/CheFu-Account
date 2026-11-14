@@ -21,10 +21,9 @@ import {
     resolveChefuApp,
     safeReturnTo,
 } from "../../lib/chefu-account";
-import { AccountAuthScreen } from "../_components/AccountAuthScreen";
+import { LoginAccountEntry } from "./LoginAccountEntry";
 import { MfaChallengeDialog } from "./MfaChallengeDialog";
 import { usePasskeySignIn } from "./usePasskeySignIn";
-import { AccountChooser } from "./AccountChooser";
 import { completeAuthRedirect, readLoginError, readMfaError } from "./login-helpers";
 
 export function LoginClient() {
@@ -40,9 +39,6 @@ export function LoginClient() {
     const [isResendingTrustedDeviceCode, setIsResendingTrustedDeviceCode] = useState(false);
     const [trustDeviceVerificationOpen, setTrustDeviceVerificationOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [showAccountChooser, setShowAccountChooser] = useState(
-        () => searchParams.get("prompt") === "select_account",
-    );
     const [mfaCode, setMfaCode] = useState("");
     const [mfaEmail, setMfaEmail] = useState("");
     const [mfaPendingCredential, setMfaPendingCredential] = useState("");
@@ -346,14 +342,11 @@ export function LoginClient() {
 
     return (
         <>
-            {selectAccount && showAccountChooser ? (
-                <AccountChooser
-                    appId={appId}
-                    onAddAccount={() => setShowAccountChooser(false)}
-                    onSelected={() => completeAuthRedirect(fromPath, router.replace)}
-                />
-            ) : null}
-            {!selectAccount || !showAccountChooser ? <AccountAuthScreen
+            <LoginAccountEntry
+                key={`${appId}:${selectAccount}:${fromPath}`}
+                appId={appId}
+                selectAccount={selectAccount}
+                onSelected={() => completeAuthRedirect(fromPath, router.replace)}
                 alternateHref={registerHref}
                 appName={appName}
                 email={email}
@@ -368,13 +361,7 @@ export function LoginClient() {
                 setPassword={setPassword}
                 trustDevice={trustDevice}
                 setTrustDevice={setTrustDevice}
-                onReturnToPicker={selectAccount ? () => {
-                    setPassword("");
-                    setEmail("");
-                    setTrustDevice(false);
-                    setShowAccountChooser(true);
-                } : undefined}
-            /> : null}
+            />
             <MfaChallengeDialog
                 code={mfaCode}
                 email={mfaEmail}

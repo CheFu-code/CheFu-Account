@@ -177,14 +177,20 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                             </>
                         ) : null}
                     </form>
+                    {mode === "login" && <div className="mt-6 border-t border-[var(--border)] pt-5 text-center">
+                        <p className="account-auth-muted text-sm">New to {appName}?</p>
+                        <Link href={alternateHref} className="account-auth-dialog-skip mt-3 inline-flex w-full items-center justify-center font-semibold">
+                            Create account
+                        </Link>
+                    </div>}
                 </div>
 
-                <p className="account-auth-muted mt-6 text-sm">
+                {mode !== "login" && <p className="account-auth-muted mt-6 text-sm">
                     {copy.alternateLead}{" "}
                     <Link href={alternateHref} className={linkClass}>
                         {copy.alternateAction}
                     </Link>
-                </p>
+                </p>}
             </div>
 
             <footer className="account-auth-footer flex justify-center gap-5 pb-6 text-xs">

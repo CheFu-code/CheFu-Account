@@ -9,7 +9,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import * as icons from "lucide-react";
 
 function load(file, dependencies, globals = {}) {
-    const module = { exports: {} };
+    const testModule = { exports: {} };
     const code = ts.transpileModule(
         fs.readFileSync(new URL(`../src/${file}`, import.meta.url), "utf8"),
         {
@@ -21,15 +21,15 @@ function load(file, dependencies, globals = {}) {
         },
     ).outputText;
     vm.runInNewContext(code, {
-        module,
-        exports: module.exports,
+        module: testModule,
+        exports: testModule.exports,
         require: (name) => {
             assert.ok(name in dependencies, name);
             return dependencies[name];
         },
         ...globals,
     });
-    return module.exports;
+    return testModule.exports;
 }
 
 function elements(node) {
@@ -83,6 +83,7 @@ test("expired saved account switching keeps the picker usable and permits retry"
     let selected = 0;
     const { AccountChooser } = load("app/login/AccountChooser.tsx", {
         react: fakeReact, "react/jsx-runtime": jsxRuntime,
+        "next/link": { default: () => null },
         "../../lib/chefu-account": {
             listChefuAccountSessions: async () => [account],
             switchChefuAccount: async () => { switched++; if (fail) throw new Error("Saved sign-in expired. Add this account again."); },

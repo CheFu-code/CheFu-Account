@@ -1,0 +1,15 @@
+# Optional phone verification after signup
+
+Successful email verification creates the account and its existing central session. Signup then offers an optional phone modal, followed by the existing passkey offer and original validated return destination. Both optional steps can be skipped. No SMS is sent merely by opening or skipping the modal.
+
+ShopYethu requests account selection when opening sign-in. The central chooser checks for saved browser accounts once, sharing concurrent checks and limiting the wait to three seconds. An empty, unauthorized or failed account lookup opens the sign-in form with a prominent Create account action. Existing saved accounts remain selectable, with both Sign in with another account and Create account available. Returning to the chooser is offered only when saved accounts were found. Registration links retain the original app, OAuth return destination and prompt parameters.
+
+The number is sent through the central session to `POST /phone-verification/send`; the SMS code is checked with `POST /phone-verification/check`. The backend normalizes the number and verifies the provider's response. On a fresh approval, the verified receipt and the authenticated user's `users/<email>.phone` contact are saved in one transaction. This does not enroll Firebase phone sign-in or SMS MFA. Verification status remains in the private backend receipt, separate from an editable contact field.
+
+The modal has explicit send/verify buttons, a resend cooldown, expiry, exhausted-attempt handling, loading/errors and a verified confirmation. Requests are locked against duplicate clicks and time out after twenty seconds. A send with an uncertain network result is never automatically repeated; the user can enter an arriving code or resend after the cooldown. Only a matching confirmed backend receipt shows success. No phone number or OTP is persisted in browser storage.
+
+The native dialog manages modal focus and keyboard navigation. Escape skips when no request is running. A failed verification does not undo registration or prevent continuing.
+
+Deploy the backend phone module and configure `PHONE_VERIFICATION_ENABLED=true`, Twilio Verify credentials and a shared production limiter before enabling real sends. See `chefu-inc-backend/src/modules/phone-verification/README.md` for Firestore access rules, TTL and provider restrictions. Secrets remain on the backend; no frontend Twilio environment variables are needed.
+
+Verification: `npm run test:sso`, `npm run typecheck`, `npm run lint`, and `npm run build`. Automated tests use mocked fetch/provider responses and never send SMS. A real signup/SMS round trip still needs checking against the deployed backend with an authorized phone number.
