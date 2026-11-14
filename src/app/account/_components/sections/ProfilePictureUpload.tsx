@@ -8,6 +8,8 @@ interface ProfilePictureUploadProps {
     currentImageUrl?: string;
     userName?: string;
     onUploadSuccess?: (imageUrl: string) => void;
+    disabled?: boolean;
+    onUploadingChange?: (uploading: boolean) => void;
 }
 
 /**
@@ -17,23 +19,27 @@ export function ProfilePictureUpload({
     currentImageUrl,
     userName = "User",
     onUploadSuccess,
+    disabled = false,
+    onUploadingChange,
 }: ProfilePictureUploadProps) {
     const { uploadProfilePicture, isUploading, error, previewUrl, clearError } =
         useProfilePictureUpload();
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const uploadLock = useRef(false);
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.currentTarget.files?.[0];
-        if (!file) return;
+        if (!file || disabled || uploadLock.current) return;
 
-        const uploadedUrl = await uploadProfilePicture(file);
-        if (uploadedUrl) {
-            onUploadSuccess?.(uploadedUrl);
-        }
-
-        // Reset input
-        if (fileInputRef.current) {
-            fileInputRef.current.value = "";
+        uploadLock.current = true;
+        onUploadingChange?.(true);
+        try {
+            const uploadedUrl = await uploadProfilePicture(file);
+            if (uploadedUrl) onUploadSuccess?.(uploadedUrl);
+        } finally {
+            uploadLock.current = false;
+            onUploadingChange?.(false);
+            if (fileInputRef.current) fileInputRef.current.value = "";
         }
     };
 
@@ -64,7 +70,7 @@ export function ProfilePictureUpload({
                     <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploading}
+                        disabled={disabled || isUploading}
                         className="absolute -bottom-1 -right-1 flex size-8 items-center justify-center rounded bg-[var(--accent)] text-white shadow-sm transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
                         aria-label="Upload profile picture"
                         title="Upload profile picture"
@@ -84,7 +90,7 @@ export function ProfilePictureUpload({
                     accept="image/jpeg,image/png,image/gif,image/webp"
                     onChange={handleFileChange}
                     className="hidden"
-                    disabled={isUploading}
+                    disabled={disabled || isUploading}
                 />
 
                 {/* Upload Info & Action Button */}
@@ -102,7 +108,7 @@ export function ProfilePictureUpload({
                         <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            disabled={isUploading}
+                            disabled={disabled || isUploading}
                             className="inline-flex items-center gap-2 rounded border border-[var(--border-strong)] bg-[var(--bg)] px-3.5 py-1.5 text-xs font-semibold text-[var(--fg-2)] transition hover:border-[var(--accent)] hover:bg-[var(--surface-alt)] disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             {isUploading ? (
@@ -123,7 +129,7 @@ export function ProfilePictureUpload({
 
             {/* Error Message */}
             {error && (
-                <div className="mt-4 flex items-start gap-2.5 rounded-2xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-200">
+                <div role="alert" className="mt-4 flex items-start gap-2.5 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-[var(--danger)]">
                     <AlertCircle className="mt-0.5 size-4 shrink-0 text-red-400" />
                     <div className="flex-1">
                         <p>{error}</p>

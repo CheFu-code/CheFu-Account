@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -11,7 +11,8 @@ import {
 } from "./account-data";
 import { mockAccount } from "./preview-account";
 import { useAccountLoad } from "./useAccountLoad";
-import { authMutationFetch } from "../../../lib/auth-reads";
+import { useProfileSave } from "./useProfileSave";
+import type { VerifiedPhone } from "../../../lib/phone-verification";
 import type {
     AccountProfile,
     AccountResponse,
@@ -69,12 +70,14 @@ export function useAccountController() {
     const [activeSection, setActiveSection] = useState(() =>
         resolveAccountSection(sectionParam),
     );
-    const [isSaving, setIsSaving] = useState(false);
     const [isSendingReset, setIsSendingReset] = useState(false);
     const [isSigningOut, setIsSigningOut] = useState(false);
     const [isSwitchingAccount, setIsSwitchingAccount] = useState(false);
 
     const isLoading = useAccountLoad(appId, hydrateAccount, getCurrentAccountPath, isDevPreview ? mockAccount : undefined);
+    const { isSaving, saveProfile, savePersonalInfo } = useProfileSave({
+        account, appId, activeSection, privacy, onSaved: hydrateAccount, isDevPreview,
+    });
 
     const accountsQuery = useQuery({
         queryKey: ["account-sessions", appId],
@@ -148,186 +151,6 @@ export function useAccountController() {
         );
     }, [accountSearch]);
 
-    async function saveProfile(event: FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-        if (!account) return;
-
-        const normalizeName = (value: string) => value.trim().replace(/\s+/g, " ");
-        const trimmedFirstName = normalizeName(firstName);
-        const trimmedLastName = normalizeName(lastName);
-        const trimmedDisplayName = normalizeName(name);
-        const originalFirstName = normalizeName(readText(account.profile.firstName));
-        const originalLastName = normalizeName(readText(account.profile.lastName));
-        const originalDisplayName = normalizeName(
-            readText(account.profile.fullname) || readText(account.user.displayName),
-        );
-        const firstNameChanged = trimmedFirstName !== originalFirstName;
-        const lastNameChanged = trimmedLastName !== originalLastName;
-        const displayNameChanged = trimmedDisplayName !== originalDisplayName;
-        const phoneChanged = phone.trim() !== readText(account.profile.phone).trim();
-        const bioChanged = bio.trim() !== readText(account.profile.bio).trim();
-        const websiteChanged = website.trim() !== readText(account.profile.website).trim();
-        const locationChanged = location.trim() !== readText(account.profile.location).trim();
-        const privacyChanges = Object.fromEntries(
-            (Object.keys(privacy) as Array<keyof PrivacyPreferences>)
-                .filter((key) => privacy[key] !== account.profile.privacy[key])
-                .map((key) => [key, privacy[key]]),
-        ) as Partial<PrivacyPreferences>;
-        const hasPrivacyChanges = Object.keys(privacyChanges).length > 0;
-
-        if (
-            activeSection === "personal-info" &&
-            displayNameChanged &&
-            trimmedDisplayName.length < 2
-        ) {
-            toast.error("Display name must contain at least 2 characters.");
-            return;
-        }
-
-        if (
-            activeSection === "personal-info" &&
-            !displayNameChanged &&
-            (firstNameChanged || lastNameChanged) &&
-            (!trimmedFirstName || !trimmedLastName)
-        ) {
-            toast.error("First name and last name are both required.");
-            return;
-        }
-
-        const hasPersonalInfoChanges =
-            displayNameChanged || firstNameChanged || lastNameChanged || phoneChanged ||
-            bioChanged || websiteChanged || locationChanged;
-        if (
-            (activeSection === "personal-info" && !hasPersonalInfoChanges) ||
-            (activeSection === "privacy" && !hasPrivacyChanges)
-        ) {
-            toast.info("There are no profile changes to save.");
-            return;
-        }
-
-        const profileUpdates: {
-            fullname?: string;
-            firstName?: string;
-            lastName?: string;
-            phone?: string;
-            bio?: string;
-            website?: string;
-            location?: string;
-            academyProfile?: {
-                bio?: string;
-                privacy?: Partial<PrivacyPreferences>;
-            };
-        } = {};
-        if (activeSection === "personal-info") {
-            if (displayNameChanged) {
-                profileUpdates.fullname = trimmedDisplayName;
-            } else if (firstNameChanged || lastNameChanged) {
-                profileUpdates.firstName = trimmedFirstName;
-                profileUpdates.lastName = trimmedLastName;
-            }
-            if (phoneChanged) profileUpdates.phone = phone.trim();
-            if (bioChanged) profileUpdates.bio = bio.trim();
-            if (websiteChanged) profileUpdates.website = website.trim();
-            if (locationChanged) profileUpdates.location = location.trim();
-        } else if (activeSection === "privacy" && hasPrivacyChanges) {
-            profileUpdates.academyProfile = { privacy: privacyChanges };
-        }
-
-        setIsSaving(true);
-
-        try {
-            if (isDevPreview) {
-                const previewProfileUpdates: Partial<AccountProfile> = {};
-                if (activeSection === "personal-info" && displayNameChanged) {
-                    previewProfileUpdates.fullname = trimmedDisplayName;
-                    const nameParts = trimmedDisplayName.split(" ");
-                    previewProfileUpdates.firstName = nameParts[0];
-                    previewProfileUpdates.lastName = nameParts.slice(1).join(" ");
-                } else if (activeSection === "personal-info") {
-                    if (firstNameChanged) previewProfileUpdates.firstName = trimmedFirstName;
-                    if (lastNameChanged) previewProfileUpdates.lastName = trimmedLastName;
-                    if (firstNameChanged || lastNameChanged) {
-                        previewProfileUpdates.fullname =
-                            `${trimmedFirstName} ${trimmedLastName}`.trim();
-                    }
-                }
-                if (activeSection === "personal-info" && phoneChanged) {
-                    previewProfileUpdates.phone = phone.trim();
-                }
-                if (activeSection === "personal-info" && bioChanged) {
-                    previewProfileUpdates.bio = bio.trim();
-                }
-                if (activeSection === "personal-info" && websiteChanged) {
-                    previewProfileUpdates.website = website.trim();
-                }
-                if (activeSection === "personal-info" && locationChanged) {
-                    previewProfileUpdates.location = location.trim();
-                }
-                if (activeSection === "privacy" && hasPrivacyChanges) {
-                    previewProfileUpdates.privacy = {
-                        ...account.profile.privacy,
-                        ...privacyChanges,
-                    };
-                }
-
-                hydrateAccount({
-                    ...account,
-                    user: {
-                        ...account.user,
-                        ...(activeSection === "personal-info" &&
-                        (displayNameChanged || firstNameChanged || lastNameChanged)
-                            ? {
-                                  displayName:
-                                      previewProfileUpdates.fullname ||
-                                      account.user.displayName,
-                              }
-                            : {}),
-                    },
-                    profile: {
-                        ...account.profile,
-                        ...previewProfileUpdates,
-                    },
-                });
-                toast.success("Preview profile updated locally.");
-                return;
-            }
-
-            const response = await authMutationFetch(apiUrl("/auth/profile"), {
-                method: "PATCH",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                    "x-chefu-app": appId,
-                },
-                body: JSON.stringify(profileUpdates),
-            });
-
-            const data = (await response.json().catch(() => null)) as
-                | AccountResponse
-                | { message?: string; error?: string }
-                | null;
-
-            if (!response.ok) {
-                const message =
-                    data && "message" in data
-                        ? data.message
-                        : "Your account could not be updated.";
-                throw new Error(message || "Your account could not be updated.");
-            }
-
-
-            hydrateAccount(data as AccountResponse);
-            toast.success("Account updated.");
-        } catch (error) {
-            toast.error("Unable to update your account.", {
-                description:
-                    error instanceof Error ? error.message : "Please try again.",
-            });
-        } finally {
-            setIsSaving(false);
-        }
-    }
-
     async function sendResetEmail() {
         if (!account?.user.email) return;
         if (isDevPreview) {
@@ -399,6 +222,17 @@ export function useAccountController() {
             });
             setIsSigningOut(false);
         }
+    }
+
+    function handlePhoneVerified(receipt: VerifiedPhone) {
+        setPhone(receipt.phone);
+        setAccount(current => current ? {
+            ...current,
+            profile: {
+                ...current.profile, phone: receipt.phone,
+                phoneVerifiedAt: receipt.verifiedAt, phoneVerificationRequired: false,
+            },
+        } : current);
     }
 
     function handleProfilePictureSuccess(imageUrl: string) {
@@ -489,6 +323,7 @@ export function useAccountController() {
         filteredSections,
         goToSection,
         handleProfilePictureSuccess,
+        handlePhoneVerified,
         handleSignOut,
         initials,
         isLoading,
@@ -508,6 +343,7 @@ export function useAccountController() {
         preferredContentFormat,
         privacy,
         saveProfile,
+        savePersonalInfo,
         securityEmailsEnabled,
         sendResetEmail,
         setAccountSearch,

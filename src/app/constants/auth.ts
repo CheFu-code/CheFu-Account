@@ -6,7 +6,7 @@ export const modeCopy = {
         eyebrow: "Welcome back",
         passwordAutoComplete: "current-password",
         passwordHelp: "",
-        submitting: "Opening your account...",
+        submitting: "Signing in…",
     },
     register: {
         alternateAction: "Sign in instead",

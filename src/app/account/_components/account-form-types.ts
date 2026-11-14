@@ -6,6 +6,8 @@ import type {
     PrivacyPreferences,
 } from "./account-types";
 import type { ChefuAppId } from "../../../lib/chefu-account";
+import type { PersonalInfoUpdate } from "../../../lib/account-profile";
+import type { VerifiedPhone } from "../../../lib/phone-verification";
 
 export type AccountSettingsFormProps = {
     account: AccountResponse;
@@ -35,6 +37,8 @@ export type AccountSettingsFormProps = {
     ) => void;
     onPrivacyChange: Dispatch<SetStateAction<PrivacyPreferences>>;
     onProfilePictureSuccess?: (imageUrl: string) => void;
+    onPhoneVerified: (receipt: VerifiedPhone) => void;
+    onSavePersonalInfo: (updates: PersonalInfoUpdate) => Promise<void>;
     onSendResetEmail: () => void;
     onSkillLevelChange: (value: AccountProfile["skillLevel"]) => void;
     onSubmit: (event: FormEvent<HTMLFormElement>) => void;

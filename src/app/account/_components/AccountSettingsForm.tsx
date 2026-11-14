@@ -12,11 +12,11 @@ import { PrivacySection } from "./sections/PrivacySection";
 import { SecuritySection } from "./sections/SecuritySection";
 
 export function AccountSettingsForm(props: AccountSettingsFormProps) {
+    if (props.activeSection === "personal-info") {
+        return <PersonalInfoSection key={props.account.user.uid} {...props} />;
+    }
     return (
         <form id="account-settings-form" onSubmit={props.onSubmit} className="space-y-5">
-            {props.activeSection === "personal-info" ? (
-                <PersonalInfoSection {...props} />
-            ) : null}
             {props.activeSection === "security" ? <SecuritySection {...props} /> : null}
             {props.activeSection === "privacy" ? <PrivacySection {...props} /> : null}
 

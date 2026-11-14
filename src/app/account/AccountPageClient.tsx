@@ -55,7 +55,7 @@ export function AccountPageClient() {
                     account={account.account}
                     initials={account.initials}
                     name={account.name}
-                    onSelectSection={account.goToSection}
+                    onProfilePictureSuccess={account.handleProfilePictureSuccess}
                 />
             ) : (
                 <AccountSettingsForm
@@ -82,6 +82,8 @@ export function AccountPageClient() {
                     onPreferredContentFormatChange={account.setPreferredContentFormat}
                     onPrivacyChange={account.setPrivacy}
                     onProfilePictureSuccess={account.handleProfilePictureSuccess}
+                    onPhoneVerified={account.handlePhoneVerified}
+                    onSavePersonalInfo={account.savePersonalInfo}
                     phone={account.phone}
                     onSendResetEmail={account.sendResetEmail}
                     onSkillLevelChange={account.setSkillLevel}

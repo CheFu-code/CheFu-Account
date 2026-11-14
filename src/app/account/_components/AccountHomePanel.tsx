@@ -1,23 +1,26 @@
 "use client";
 
 import { Check } from "lucide-react";
+import { useState } from "react";
 import type { AccountResponse } from "./account-types";
 import { AccountButton, FieldRow, AccountPanel, SectionHeader } from "./AccountPrimitives";
+import { ProfilePhotoDialog } from "./sections/ProfilePhotoDialog";
 
 type AccountHomePanelProps = {
     account: AccountResponse;
     initials: string;
     name: string;
-    onSelectSection: (id: string) => void;
+    onProfilePictureSuccess: (imageUrl: string) => void;
 };
 
 export function AccountHomePanel({
     account,
     initials,
     name,
-    onSelectSection,
+    onProfilePictureSuccess,
 }: AccountHomePanelProps) {
     const fullName = name || account.user.displayName || "Account user";
+    const [changingPhoto, setChangingPhoto] = useState(false);
     const country = account.profile.country || account.profile.detectedCountryCode || "Not set";
 
     return (
@@ -45,7 +48,7 @@ export function AccountHomePanel({
                     </span>
                 </div>
                 <div className="account-profile-action">
-                    <AccountButton variant="secondary" onClick={() => onSelectSection("personal-info")}>
+                    <AccountButton variant="secondary" onClick={() => setChangingPhoto(true)}>
                         Change photo
                     </AccountButton>
                 </div>
@@ -72,7 +75,8 @@ export function AccountHomePanel({
                 </dl>
             </AccountPanel>
 
-            
+            {changingPhoto && <ProfilePhotoDialog currentImageUrl={account.profile.profilePicture}
+                userName={fullName} onSaved={onProfilePictureSuccess} onClose={() => setChangingPhoto(false)} />}
         </div>
     );
 }

@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { ChefuAppId } from "../../lib/chefu-account";
-import { checkPhoneCode, PhoneVerificationError, sendPhoneCode } from "../../lib/phone-verification";
+import { checkPhoneCode, PhoneVerificationError, sendPhoneCode, type VerifiedPhone } from "../../lib/phone-verification";
 
 export function usePhoneVerification(appId: ChefuAppId, initialPhone = "") {
     const [phase, setPhase] = useState<"number" | "code" | "verified">("number");
+    const [verifiedPhone, setVerifiedPhone] = useState<VerifiedPhone | null>(null);
     const [phone, setPhone] = useState(initialPhone);
     const [target, setTarget] = useState("");
     const [code, setCode] = useState("");
@@ -72,7 +73,7 @@ export function usePhoneVerification(appId: ChefuAppId, initialPhone = "") {
             const result = await sendPhoneCode(input, appId, signal);
             if (!mounted.current) return;
             setTarget(result.phone); setCode(""); setUncertainSend(false);
-            if (result.verified) { setPhase("verified"); return; }
+            if (result.verified) { setVerifiedPhone(result); setPhase("verified"); return; }
             setPhase("code"); setAttemptsRemaining(undefined); setCheckAt(0);
             setResendAt(Date.now() + Math.max(30, result.resendAfterSeconds) * 1000);
             setExpiresAt(Date.now() + result.expiresInSeconds * 1000);
@@ -82,12 +83,12 @@ export function usePhoneVerification(appId: ChefuAppId, initialPhone = "") {
         if (locked.current || phase !== "code" || Date.now() >= expiresAt || Date.now() < checkAt || attemptsRemaining === 0) return;
         if (!/^\d{4,10}$/.test(code)) { setError("Enter the numeric code from your text message."); return; }
         await perform("checking", async signal => {
-            await checkPhoneCode(target, code, appId, signal);
-            if (mounted.current) { setCode(""); setPhase("verified"); }
+            const receipt = await checkPhoneCode(target, code, appId, signal);
+            if (mounted.current) { setVerifiedPhone(receipt); setCode(""); setPhase("verified"); }
         });
     }
     return {
-        phase, phone, target, code, busy, error, attemptsRemaining, uncertainSend,
+        phase, phone, target, code, busy, error, attemptsRemaining, uncertainSend, verifiedPhone,
         resendIn: Math.max(0, Math.ceil((resendAt - now) / 1000)),
         expiresIn: Math.max(0, Math.ceil((expiresAt - now) / 1000)),
         checkIn: Math.max(0, Math.ceil((checkAt - now) / 1000)),
