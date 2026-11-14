@@ -16,6 +16,7 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
     const { alternateHref, appName, email, isSubmitting, mode, onSubmit, setEmail } = props;
     const [showPassword, setShowPassword] = useState(false);
     const copy = modeCopy[mode];
+    const showPasskey = mode === "login" && Boolean(props.onPasskeyClick);
 
     return (
         <main className="account-auth-screen flex min-h-dvh flex-col px-4">
@@ -145,37 +146,33 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                             />
                         ) : null}
 
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="account-auth-submit inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                            {isSubmitting ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : null}
-                            {isSubmitting ? copy.submitting : copy.buttonIdle}
-                        </button>
+                        <div className={`grid gap-3 ${showPasskey ? "grid-cols-2" : "grid-cols-1"}`}>
+                            <button
+                                type="submit"
+                                disabled={isSubmitting || props.isPasskeySubmitting}
+                                className="account-auth-submit inline-flex min-h-12 min-w-0 items-center justify-center gap-2 rounded-lg px-2 py-2.5 text-sm font-medium leading-5 transition focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                                {isSubmitting ? <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden="true" /> : null}
+                                {isSubmitting ? copy.submitting : copy.buttonIdle}
+                            </button>
 
-                        {mode === "login" && props.onPasskeyClick ? (
-                            <>
-                                <div className="account-auth-muted flex items-center gap-3 text-xs" aria-hidden="true">
-                                    <span className="account-auth-divider h-px flex-1" />
-                                    or
-                                    <span className="account-auth-divider h-px flex-1" />
-                                </div>
+                            {showPasskey ? (
                                 <button
                                     type="button"
                                     onClick={props.onPasskeyClick}
+                                    aria-label={props.isPasskeySubmitting ? "Waiting for passkey" : "Sign in with a passkey"}
                                     disabled={props.isPasskeySubmitting || isSubmitting}
-                                    className="account-auth-passkey inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg border px-4 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="account-auth-passkey inline-flex min-h-12 min-w-0 items-center justify-center gap-2 rounded-lg border px-2 py-2.5 text-sm font-medium leading-5 transition focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {props.isPasskeySubmitting ? (
-                                        <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                                        <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden="true" />
                                     ) : (
-                                        <Fingerprint className="size-4" aria-hidden="true" />
+                                        <Fingerprint className="size-4 shrink-0" aria-hidden="true" />
                                     )}
-                                    {props.isPasskeySubmitting ? "Waiting for passkey…" : "Sign in with a passkey"}
+                                    {props.isPasskeySubmitting ? "Waiting…" : "Passkey"}
                                 </button>
-                            </>
-                        ) : null}
+                            ) : null}
+                        </div>
                     </form>
                     {mode === "login" && <div className="mt-6 border-t border-[var(--border)] pt-5 text-center">
                         <p className="account-auth-muted text-sm">New to {appName}?</p>

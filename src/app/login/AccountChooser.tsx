@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
+    chefuAppLabel,
     listChefuAccountSessions,
     switchChefuAccount,
     type AccountSession,
@@ -120,7 +121,7 @@ export function AccountChooser({
                 </h1>
                 <p className="account-auth-muted mt-1.5 text-sm">
                     Continue to use{" "}
-                    {appName || (appId === "liftwise" ? "LiftWise" : "your app")}.
+                    {appName || chefuAppLabel(appId)}.
                 </p>
                 {error ? (
                     <p

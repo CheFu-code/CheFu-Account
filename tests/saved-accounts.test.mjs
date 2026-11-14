@@ -85,6 +85,7 @@ test("expired saved account switching keeps the picker usable and permits retry"
         react: fakeReact, "react/jsx-runtime": jsxRuntime,
         "next/link": { default: () => null },
         "../../lib/chefu-account": {
+            chefuAppLabel: () => "LiftWise",
             listChefuAccountSessions: async () => [account],
             switchChefuAccount: async () => { switched++; if (fail) throw new Error("Saved sign-in expired. Add this account again."); },
         },
