@@ -6,6 +6,7 @@ import { AccountFrame } from "./_components/AccountFrame";
 import { AccountHomePanel } from "./_components/AccountHomePanel";
 import { AccountSettingsForm } from "./_components/AccountSettingsForm";
 import { AccountHomeSkeleton } from "./_components/AccountHomeSkeleton";
+import { AccountPhoneGate } from "./_components/AccountPhoneGate";
 import { useAccountController } from "./_components/useAccountController";
 
 export function AccountPageClient() {
@@ -35,6 +36,9 @@ export function AccountPageClient() {
         );
     }
 
+    if (account.account.profile.phoneVerificationRequired) {
+        return <AccountPhoneGate phone={account.account.profile.phone || ""} appId={account.appId} />;
+    }
     return (
         <>
             <AccountFrame

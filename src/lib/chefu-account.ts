@@ -120,6 +120,9 @@ export class MfaRequiredLoginError extends Error {
 }
 
 export type SessionTrustResult = {
+    phoneVerificationRequired?: boolean;
+    phone?: string;
+    phoneVerifiedAt?: string | null;
     trustDeviceVerificationRequired?: boolean;
     trustDeviceRequiresAuthenticator?: boolean;
     trustDeviceResendCooldownSeconds?: number;
@@ -364,6 +367,7 @@ export async function switchChefuAccount(slot: number) {
         body: JSON.stringify({ slot }),
     });
     if (!response.ok) throw new Error(await readApiError(response));
+    return await response.json() as SessionTrustResult;
 }
 
 export async function revokeChefuConnectedApp(appId: string) {

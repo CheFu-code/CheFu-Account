@@ -8,12 +8,14 @@ import { usePhoneVerification } from "./usePhoneVerification";
 const primary = "account-auth-submit inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-60";
 const time = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 
-export function PhoneVerificationDialog({ appId, onSkip, onComplete }: {
+export function PhoneVerificationDialog({ appId, onSkip, onComplete, required = false, initialPhone = "" }: {
     appId: ChefuAppId;
     onSkip: () => void;
     onComplete: () => void;
+    required?: boolean;
+    initialPhone?: string;
 }) {
-    const verification = usePhoneVerification(appId);
+    const verification = usePhoneVerification(appId, initialPhone);
     const dialogRef = useRef<HTMLDialogElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const titleId = useId(), descriptionId = useId(), errorId = useId(), fieldId = useId();
@@ -26,7 +28,10 @@ export function PhoneVerificationDialog({ appId, onSkip, onComplete }: {
     useEffect(() => { inputRef.current?.focus(); }, [phase]);
 
     function leave() {
-        if (verification.canLeave()) (phase === "verified" ? onComplete : onSkip)();
+        if (verification.canLeave()) {
+            if (phase === "verified") onComplete();
+            else if (!required) onSkip();
+        }
     }
     return (
         <dialog
@@ -39,17 +44,18 @@ export function PhoneVerificationDialog({ appId, onSkip, onComplete }: {
                     <span className="account-auth-dialog-icon" aria-hidden="true">
                         {phase === "verified" ? <ShieldCheck className="size-5" /> : phase === "code" ? <MessageSquare className="size-5" /> : <Phone className="size-5" />}
                     </span>
-                    <button type="button" className="account-auth-password-toggle rounded-md p-2" aria-label={phase === "verified" ? "Continue" : "Skip phone setup"} disabled={!!busy} onClick={leave}>
+                    {(!required || phase === "verified") && <button type="button" className="account-auth-password-toggle rounded-md p-2" aria-label={phase === "verified" ? "Continue" : "Skip phone setup"} disabled={!!busy} onClick={leave}>
                         <X className="size-4" aria-hidden="true" />
-                    </button>
+                    </button>}
                 </div>
                 <h2 id={titleId} className="mt-4 text-xl font-semibold">
-                    {phase === "verified" ? "Phone number verified" : phase === "code" ? "Check your messages" : "Add a phone number?"}
+                    {phase === "verified" ? "Phone number verified" : phase === "code" ? "Check your messages" : required ? "Verify your phone number" : "Add a phone number?"}
                 </h2>
                 <p id={descriptionId} className="account-auth-muted mt-2 text-sm leading-6">
                     {phase === "verified" ? `${target} is verified for your account.` : phase === "code"
                         ? verification.uncertainSend ? `If a code arrives at ${target}, enter it here. Otherwise, use Resend code when available.`
-                            : `Enter the code we sent to ${target}.` : "Add a contact number and confirm it with a text message. This step is optional."}
+                            : `Enter the code we sent to ${target}.` : required ? "Your account has a phone number that needs verification. Confirm it or use another number before continuing."
+                                : "Add a contact number and confirm it with a text message. This step is optional."}
                 </p>
                 {phase === "verified" ? (
                     <div className="mt-6">
@@ -87,7 +93,7 @@ export function PhoneVerificationDialog({ appId, onSkip, onComplete }: {
                                 {resendIn > 0 ? `Resend in ${time(resendIn)}` : "Resend code"}
                             </button>
                         </div>}
-                        <button type="button" className="account-auth-dialog-skip w-full" disabled={!!busy} onClick={leave}>Skip for now</button>
+                        <button type="button" className="account-auth-dialog-skip w-full" disabled={!!busy} onClick={() => { if (verification.canLeave()) (required ? onSkip : leave)(); }}>{required ? "Sign out" : "Skip for now"}</button>
                     </form>
                 )}
             </div>

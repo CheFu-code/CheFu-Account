@@ -103,7 +103,7 @@ export function PersonalInfoSection({
                         <FieldRow label="First name" value={currentFirstName} />
                         <FieldRow label="Last name" value={currentLastName} />
                         <FieldRow label="Display name" value={name || "Not set"} />
-                        <FieldRow label="Phone number" value={displayedPhone} />
+                        <FieldRow label="Phone number" value={`${displayedPhone}${account.profile.phoneVerifiedAt ? " · Verified" : ""}`} />
                         <FieldRow label="Professional bio" value={displayedBio} />
                         <FieldRow label="Website" value={displayedWebsite} />
                         <FieldRow label="Location" value={displayedLocation} />

@@ -40,7 +40,7 @@ async function request(action: "send" | "check", body: object, appId: ChefuAppId
     const raw: unknown = await response.json().catch(() => null);
     const data = raw && typeof raw === "object" && !Array.isArray(raw) ? raw as Record<string, unknown> : {};
     if (!response.ok) {
-        const message = typeof data.message === "string" ? data.message : Array.isArray(data.message)
+        const message = typeof data.message === "string" ? data.message : typeof data.error === "string" ? data.error : Array.isArray(data.message)
             ? data.message.filter(value => typeof value === "string").join(" ") : "Unable to verify your phone number.";
         throw new PhoneVerificationError(response.status === 401 ? "Your sign-in expired. You can skip this step and sign in again."
             : response.status >= 500 ? "Phone verification is temporarily unavailable. You can try again or skip this step."

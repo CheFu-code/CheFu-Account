@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { hasReusableSession, sessionReuseTarget } from "../../lib/session-reuse";
+import { phoneVerificationHref } from "../../lib/phone-gate";
 
 export function ExistingSessionGate({ children }: { children: ReactNode }) {
     const params = useSearchParams().toString();
@@ -14,8 +15,14 @@ export function ExistingSessionGate({ children }: { children: ReactNode }) {
             setCheckedParams(params);
             return;
         }
-        void hasReusableSession(reuse.appId).then(authenticated => {
+        let verifyingPhone = false;
+        void hasReusableSession(reuse.appId, () => {
             if (!active) return;
+            verifyingPhone = true;
+            window.location.replace(phoneVerificationHref(reuse.appId, reuse.target));
+        }).then(authenticated => {
+            if (!active) return;
+            if (verifyingPhone) return;
             if (authenticated) window.location.replace(reuse.target);
             else setCheckedParams(params);
         });

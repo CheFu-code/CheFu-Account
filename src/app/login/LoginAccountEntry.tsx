@@ -2,14 +2,14 @@
 
 import { useCallback, useState } from "react";
 import type { AccountAuthScreenProps } from "@/app/types";
-import type { ChefuAppId } from "../../lib/chefu-account";
+import type { ChefuAppId, SessionTrustResult } from "../../lib/chefu-account";
 import { AccountAuthScreen } from "../_components/AccountAuthScreen";
 import { AccountChooser } from "./AccountChooser";
 
 type Props = Extract<AccountAuthScreenProps, { mode: "login" }> & {
     appId: ChefuAppId;
     selectAccount: boolean;
-    onSelected: () => void;
+    onSelected: (result?: SessionTrustResult) => void;
 };
 
 export function LoginAccountEntry({ appId, selectAccount, onSelected, ...form }: Props) {
@@ -22,7 +22,7 @@ export function LoginAccountEntry({ appId, selectAccount, onSelected, ...form }:
 
     if (selectAccount && showChooser) return <AccountChooser
         appId={appId} appName={form.appName} registerHref={form.alternateHref}
-        onAvailability={onAvailability} onSelected={onSelected}
+        onAvailability={onAvailability} onSelected={(_account, result) => onSelected(result)}
         onAddAccount={() => setShowChooser(false)}
     />;
 

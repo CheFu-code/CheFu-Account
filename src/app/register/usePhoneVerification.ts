@@ -4,9 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import type { ChefuAppId } from "../../lib/chefu-account";
 import { checkPhoneCode, PhoneVerificationError, sendPhoneCode } from "../../lib/phone-verification";
 
-export function usePhoneVerification(appId: ChefuAppId) {
+export function usePhoneVerification(appId: ChefuAppId, initialPhone = "") {
     const [phase, setPhase] = useState<"number" | "code" | "verified">("number");
-    const [phone, setPhone] = useState("");
+    const [phone, setPhone] = useState(initialPhone);
     const [target, setTarget] = useState("");
     const [code, setCode] = useState("");
     const [busy, setBusy] = useState<"sending" | "checking" | null>(null);

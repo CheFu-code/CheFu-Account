@@ -34,6 +34,8 @@ export type AccountProfile = {
     firstName: string;
     lastName: string;
     phone?: string | null;
+    phoneVerifiedAt?: string | null;
+    phoneVerificationRequired?: boolean;
     profilePicture?: string;
     bio: string;
     website?: string;

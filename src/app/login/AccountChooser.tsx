@@ -7,6 +7,7 @@ import {
     switchChefuAccount,
     type AccountSession,
     type ChefuAppId,
+    type SessionTrustResult,
 } from "../../lib/chefu-account";
 import { removeSavedAccount } from "../../lib/saved-accounts";
 import { AccountChooserSkeleton } from "./AccountChooserSkeleton";
@@ -28,7 +29,7 @@ export function AccountChooser({
     registerHref?: string;
     onAvailability?: (available: boolean) => void;
     onAddAccount: () => void;
-    onSelected: (account: AccountSession) => void;
+    onSelected: (account: AccountSession, result?: SessionTrustResult) => void;
 }) {
     const [accounts, setAccounts] = useState<AccountSession[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -70,8 +71,8 @@ export function AccountChooser({
         setIsSwitching(true);
         setError(null);
         try {
-            if (account.slot !== null) await switchChefuAccount(account.slot);
-            onSelected(account);
+            const result = account.slot !== null ? await switchChefuAccount(account.slot) : undefined;
+            onSelected(account, result);
         } catch (cause) {
             setError(
                 cause instanceof Error
