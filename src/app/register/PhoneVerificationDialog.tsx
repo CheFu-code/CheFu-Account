@@ -60,7 +60,7 @@ export function PhoneVerificationDialog({ appId, onSkip, onComplete, required = 
                     {phase === "verified" ? `${target} is verified for your account.` : phase === "code"
                         ? verification.uncertainSend ? `If a code arrives at ${target}, enter it here. Otherwise, use Resend code when available.`
                             : `Enter the code we sent to ${target}.` : required ? "Your account has a phone number that needs verification. Confirm it or use another number before continuing."
-                                : purpose === "profile" ? "Your saved number changes only after SMS verification succeeds. Closing this dialog keeps your current number."
+                                : purpose === "profile" ? "Your saved number changes only after SMS verification succeeds."
                                     : "Add a contact number and confirm it with a text message. This step is optional."}
                 </p>
                 {phase === "verified" ? (
@@ -83,7 +83,7 @@ export function PhoneVerificationDialog({ appId, onSkip, onComplete, required = 
                                     value={code} onChange={event => verification.changeCode(event.target.value)} disabled={!!busy || !expiresIn || attemptsRemaining === 0}
                                     placeholder="Enter SMS code" className="account-auth-input text-center tracking-[0.3em]" aria-invalid={!!error} aria-describedby={error ? errorId : undefined} />
                             )}
-                            {phase === "number" ? <p className="account-auth-muted text-xs leading-5">Use a South African number or include your country code. We’ll send an SMS to verify it.</p>
+                            {phase === "number" ? <p className="account-auth-muted text-xs leading-5">Use a South African number or include your country code.</p>
                                 : <p className="account-auth-muted text-xs leading-5">{expiresIn ? verification.uncertainSend ? "Codes are valid for up to ten minutes." : `Code expires in ${time(expiresIn)}.` : "Your code has expired. Request a new one."}{attemptsRemaining !== undefined && ` ${attemptsRemaining} ${attemptsRemaining === 1 ? "attempt" : "attempts"} remaining.`}</p>}
                         </div>
                         {error && <p id={errorId} className="account-auth-dialog-error text-sm" role="alert">{error}</p>}

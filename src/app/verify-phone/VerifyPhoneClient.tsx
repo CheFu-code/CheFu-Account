@@ -36,6 +36,6 @@ export function VerifyPhoneClient() {
         </section>
         {phone !== null && <PhoneVerificationDialog appId={appId} initialPhone={phone} required
             onComplete={() => completeAuthRedirect(target, router.replace)}
-            onSkip={() => router.replace(`/logout?${new URLSearchParams({ app: appId, returnTo: target })}`)} />}
+            onSkip={() => router.replace(`/logout?${new URLSearchParams({ app: appId, returnTo: target, current: "true" })}`)} />}
     </main>;
 }

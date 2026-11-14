@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import {
     chefuAppLabel,
+    clearCurrentChefuAccountSession,
     clearChefuAccountSession,
     resolveChefuApp,
     safeReturnTo,
@@ -13,26 +14,38 @@ export function LogoutClient() {
     const searchParams = useSearchParams();
     const appId = resolveChefuApp(searchParams.get("app"));
     const appName = chefuAppLabel(appId);
+    const currentOnly = searchParams.get("current") === "true";
     const [logoutError, setLogoutError] = useState("");
     const [retry, setRetry] = useState(0);
 
     const signOutEverywhere = useCallback(async () => {
         setLogoutError("");
         const [serverResult] = await Promise.allSettled([
-            clearChefuAccountSession(),
+            currentOnly
+                ? clearCurrentChefuAccountSession()
+                : clearChefuAccountSession(),
         ]);
 
         if (serverResult.status === "rejected") {
             setLogoutError(
                 serverResult.reason instanceof Error
                     ? serverResult.reason.message
-                    : "The server could not confirm global sign-out.",
+                    : "The server could not confirm sign-out.",
             );
             return;
         }
         const returnTo = safeReturnTo(searchParams.get("returnTo"), appId, "/login");
-        window.location.replace(returnTo);
-    }, [appId, searchParams]);
+        if (currentOnly) {
+            const loginParams = new URLSearchParams({
+                app: appId,
+                returnTo,
+                prompt: "select_account",
+            });
+            window.location.replace(`/login?${loginParams}`);
+        } else {
+            window.location.replace(returnTo);
+        }
+    }, [appId, currentOnly, searchParams]);
 
     useEffect(() => {
         void signOutEverywhere();
@@ -46,7 +59,7 @@ export function LogoutClient() {
                     {logoutError ? "Sign-out needs attention" : `Signing out of ${appName}...`}
                 </p>
                 <p className="mt-2 text-sm text-[#8f887d]">
-                    {logoutError || "We are closing your shared session."}
+                    {logoutError || "We are closing your session."}
                 </p>
                 {logoutError ? (
                     <button
@@ -54,7 +67,7 @@ export function LogoutClient() {
                         onClick={() => setRetry((value) => value + 1)}
                         className="mt-5 rounded-lg bg-[#e5ad5b] px-4 py-2 text-sm font-semibold text-[#11110f]"
                     >
-                        Try global sign-out again
+                        {currentOnly ? "Try sign-out again" : "Try global sign-out again"}
                     </button>
                 ) : null}
             </div>

@@ -166,6 +166,25 @@ test("saved account removal uses a credentialed mutation for only the requested 
     await assert.rejects(api.removeSavedAccount(3), /Please sign in again/);
 });
 
+test("current account sign-out uses the non-global session endpoint", async () => {
+    const requests = [];
+    const api = load("lib/chefu-account.ts", {
+        "./redirect-policy": {},
+        "./auth-reads": {
+            authMutationFetch: async (...args) => {
+                requests.push(args);
+                return { ok: true, json: async () => ({ ok: true, revoked: false }) };
+            },
+        },
+    }, { process: { env: {} } });
+
+    await api.clearCurrentChefuAccountSession();
+    assert.equal(requests.length, 1);
+    assert.equal(requests[0][0], "https://api.chefu.co.za/auth/session?current=true");
+    assert.equal(requests[0][1].method, "DELETE");
+    assert.equal(requests[0][1].credentials, "include");
+});
+
 test("saved-account removal waits for confirmation and cancellation leaves the account untouched", () => {
     let confirming = false;
     let removed = 0;

@@ -40,6 +40,92 @@ test("required phone modal offers sign-out rather than skip, and Escape cannot d
     elements(tree).find(node => node.type === "button" && node.props.children === "Sign out").props.onClick();
     assert.equal(skipped, 1);
 });
+test("phone-gate sign-out requests current-account logout and preserves the account chooser", () => {
+    const destinations = [];
+    function PhoneVerificationDialog() {}
+    const { AccountPhoneGate } = load("app/account/_components/AccountPhoneGate.tsx", {
+        "next/navigation": { useRouter: () => ({ replace: value => destinations.push(value) }) },
+        "react/jsx-runtime": jsxRuntime,
+        "../../../lib/chefu-account": {},
+        "../../register/PhoneVerificationDialog": { PhoneVerificationDialog },
+    });
+    const tree = AccountPhoneGate({ phone: "+27821234567", appId: "shopyethu" });
+    elements(tree).find(node => node.type === PhoneVerificationDialog).props.onSkip();
+    const logout = new URL(destinations[0], "https://myaccount.chefu.co.za");
+    assert.equal(logout.pathname, "/logout");
+    assert.equal(logout.searchParams.get("current"), "true");
+    assert.equal(logout.searchParams.get("returnTo"), "/account");
+});
+test("direct verification sign-out also requests current-account logout", async () => {
+    const destinations = [], effects = [], state = [];
+    let cursor = 0;
+    function PhoneVerificationDialog() {}
+    const { VerifyPhoneClient } = load("app/verify-phone/VerifyPhoneClient.tsx", {
+        react: {
+            useState(initial) {
+                const index = cursor++;
+                if (!(index in state)) state[index] = initial;
+                return [state[index], value => { state[index] = value; }];
+            },
+            useEffect: effect => effects.push(effect),
+        },
+        "react/jsx-runtime": jsxRuntime,
+        "next/navigation": {
+            useRouter: () => ({ replace: value => destinations.push(value) }),
+            useSearchParams: () => new URLSearchParams("app=shopyethu&returnTo=%2Faccount"),
+        },
+        "../../lib/account-read": {
+            readCurrentAccount: async () => ({
+                status: 200,
+                data: { profile: { phone: "+27821234567", phoneVerificationRequired: true } },
+            }),
+        },
+        "../../lib/chefu-account": { resolveChefuApp: value => value, safeReturnTo: value => value },
+        "../login/login-helpers": { completeAuthRedirect() {} },
+        "../register/PhoneVerificationDialog": { PhoneVerificationDialog },
+    });
+
+    VerifyPhoneClient();
+    effects[0]();
+    await new Promise(setImmediate);
+    cursor = 0;
+    const tree = VerifyPhoneClient();
+    elements(tree).find(node => node.type === PhoneVerificationDialog).props.onSkip();
+    const logout = new URL(destinations[0], "https://myaccount.chefu.co.za");
+    assert.equal(logout.pathname, "/logout");
+    assert.equal(logout.searchParams.get("current"), "true");
+    assert.equal(logout.searchParams.get("returnTo"), "/account");
+});
+test("current-account logout redirects to the chooser without invoking global sign-out", async () => {
+    const effects = [], calls = [], destinations = [];
+    const { LogoutClient } = load("app/logout/LogoutClient.tsx", {
+        react: {
+            useCallback: callback => callback,
+            useEffect: effect => effects.push(effect),
+            useState: initial => [initial, () => {}],
+        },
+        "react/jsx-runtime": jsxRuntime,
+        "next/navigation": {
+            useSearchParams: () => new URLSearchParams("app=shopyethu&returnTo=%2Faccount&current=true"),
+        },
+        "../../lib/chefu-account": {
+            chefuAppLabel: () => "ShopYethu",
+            clearCurrentChefuAccountSession: async () => { calls.push("current"); },
+            clearChefuAccountSession: async () => { calls.push("global"); },
+            resolveChefuApp: value => value,
+            safeReturnTo: value => value,
+        },
+    }, { window: { location: { replace: value => destinations.push(value) } } });
+
+    LogoutClient();
+    effects[0]();
+    await new Promise(setImmediate);
+    assert.deepEqual(calls, ["current"]);
+    const login = new URL(destinations[0], "https://myaccount.chefu.co.za");
+    assert.equal(login.pathname, "/login");
+    assert.equal(login.searchParams.get("prompt"), "select_account");
+    assert.equal(login.searchParams.get("returnTo"), "/account");
+});
 test("sign-in continuation uses returned profile state without any extra request", async () => {
     const redirects = [];
     const { usePhoneContinuation } = load("app/login/usePhoneContinuation.ts", {

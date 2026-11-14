@@ -332,6 +332,22 @@ export async function clearChefuAccountSession(globalLogout = true) {
     }
 }
 
+export async function clearCurrentChefuAccountSession() {
+    const response = await authMutationFetch(apiUrl("/auth/session?current=true"), {
+        method: "DELETE",
+        credentials: "include",
+    });
+
+    if (!response.ok) {
+        throw new Error(await readApiError(response));
+    }
+
+    const result = (await response.json()) as { ok?: boolean };
+    if (!result.ok) {
+        throw new Error("The server could not confirm that this account was signed out.");
+    }
+}
+
 export async function listChefuAccountSessions(appId: ChefuAppId): Promise<AccountSession[]> {
     return shareAuthRead(`accounts:${appId}`, async signal => {
         const controller = new AbortController();

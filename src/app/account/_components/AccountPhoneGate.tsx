@@ -9,6 +9,6 @@ export function AccountPhoneGate({ phone, appId }: { phone: string; appId: Chefu
     return <main className="account-auth-screen min-h-dvh">
         <PhoneVerificationDialog appId={appId} initialPhone={phone} required
             onComplete={() => window.location.reload()}
-            onSkip={() => router.replace(`/logout?${new URLSearchParams({ app: appId, returnTo: "/account" })}`)} />
+            onSkip={() => router.replace(`/logout?${new URLSearchParams({ app: appId, returnTo: "/account", current: "true" })}`)} />
     </main>;
 }
