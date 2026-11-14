@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { readCurrentAccount } from "../../lib/account-read";
-import { preserveAuthParams, resolveChefuApp, safeReturnTo } from "../../lib/chefu-account";
+import { resolveChefuApp, safeReturnTo } from "../../lib/chefu-account";
 import { completeAuthRedirect } from "../login/login-helpers";
 import { PhoneVerificationDialog } from "../register/PhoneVerificationDialog";
 
@@ -11,7 +11,7 @@ export function VerifyPhoneClient() {
     const router = useRouter(), params = useSearchParams();
     const appId = resolveChefuApp(params.get("app"));
     const destination = safeReturnTo(params.get("returnTo"), appId, "/account");
-    const target = destination.split("?")[0] === "/verify-phone" ? "/account" : destination;
+    const target = destination.split(/[?#]/)[0].replace(/\/+$/, "") === "/verify-phone" ? "/account" : destination;
     const [phone, setPhone] = useState<string | null>(null);
     const [error, setError] = useState("");
     const [attempt, setAttempt] = useState(0);
@@ -36,6 +36,6 @@ export function VerifyPhoneClient() {
         </section>
         {phone !== null && <PhoneVerificationDialog appId={appId} initialPhone={phone} required
             onComplete={() => completeAuthRedirect(target, router.replace)}
-            onSkip={() => router.replace(preserveAuthParams("/logout", new URLSearchParams({ app: appId, returnTo: target })))} />}
+            onSkip={() => router.replace(`/logout?${new URLSearchParams({ app: appId, returnTo: target })}`)} />}
     </main>;
 }

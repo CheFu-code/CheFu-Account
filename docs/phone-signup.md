@@ -10,6 +10,10 @@ The modal has explicit send/verify buttons, a resend cooldown, expiry, exhausted
 
 The native dialog manages modal focus and keyboard navigation. Escape skips when no request is running. A failed verification does not undo registration or prevent continuing.
 
+Existing accounts with a saved unverified number use a required mode: there is no Skip action and Escape cannot dismiss it. Users can confirm the saved number, verify a replacement, or sign out. This mode is reached after password/passkey login, account switching, existing-session reuse, direct account access or the backend OAuth redirect. Users without a saved number retain the optional signup mode. Profile edits that change the number require verification again; formatting-only edits preserve it. The account profile shows a Verified label only when the backend returns proof for the current number.
+
+Fresh login and account-switch responses carry the flag from their loaded profile, without another status call. Selecting the already active saved account uses the normal session probe because no switch occurred. Session reuse and protected backend endpoints evaluate the current profile; they never call Twilio or scan verification receipts just to decide whether a prompt is needed. The required screen loads account details on entry, not on focus/polling. A separate live SMS check happens only after pressing Send/Verify. See the backend README for exact read costs and the one-time legacy-field migration.
+
 Deploy the backend phone module and configure `PHONE_VERIFICATION_ENABLED=true`, Twilio Verify credentials and a shared production limiter before enabling real sends. See `chefu-inc-backend/src/modules/phone-verification/README.md` for Firestore access rules, TTL and provider restrictions. Secrets remain on the backend; no frontend Twilio environment variables are needed.
 
 Verification: `npm run test:sso`, `npm run typecheck`, `npm run lint`, and `npm run build`. Automated tests use mocked fetch/provider responses and never send SMS. A real signup/SMS round trip still needs checking against the deployed backend with an authorized phone number.

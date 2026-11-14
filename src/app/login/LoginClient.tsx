@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import {
     useMemo,
     useRef,
@@ -28,7 +28,6 @@ import { readLoginError, readMfaError } from "./login-helpers";
 import { usePhoneContinuation } from "./usePhoneContinuation";
 
 export function LoginClient() {
-    const router = useRouter();
     const searchParams = useSearchParams();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");

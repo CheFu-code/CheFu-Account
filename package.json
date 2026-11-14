@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "smoke": "npm run test:sso",
-    "test:sso": "node --test tests/liftwise-redirect.test.mjs tests/session-reuse.test.mjs tests/auth-reads.test.mjs tests/saved-accounts.test.mjs tests/phone-verification.test.mjs tests/account-entry.test.mjs",
+    "test:sso": "node --test tests/liftwise-redirect.test.mjs tests/session-reuse.test.mjs tests/auth-reads.test.mjs tests/saved-accounts.test.mjs tests/phone-verification.test.mjs tests/account-entry.test.mjs tests/phone-gate.test.mjs",
     "test:trusted-browser": "node --test tests/trusted-browser.test.mjs",
     "dev": "next dev",
     "build": "next build",

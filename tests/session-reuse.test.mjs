@@ -116,6 +116,7 @@ test('the gate hides forms during the check, redirects valid sessions, and ignor
             react: { useState: () => [checked, value => { checked = value; }], useEffect: fn => { effect = fn; } },
             'next/navigation': { useSearchParams: () => new URLSearchParams() },
             '../../lib/session-reuse': { sessionReuseTarget: () => ({ appId: 'root', target: '/account' }), hasReusableSession: () => pending },
+            '../../lib/phone-gate': { phoneVerificationHref: () => '/verify-phone?returnTo=/account' },
         }, { window: { location: { replace: value => redirects.push(value) } } });
         const props = { children: 'sign-in form' };
         assert.notEqual(ExistingSessionGate(props), props.children);
