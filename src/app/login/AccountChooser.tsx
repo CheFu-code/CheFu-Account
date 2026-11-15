@@ -203,18 +203,7 @@ export function AccountChooser({
                         </p>
                     )}
                 </div>
-                <div role="status" aria-live="polite" aria-atomic="true">
-                    {pendingAction && (
-                        <div className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--accent)]/5 px-4 py-3">
-                            <p className="text-sm font-medium text-[var(--fg)]">
-                                {pendingAction.kind === "remove"
-                                    ? "Removing saved account…"
-                                    : pendingAction.phase === "continuing" ? `Continuing to ${destination}…` : "Signing you in…"}
-                            </p>
-                            <p className="account-auth-muted mt-1 break-all text-xs">{pendingAction.account.email}</p>
-                        </div>
-                    )}
-                </div>
+                
                 <button
                     type="button"
                     onClick={() => { if (!actionLock.current) onAddAccount(); }}
