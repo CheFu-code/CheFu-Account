@@ -107,6 +107,7 @@ test("opening or editing sends nothing; double clicks share one send and one ver
     view.changeCode("123456"); view = harness.render();
     await Promise.all([view.verify(), view.verify()]);
     view = harness.render(); assert.equal(checks, 1); assert.equal(view.phase, "verified"); assert.equal(view.code, "");
+    assert.equal(view.verifiedPhone, verified);
     harness.unmount();
 });
 test("exhausted checks block another attempt and cannot be reset by changing the number", async () => {
