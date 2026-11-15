@@ -17,6 +17,12 @@ import {
     SavedAccountRemoveButton,
 } from "../_components/SavedAccountRemoveButton";
 
+type PendingAccountAction = {
+    kind: "select" | "remove";
+    account: AccountSession;
+    phase?: "signing-in" | "continuing";
+};
+
 export function AccountChooser({
     appId,
     appName,
@@ -30,14 +36,16 @@ export function AccountChooser({
     registerHref?: string;
     onAvailability?: (available: boolean) => void;
     onAddAccount: () => void;
-    onSelected: (account: AccountSession, result?: SessionTrustResult) => void;
+    onSelected: (account: AccountSession, result?: SessionTrustResult) => void | Promise<void>;
 }) {
     const [accounts, setAccounts] = useState<AccountSession[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [isSwitching, setIsSwitching] = useState(false);
+    const [pendingAction, setPendingAction] = useState<PendingAccountAction | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [notice, setNotice] = useState<string | null>(null);
     const actionLock = useRef(false);
+    const isSwitching = pendingAction !== null;
+    const destination = appName || chefuAppLabel(appId);
 
     useEffect(() => {
         let active = true;
@@ -69,18 +77,20 @@ export function AccountChooser({
     async function selectAccount(account: AccountSession) {
         if (actionLock.current) return;
         actionLock.current = true;
-        setIsSwitching(true);
+        setPendingAction({ kind: "select", account, phase: "signing-in" });
         setError(null);
+        setNotice(null);
         try {
             const result = account.slot !== null ? await switchChefuAccount(account.slot) : undefined;
-            onSelected(account, result);
+            setPendingAction({ kind: "select", account, phase: "continuing" });
+            await onSelected(account, result);
         } catch (cause) {
             setError(
                 cause instanceof Error
                     ? cause.message
                     : "Unable to switch account.",
             );
-            setIsSwitching(false);
+            setPendingAction(null);
             actionLock.current = false;
         }
     }
@@ -89,7 +99,7 @@ export function AccountChooser({
         if (actionLock.current || account.active || account.slot === null)
             return;
         actionLock.current = true;
-        setIsSwitching(true);
+        setPendingAction({ kind: "remove", account });
         setError(null);
         setNotice(null);
         try {
@@ -109,7 +119,7 @@ export function AccountChooser({
             );
         } finally {
             actionLock.current = false;
-            setIsSwitching(false);
+            setPendingAction(null);
         }
     }
 
@@ -121,7 +131,7 @@ export function AccountChooser({
                 </h1>
                 <p className="account-auth-muted mt-1.5 text-sm">
                     Continue to use{" "}
-                    {appName || chefuAppLabel(appId)}.
+                    {destination}.
                 </p>
                 {error ? (
                     <p
@@ -143,17 +153,22 @@ export function AccountChooser({
                     {isLoading ? (
                         <AccountChooserSkeleton />
                     ) : accounts.length ? (
-                        accounts.map((account) => (
+                        accounts.map((account) => {
+                            const pending = pendingAction?.account.slot === account.slot && pendingAction.account.email === account.email;
+                            return (
                             <div
                                 key={`${account.slot ?? "active"}:${account.email}`}
-                                className="flex items-center rounded-lg border border-[var(--border)]"
+                                className={`flex items-center rounded-lg border transition-colors ${pending
+                                    ? "border-[var(--accent)] bg-[var(--accent)]/5"
+                                    : "border-[var(--border)]"}`}
                             >
                                 <button
                                     key={`${account.slot ?? "active"}:${account.email}`}
                                     type="button"
                                     disabled={isSwitching}
+                                    aria-busy={pending}
                                     onClick={() => void selectAccount(account)}
-                                    className="flex min-w-0 flex-1 items-center gap-3 rounded-lg p-3 text-left transition hover:bg-[var(--accent)]/5 disabled:opacity-60"
+                                    className={`flex min-w-0 flex-1 items-center gap-3 rounded-lg p-3 text-left transition hover:bg-[var(--accent)]/5 disabled:cursor-wait ${isSwitching && !pending ? "opacity-50" : ""}`}
                                 >
                                     <SavedAccountAvatar account={account} />
                                     <span className="min-w-0 flex-1">
@@ -164,7 +179,9 @@ export function AccountChooser({
                                             {account.email}
                                         </span>
                                     </span>
-                                    {account.active ? (
+                                    {pending ? (
+                                        <span aria-hidden="true" className="size-5 shrink-0 rounded-full border-2 border-[var(--accent)]/20 border-t-[var(--accent)] motion-safe:animate-spin" />
+                                    ) : account.active ? (
                                         <span className="text-xs text-[var(--accent)]">
                                             Current
                                         </span>
@@ -178,16 +195,29 @@ export function AccountChooser({
                                     }
                                 />
                             </div>
-                        ))
+                            );
+                        })
                     ) : (
                         <p className="account-auth-muted py-4 text-sm">
                             Sign in with your email or create an account to get started.
                         </p>
                     )}
                 </div>
+                <div role="status" aria-live="polite" aria-atomic="true">
+                    {pendingAction && (
+                        <div className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--accent)]/5 px-4 py-3">
+                            <p className="text-sm font-medium text-[var(--fg)]">
+                                {pendingAction.kind === "remove"
+                                    ? "Removing saved account…"
+                                    : pendingAction.phase === "continuing" ? `Continuing to ${destination}…` : "Signing you in…"}
+                            </p>
+                            <p className="account-auth-muted mt-1 break-all text-xs">{pendingAction.account.email}</p>
+                        </div>
+                    )}
+                </div>
                 <button
                     type="button"
-                    onClick={onAddAccount}
+                    onClick={() => { if (!actionLock.current) onAddAccount(); }}
                     disabled={isSwitching}
                     className="mt-5 h-11 w-full rounded-lg border border-[var(--border-strong)] px-4 text-sm font-semibold text-[var(--fg)] hover:border-[var(--accent)] disabled:opacity-60"
                 >
@@ -195,7 +225,7 @@ export function AccountChooser({
                 </button>
                 {registerHref && <div className="mt-6 border-t border-[var(--border)] pt-5 text-center">
                     <p className="account-auth-muted text-sm">New here?</p>
-                    <Link href={registerHref} aria-disabled={isSwitching} onClick={event => { if (isSwitching) event.preventDefault(); }}
+                    <Link href={registerHref} aria-disabled={isSwitching} onClick={event => { if (actionLock.current) event.preventDefault(); }}
                         className="account-auth-link mt-2 inline-flex min-h-11 items-center justify-center rounded-lg px-4 text-sm font-semibold underline underline-offset-4 aria-disabled:opacity-50">
                         Create account
                     </Link>

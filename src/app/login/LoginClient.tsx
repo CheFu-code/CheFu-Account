@@ -349,7 +349,7 @@ export function LoginClient() {
                 key={`${appId}:${selectAccount}:${fromPath}`}
                 appId={appId}
                 selectAccount={selectAccount}
-                onSelected={result => void phoneContinuation.selected(result)}
+                onSelected={result => phoneContinuation.selected(result)}
                 alternateHref={registerHref}
                 appName={appName}
                 email={email}

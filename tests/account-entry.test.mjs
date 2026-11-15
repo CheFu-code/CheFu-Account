@@ -124,3 +124,87 @@ test("account checks share only concurrent reads and time out rather than trappi
     await new Promise(setImmediate); assert.equal(calls, 2); timeout();
     await assert.rejects(next, /Timed out/);
 });
+
+async function chooserActions({ slot = 1, switching = async () => ({}), selected = async () => {}, removing = async () => {} } = {}) {
+    const harness = hooks(), Link = () => null, RemoveButton = () => null;
+    const accounts = [
+        { slot, email: "selected@example.test", fullName: "Selected account", active: slot === null },
+        { slot: 2, email: "other@example.test", fullName: "Other account", active: false },
+    ];
+    const calls = { switches: 0, selections: 0, removals: 0, adds: 0 };
+    const { AccountChooser } = load("app/login/AccountChooser.tsx", {
+        react: harness.react, "react/jsx-runtime": jsxRuntime, "next/link": { default: Link },
+        "../../lib/chefu-account": {
+            chefuAppLabel: () => "ShopYethu", listChefuAccountSessions: async () => accounts,
+            switchChefuAccount: async value => { calls.switches++; return switching(value); },
+        },
+        "../../lib/saved-accounts": { removeSavedAccount: async value => { calls.removals++; return removing(value); } },
+        "./AccountChooserSkeleton": { AccountChooserSkeleton: () => null },
+        "../_components/SavedAccountRemoveButton": { SavedAccountAvatar: () => null, SavedAccountRemoveButton: RemoveButton },
+    }, { Error });
+    const props = { ...formProps, registerHref, onAddAccount: () => { calls.adds++; },
+        onSelected: async (...args) => { calls.selections++; return selected(...args); } };
+    const render = () => harness.render(() => AccountChooser(props));
+    render(); await new Promise(setImmediate);
+    const accountButton = (email = accounts[0].email) => elements(render()).find(node => node.type === "button" &&
+        elements(node).some(child => child.type === "span" && child.props.children === email));
+    const text = () => elements(render()).filter(node => node.type === "p").map(node => node.props.children).filter(value => typeof value === "string").join(" ");
+    return { accounts, calls, render, accountButton, text, Link, RemoveButton };
+}
+
+test("selecting a saved account shows a spinner and continuing state until navigation, with duplicate taps locked", async () => {
+    let finishSwitch, finishContinuation;
+    const state = await chooserActions({ switching: () => new Promise(resolve => { finishSwitch = resolve; }),
+        selected: () => new Promise(resolve => { finishContinuation = resolve; }) });
+    const button = state.accountButton(); const selection = button.props.onClick(); button.props.onClick();
+    assert.equal(state.calls.switches, 1); assert.equal(state.calls.selections, 0);
+    assert.match(state.text(), /Signing you in/);
+    assert.equal(state.accountButton().props["aria-busy"], true);
+    assert.ok(elements(state.accountButton()).some(node => node.props.className?.includes("motion-safe:animate-spin")));
+    assert.equal(state.accountButton(state.accounts[1].email).props["aria-busy"], false);
+    assert.ok(elements(state.render()).filter(node => node.type === "button").every(node => node.props.disabled));
+    assert.ok(elements(state.render()).filter(node => node.type === state.RemoveButton).every(node => node.props.disabled));
+    const status = elements(state.render()).find(node => node.props.role === "status");
+    assert.equal(status.props["aria-live"], "polite");
+    const create = elements(state.render()).find(node => node.type === state.Link);
+    let prevented = false; create.props.onClick({ preventDefault() { prevented = true; } }); assert.equal(prevented, true);
+    finishSwitch({ phoneVerificationRequired: false }); await new Promise(setImmediate);
+    assert.equal(state.calls.selections, 1); assert.match(state.text(), /Continuing to ShopYethu/);
+    assert.equal(state.accountButton().props.disabled, true, 'loading must cover the asynchronous continuation');
+    finishContinuation(); await selection;
+    assert.equal(state.accountButton().props.disabled, true, 'keep feedback visible while the browser redirects');
+});
+
+test("active-account session checks show progress without issuing a switch request", async () => {
+    let finish;
+    const state = await chooserActions({ slot: null, selected: () => new Promise(resolve => { finish = resolve; }) });
+    const selected = state.accountButton().props.onClick();
+    assert.equal(state.calls.switches, 0); assert.equal(state.calls.selections, 1);
+    assert.match(state.text(), /Continuing to ShopYethu/); assert.equal(state.accountButton().props["aria-busy"], true);
+    finish(); await selected;
+});
+
+test("switch and continuation failures clear progress, show the error and allow another attempt", async () => {
+    for (const stage of ["switching", "selected"]) {
+        let fail = true;
+        const state = await chooserActions({ [stage]: async () => { if (fail) throw new Error('Please retry your sign-in.'); } });
+        state.accountButton().props.onClick(); await new Promise(setImmediate);
+        assert.equal(state.accountButton().props.disabled, false);
+        assert.equal(state.accountButton().props["aria-busy"], false);
+        assert.equal(elements(state.render()).find(node => node.props.role === "alert").props.children, 'Please retry your sign-in.');
+        assert.doesNotMatch(state.text(), /Signing you in|Continuing to/);
+        fail = false; state.accountButton().props.onClick(); await new Promise(setImmediate); assert.equal(state.calls.switches, 2);
+    }
+});
+
+test("removing an account uses its own loading message, never announces sign-in and unlocks after completion", async () => {
+    let finish;
+    const state = await chooserActions({ removing: () => new Promise(resolve => { finish = resolve; }) });
+    const remove = elements(state.render()).find(node => node.type === state.RemoveButton);
+    remove.props.onRemove(state.accounts[0]);
+    assert.match(state.text(), /Removing saved account/); assert.doesNotMatch(state.text(), /Signing you in|Continuing to/);
+    assert.equal(state.accountButton().props.disabled, true);
+    finish(); await new Promise(setImmediate);
+    assert.equal(state.accountButton(state.accounts[1].email).props.disabled, false);
+    assert.equal(state.calls.switches, 0); assert.equal(state.calls.removals, 1);
+});

@@ -9,7 +9,7 @@ import { AccountChooser } from "./AccountChooser";
 type Props = Extract<AccountAuthScreenProps, { mode: "login" }> & {
     appId: ChefuAppId;
     selectAccount: boolean;
-    onSelected: (result?: SessionTrustResult) => void;
+    onSelected: (result?: SessionTrustResult) => void | Promise<void>;
 };
 
 export function LoginAccountEntry({ appId, selectAccount, onSelected, ...form }: Props) {
