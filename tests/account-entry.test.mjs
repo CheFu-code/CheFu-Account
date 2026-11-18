@@ -168,7 +168,7 @@ test("selecting a saved account shows a spinner and continuing state until navig
     assert.equal(status.props["aria-live"], "polite");
     const create = elements(state.render()).find(node => node.type === state.Link);
     let prevented = false; create.props.onClick({ preventDefault() { prevented = true; } }); assert.equal(prevented, true);
-    finishSwitch({ phoneVerificationRequired: false }); await new Promise(setImmediate);
+    finishSwitch({}); await new Promise(setImmediate);
     assert.equal(state.calls.selections, 1); assert.match(state.text(), /Continuing to ShopYethu/);
     assert.equal(state.accountButton().props.disabled, true, 'loading must cover the asynchronous continuation');
     finishContinuation(); await selection;

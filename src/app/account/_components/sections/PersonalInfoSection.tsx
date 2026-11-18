@@ -1,10 +1,9 @@
 "use client";
 
-import { ShieldCheck } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { useState } from "react";
-import { AccountButton, SectionHeader } from "../AccountPrimitives";
+import { SectionHeader } from "../AccountPrimitives";
 import type { AccountSettingsFormProps } from "../account-form-types";
-import { PhoneVerificationDialog } from "../../../register/PhoneVerificationDialog";
 import { ProfilePictureUpload } from "./ProfilePictureUpload";
 import { PersonalDetailRow } from "./PersonalDetailRow";
 import { personalFields, personalValues } from "./personal-info-fields";
@@ -13,22 +12,14 @@ import styles from "./personal-info.module.css";
 
 export function PersonalInfoSection({
     account,
-    appId,
     isSaving,
     onProfilePictureSuccess,
-    onPhoneVerified,
     onSavePersonalInfo,
 }: AccountSettingsFormProps) {
     const editor = usePersonalInfoEditor(account, onSavePersonalInfo);
-    const [changingPhone, setChangingPhone] = useState(false);
     const [uploadingPhoto, setUploadingPhoto] = useState(false);
     const values = personalValues(account);
-    const busy = isSaving || editor.saving || uploadingPhoto || changingPhone;
-    const verified = Boolean(
-        account.profile.phone &&
-        account.profile.phoneVerifiedAt &&
-        !account.profile.phoneVerificationRequired,
-    );
+    const busy = isSaving || editor.saving || uploadingPhoto;
 
     return (
         <section className="account-personal-section">
@@ -45,9 +36,7 @@ export function PersonalInfoSection({
                     currentImageUrl={account.profile.profilePicture}
                     userName={values.fullname || account.user.email}
                     onUploadSuccess={onProfilePictureSuccess}
-                    disabled={
-                        isSaving || editor.active !== null || changingPhone
-                    }
+                    disabled={isSaving || editor.active !== null}
                     onUploadingChange={setUploadingPhoto}
                 />
             </div>
@@ -61,45 +50,12 @@ export function PersonalInfoSection({
                         disabled={busy}
                     />
                 ))}
-                <div className={styles.row}>
-                    <dt>Phone number</dt>
-                    <dd className={styles.value}>
-                        <div className={styles.text}>
-                            <div>{account.profile.phone || "Not set"}</div>
-                            {verified && (
-                                <span className={styles.verified}>
-                                    <ShieldCheck
-                                        className="size-3.5"
-                                        aria-hidden="true"
-                                    />{" "}
-                                    Verified
-                                </span>
-                            )}
-                        </div>
-                        <AccountButton
-                            disabled={busy || editor.active !== null}
-                            onClick={() => setChangingPhone(true)}
-                        >
-                            {account.profile.phone
-                                ? verified
-                                    ? "Change"
-                                    : "Verify"
-                                : "Add number"}
-                        </AccountButton>
-                    </dd>
-                </div>
             </dl>
-            {changingPhone && (
-                <PhoneVerificationDialog
-                    appId={appId}
-                    purpose="profile"
-                    initialPhone={account.profile.phone || ""}
-                    onSkip={() => setChangingPhone(false)}
-                    onComplete={(receipt) => {
-                        onPhoneVerified(receipt);
-                        setChangingPhone(false);
-                    }}
-                />
+            {account.profile.whatsappAvailable && (
+                <p className={styles.muted}>
+                    <MessageCircle className="mr-1 inline size-3.5" aria-hidden="true" />
+                    WhatsApp available
+                </p>
             )}
         </section>
     );

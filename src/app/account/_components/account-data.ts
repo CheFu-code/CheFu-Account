@@ -1,7 +1,6 @@
 import {
     Activity,
     Bell,
-    Code2,
     Contact,
     Home,
     IdCard,
@@ -20,21 +19,13 @@ export const defaultEmailPreferences: EmailPreferences = {
     general: false,
     marketing: false,
     security: true,
-    courseReminders: true,
-    aiCourseCompletion: true,
-    weeklyProgressSummary: false,
 };
 
 export const defaultPrivacyPreferences: PrivacyPreferences = {
     publicProfile: false,
-    showCompletedCourses: false,
     showCountry: true,
-    personalizedAiRecommendations: true,
 };
 
-export const skillLevels = ["beginner", "intermediate", "advanced"] as const;
-export const lessonStyles = ["short", "detailed", "example-heavy"] as const;
-export const contentFormats = ["text", "examples", "quizzes"] as const;
 
 export const connectedApps: Array<{
     id: AppId;
@@ -42,19 +33,6 @@ export const connectedApps: Array<{
     description: string;
     href: string;
 }> = [
-        {
-            id: "academy",
-            name: "Chefu Academy",
-            description: "Courses, videos, SDK keys, and guided learning.",
-            href: "https://academy.chefu.co.za",
-        },
-        {
-            id: "flow",
-            name: "Flow",
-            description: "Private email and campaign workspace.",
-            href: "https://flow.chefu.co.za",
-        },
-
         {
             id: "quantum",
             name: "Quantum",
@@ -112,13 +90,6 @@ export const navItems: AccountNavItem[] = [
         description: "Recent account and sign-in activity",
         icon: Activity,
         color: "bg-slate-300 text-slate-950",
-    },
-    {
-        id: "developer",
-        label: "Developer access",
-        description: "SDK and API key access",
-        icon: Code2,
-        color: "bg-orange-300 text-orange-950",
     },
 ];
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
     useMemo,
     useRef,
@@ -24,10 +24,10 @@ import {
 import { LoginAccountEntry } from "./LoginAccountEntry";
 import { MfaChallengeDialog } from "./MfaChallengeDialog";
 import { usePasskeySignIn } from "./usePasskeySignIn";
-import { readLoginError, readMfaError } from "./login-helpers";
-import { usePhoneContinuation } from "./usePhoneContinuation";
+import { completeAuthRedirect, readLoginError, readMfaError } from "./login-helpers";
 
 export function LoginClient() {
+    const router = useRouter();
     const searchParams = useSearchParams();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -84,7 +84,6 @@ export function LoginClient() {
         "/account",
     );
     const selectAccount = searchParams.get("prompt") === "select_account";
-    const phoneContinuation = usePhoneContinuation(appId, fromPath);
     const registerHref = useMemo(
         () => preserveAuthParams("/register", new URLSearchParams(searchParams.toString())),
         [searchParams],
@@ -99,13 +98,11 @@ export function LoginClient() {
     );
 
     function handleSessionComplete(result: {
-        phoneVerificationRequired?: boolean;
         trustDeviceVerificationRequired?: boolean;
         trustDeviceRequiresAuthenticator?: boolean;
         trustDeviceResendCooldownSeconds?: number;
         trustDeviceResendsRemaining?: number;
     }) {
-        phoneContinuation.remember(result);
         if (result.trustDeviceVerificationRequired) {
             setTrustDeviceVerificationOpen(true);
             setTrustedDeviceCode("");
@@ -124,7 +121,7 @@ export function LoginClient() {
             );
             setTrustDevice(false);
         }
-        phoneContinuation.continue();
+        completeAuthRedirect(fromPath, router.replace);
     }
 
     const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -238,7 +235,7 @@ export function LoginClient() {
             }
             toast.success("This device is trusted for 90 days.");
             setTrustDeviceVerificationOpen(false);
-            phoneContinuation.continue();
+            completeAuthRedirect(fromPath, router.replace);
         } catch (error) {
             setTrustedDeviceCode("");
             trustedDeviceCodeRefs.current[0]?.focus();
@@ -349,7 +346,7 @@ export function LoginClient() {
                 key={`${appId}:${selectAccount}:${fromPath}`}
                 appId={appId}
                 selectAccount={selectAccount}
-                onSelected={result => phoneContinuation.selected(result)}
+                onSelected={() => completeAuthRedirect(fromPath, router.replace)}
                 alternateHref={registerHref}
                 appName={appName}
                 email={email}
@@ -464,7 +461,7 @@ export function LoginClient() {
                                     onClick={() => {
                                         setTrustDeviceVerificationOpen(false);
                                         setTrustDevice(false);
-                                        phoneContinuation.continue();
+                                        completeAuthRedirect(fromPath, router.replace);
                                     }}
                                     disabled={isVerifyingTrustedDevice}
                                     className="text-[var(--fg-muted)] underline underline-offset-4 hover:text-[var(--fg)] disabled:opacity-50"

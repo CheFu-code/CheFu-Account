@@ -9,14 +9,14 @@ export function sessionReuseTarget(params: URLSearchParams) {
     if (!target.ok) return null;
     const destination = new URL(target.target, "https://myaccount.chefu.co.za");
     // Never bounce between auth pages, and honor interactive sign-in requests.
-    if (["/login", "/register", "/logout", "/forgot-password", "/verify-phone"].includes(destination.pathname.replace(/\/+$/, ""))) return null;
+    if (["/login", "/register", "/logout", "/forgot-password"].includes(destination.pathname.replace(/\/+$/, ""))) return null;
     if (destination.searchParams.has("prompt")) return null;
     return { appId, target: target.target };
 }
 
 // Share only concurrent checks (including React StrictMode remounts). Never
 // persist or cache authentication decisions across navigation or sign-out.
-export function hasReusableSession(appId: ChefuAppId, onPhoneRequired?: () => void): Promise<boolean> {
+export function hasReusableSession(appId: ChefuAppId): Promise<boolean> {
     return shareAuthRead(`session:${appId}`, async signal => {
         const controller = new AbortController();
         const abort = () => controller.abort();
@@ -31,7 +31,7 @@ export function hasReusableSession(appId: ChefuAppId, onPhoneRequired?: () => vo
             if (!response.ok) return { authenticated: false, required: false };
             const result: unknown = await response.json();
             const authenticated = typeof result === "object" && result !== null && Reflect.get(result, "authenticated") === true;
-            return { authenticated, required: authenticated && Reflect.get(result as object, "phoneVerificationRequired") === true };
+            return { authenticated };
         } catch {
             return { authenticated: false, required: false };
         } finally {
@@ -39,7 +39,6 @@ export function hasReusableSession(appId: ChefuAppId, onPhoneRequired?: () => vo
             signal.removeEventListener("abort", abort);
         }
     }).then(result => {
-        if (result.required) onPhoneRequired?.();
-        return result.authenticated && !result.required;
+        return result.authenticated;
     }).catch(() => false);
 }

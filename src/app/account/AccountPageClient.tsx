@@ -6,7 +6,6 @@ import { AccountFrame } from "./_components/AccountFrame";
 import { AccountHomePanel } from "./_components/AccountHomePanel";
 import { AccountSettingsForm } from "./_components/AccountSettingsForm";
 import { AccountHomeSkeleton } from "./_components/AccountHomeSkeleton";
-import { AccountPhoneGate } from "./_components/AccountPhoneGate";
 import { useAccountController } from "./_components/useAccountController";
 
 export function AccountPageClient() {
@@ -36,9 +35,6 @@ export function AccountPageClient() {
         );
     }
 
-    if (account.account.profile.phoneVerificationRequired) {
-        return <AccountPhoneGate phone={account.account.profile.phone || ""} appId={account.appId} />;
-    }
     return (
         <>
             <AccountFrame
@@ -63,48 +59,29 @@ export function AccountPageClient() {
                     activeSection={account.activeSection}
                     appId={account.appId}
                     bio={account.bio}
-                    aiTutorSuggestions={account.aiTutorSuggestions}
-                    defaultCourseDifficulty={account.defaultCourseDifficulty}
                     emailPreferences={account.emailPreferences}
                     firstName={account.firstName}
                     isSaving={account.isSaving}
                     isSendingReset={account.isSendingReset}
                     language={account.language}
-                    learningGoal={account.learningGoal}
-                    learningInterestsInput={account.learningInterestsInput}
-                    lessonStyle={account.lessonStyle}
                     lastName={account.lastName}
                     name={account.name}
-                    onDefaultCourseDifficultyChange={account.setDefaultCourseDifficulty}
                     onEmailPreferencesChange={account.setEmailPreferences}
-                    onLearningInterestsInputChange={account.setLearningInterestsInput}
-                    onLessonStyleChange={account.setLessonStyle}
-                    onPreferredContentFormatChange={account.setPreferredContentFormat}
                     onPrivacyChange={account.setPrivacy}
                     onProfilePictureSuccess={account.handleProfilePictureSuccess}
-                    onPhoneVerified={account.handlePhoneVerified}
                     onSavePersonalInfo={account.savePersonalInfo}
                     phone={account.phone}
                     onSendResetEmail={account.sendResetEmail}
-                    onSkillLevelChange={account.setSkillLevel}
                     onSubmit={account.saveProfile}
-                    onToggleAiTutorSuggestions={() =>
-                        account.setAiTutorSuggestions((enabled) => !enabled)
-                    }
-                    preferredContentFormat={account.preferredContentFormat}
                     privacy={account.privacy}
                     securityEmailsEnabled={account.securityEmailsEnabled}
                     setLanguage={account.setLanguage}
                     setFirstName={account.setFirstName}
                     setLastName={account.setLastName}
-                    setLearningGoal={account.setLearningGoal}
                     setName={account.setName}
                     setPhone={account.setPhone}
                     setBio={account.setBio}
                     setSecurityEmailsEnabled={account.setSecurityEmailsEnabled}
-                    setWeeklyLearningGoal={account.setWeeklyLearningGoal}
-                    skillLevel={account.skillLevel}
-                    weeklyLearningGoal={account.weeklyLearningGoal}
                     website={account.website}
                     location={account.location}
                     setWebsite={account.setWebsite}

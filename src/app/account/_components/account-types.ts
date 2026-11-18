@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 
-export type AppId = "academy" | "flow" | "quantum";
+export type AppId = "quantum";
 
 export type AccountUser = {
     uid: string;
@@ -17,16 +17,11 @@ export type EmailPreferences = {
     general: boolean;
     marketing: boolean;
     security: boolean;
-    courseReminders: boolean;
-    aiCourseCompletion: boolean;
-    weeklyProgressSummary: boolean;
 };
 
 export type PrivacyPreferences = {
     publicProfile: boolean;
-    showCompletedCourses: boolean;
     showCountry: boolean;
-    personalizedAiRecommendations: boolean;
 };
 
 export type AccountProfile = {
@@ -34,8 +29,7 @@ export type AccountProfile = {
     firstName: string;
     lastName: string;
     phone?: string | null;
-    phoneVerifiedAt?: string | null;
-    phoneVerificationRequired?: boolean;
+    whatsappAvailable?: boolean;
     profilePicture?: string;
     bio: string;
     website?: string;
@@ -48,14 +42,6 @@ export type AccountProfile = {
     createdAt?: string | null;
     updatedAt?: string | null;
     language: string;
-    learningGoal: string;
-    skillLevel: "beginner" | "intermediate" | "advanced" | null;
-    learningInterests: string[];
-    weeklyLearningGoal: number;
-    lessonStyle: "short" | "detailed" | "example-heavy" | null;
-    defaultCourseDifficulty: "beginner" | "intermediate" | "advanced" | null;
-    preferredContentFormat: "text" | "examples" | "quizzes" | null;
-    aiTutorSuggestions: boolean;
     privacy: PrivacyPreferences;
     onboardingComplete: boolean;
     appGuideComplete: boolean;

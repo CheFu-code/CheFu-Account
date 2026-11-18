@@ -3,10 +3,10 @@ import { apiUrl, type ChefuAppId } from "./chefu-account";
 import type { AccountResponse, PrivacyPreferences } from "../app/account/_components/account-types";
 
 export type PersonalInfoUpdate = Partial<Record<
-    "firstName" | "lastName" | "fullname" | "bio" | "website" | "location", string
+    "firstName" | "lastName" | "fullname" | "bio" | "website" | "location" | "phone", string
 >>;
 export type AccountProfileUpdate = PersonalInfoUpdate & {
-    academyProfile?: { privacy: Partial<PrivacyPreferences> };
+    privacy?: Partial<PrivacyPreferences>;
 };
 
 export async function patchAccountProfile(

@@ -146,7 +146,7 @@ test("Overview's Change photo opens the uploader directly and preserves the save
     assert.equal(elements(render()).some(node => node.type === Dialog), false);
 });
 
-test("personal information has independent forms rather than nesting field or SMS forms in the settings form", () => {
+test("personal information has independent forms rather than nesting field forms in the settings form", () => {
     const PersonalInfoSection = () => null;
     const { AccountSettingsForm } = load("app/account/_components/AccountSettingsForm.tsx", {
         "react/jsx-runtime": jsx, "./AdditionalSections": {}, "./sections/DeveloperSection": {},
@@ -156,23 +156,9 @@ test("personal information has independent forms rather than nesting field or SM
     assert.equal(AccountSettingsForm({ activeSection: "privacy" }).type, "form");
 });
 
-test("profile phone dialog cancels safely and returns only the backend-confirmed receipt on completion", () => {
-    const receipt = { verified: true, phone: "+27831234567", verifiedAt: "2026-11-15T01:00:00Z" };
-    let completed, cancelled = 0;
-    let verification = { phase: "number", phone: "+27821234567", canLeave: () => true };
-    const { PhoneVerificationDialog } = load("app/register/PhoneVerificationDialog.tsx", {
-        react: { useEffect() {}, useId: () => "phone", useRef: () => ({ current: null }) },
-        "react/jsx-runtime": jsx, "lucide-react": icons,
-        "./usePhoneVerification": { usePhoneVerification: () => verification },
-    });
-    const render = () => PhoneVerificationDialog({ purpose: "profile", appId: "shopyethu",
-        onSkip: () => { cancelled++; }, onComplete: value => { completed = value; } });
-    elements(render()).find(node => node.type === "button" && node.props.children === "Cancel").props.onClick();
-    assert.equal(cancelled, 1); assert.equal(completed, undefined);
-    verification = { ...verification, phase: "verified", target: receipt.phone };
-    render().props.onCancel({ preventDefault() {} });
-    assert.equal(completed, undefined, "HTTP/UI success without a receipt cannot complete phone setup");
-    verification = { ...verification, verifiedPhone: receipt };
-    render().props.onCancel({ preventDefault() {} });
-    assert.equal(completed, receipt);
+test("phone number is an editable contact field with no verification dialog", () => {
+    const original = fields.personalValues(account);
+    const draft = { ...original, phone: "083 123 4567" };
+    assert.ok(fields.personalFields.some(field => field.id === "phone"));
+    assert.equal(fields.personalInfoChanges("phone", draft, original).phone, "083 123 4567");
 });

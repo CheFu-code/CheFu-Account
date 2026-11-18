@@ -7,10 +7,11 @@ export const personalFields = [
     { id: "bio", label: "Professional bio", help: "A short introduction, up to 280 characters." },
     { id: "website", label: "Website", help: "Use a complete address starting with https:// or http://." },
     { id: "location", label: "Location", help: "For example, your city and country." },
+    { id: "phone", label: "Phone number", help: "Add a contact number. No verification code will be sent." },
 ] as const;
 
 export type PersonalField = typeof personalFields[number]["id"];
-export type PersonalDraft = Record<"firstName" | "lastName" | "fullname" | "bio" | "website" | "location", string>;
+export type PersonalDraft = Record<"firstName" | "lastName" | "fullname" | "bio" | "website" | "location" | "phone", string>;
 
 export function personalValues(account: AccountResponse): PersonalDraft {
     const text = (value: unknown) => typeof value === "string" ? value : "";
@@ -18,6 +19,7 @@ export function personalValues(account: AccountResponse): PersonalDraft {
         firstName: text(account.profile.firstName), lastName: text(account.profile.lastName),
         fullname: text(account.profile.fullname) || text(account.user.displayName),
         bio: text(account.profile.bio), website: text(account.profile.website), location: text(account.profile.location),
+        phone: text(account.profile.phone),
     };
 }
 

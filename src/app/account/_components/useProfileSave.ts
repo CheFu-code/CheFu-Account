@@ -49,7 +49,7 @@ export function useProfileSave({ account, appId, activeSection, privacy, onSaved
             return;
         }
         try {
-            await persist({ academyProfile: { privacy: changes } });
+            await persist({ privacy: changes });
             toast.success("Privacy updated.");
         } catch (cause) {
             toast.error("Unable to update your account.", {

@@ -22,14 +22,6 @@ export const mockAccount: AccountResponse = {
         country: "",
         countryCode: "",
         language: "en",
-        learningGoal: "Build better learning habits",
-        skillLevel: "beginner",
-        learningInterests: ["Technology", "Product design"],
-        weeklyLearningGoal: 3,
-        lessonStyle: "example-heavy",
-        defaultCourseDifficulty: "beginner",
-        preferredContentFormat: "examples",
-        aiTutorSuggestions: true,
         privacy: defaultPrivacyPreferences,
         onboardingComplete: true,
         appGuideComplete: true,
@@ -39,8 +31,6 @@ export const mockAccount: AccountResponse = {
         roles: ["user"],
         securityEmailsEnabled: true,
         apps: {
-            academy: { enabled: true },
-            flow: { enabled: true },
         },
     },
 };

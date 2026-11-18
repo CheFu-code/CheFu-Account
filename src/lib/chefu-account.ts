@@ -19,9 +19,7 @@ const CHEFU_APP_HEADER = "x-chefu-app";
 
 const appLabels: Record<ChefuAppId, string> = {
     root: "Chefu Technologies",
-    academy: "Chefu Technologies",
     admin: "Chefu Admin",
-    flow: "Flow Mail",
     quantum: "Quantum",
     infinity: "Infinity",
     logix: "Logix",
@@ -79,9 +77,7 @@ export function safeReturnTo(
 function isChefuAppId(value: string): value is ChefuAppId {
     return (
         value === "root" ||
-        value === "academy" ||
         value === "admin" ||
-        value === "flow" ||
         value === "quantum" ||
         value === "infinity" ||
         value === "logix" ||
@@ -120,9 +116,7 @@ export class MfaRequiredLoginError extends Error {
 }
 
 export type SessionTrustResult = {
-    phoneVerificationRequired?: boolean;
     phone?: string;
-    phoneVerifiedAt?: string | null;
     trustDeviceVerificationRequired?: boolean;
     trustDeviceRequiresAuthenticator?: boolean;
     trustDeviceResendCooldownSeconds?: number;

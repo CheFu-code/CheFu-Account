@@ -21,7 +21,6 @@ const AUTH_REDIRECT_PATHS = new Set([
     "/login",
     "/logout",
     "/register",
-    "/verify-phone",
 ]);
 
 export function middleware(request: NextRequest) {

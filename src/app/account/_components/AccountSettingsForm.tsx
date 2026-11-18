@@ -6,7 +6,6 @@ import {
     NotificationsSection,
 } from "./AdditionalSections";
 import type { AccountSettingsFormProps } from "./account-form-types";
-import { DeveloperSection } from "./sections/DeveloperSection";
 import { PersonalInfoSection } from "./sections/PersonalInfoSection";
 import { PrivacySection } from "./sections/PrivacySection";
 import { SecuritySection } from "./sections/SecuritySection";
@@ -20,7 +19,6 @@ export function AccountSettingsForm(props: AccountSettingsFormProps) {
             {props.activeSection === "security" ? <SecuritySection {...props} /> : null}
             {props.activeSection === "privacy" ? <PrivacySection {...props} /> : null}
 
-            {props.activeSection === "developer" ? <DeveloperSection {...props} /> : null}
             {props.activeSection === "contact" ? <ContactSection account={props.account} /> : null}
             {props.activeSection === "notifications" ? (
                 <NotificationsSection

@@ -1,4 +1,4 @@
-export type ChefuAppId = "root" | "academy" | "admin" | "merchant" | "flow" | "quantum" | "infinity" | "logix" | "logix-dash" | "cloudence" | "nook" | "liftwise" | "shopyethu";
+export type ChefuAppId = "root" | "admin" | "merchant" | "quantum" | "infinity" | "logix" | "logix-dash" | "cloudence" | "nook" | "liftwise" | "shopyethu";
 
 export type RedirectTargetKind = "relative" | "app-origin" | "oauth-authorize";
 
@@ -49,14 +49,6 @@ const CHEFU_APP_RETURN_TO_POLICY: Record<ChefuAppId, AppRedirectPolicy> = {
         ],
         oauthClientIds: ["chefu-technologies"],
     },
-    academy: {
-        allowedOrigins: [
-            "https://academy.chefu.co.za",
-            "https://chefu.co.za",
-            "https://myaccount.chefu.co.za",
-        ],
-        oauthClientIds: ["chefu-academy-mobile", "chefu-academy-web", "chefu-inc-web"],
-    },
     admin: {
         allowedOrigins: [
             "https://internal.chefu.co.za",
@@ -69,13 +61,6 @@ const CHEFU_APP_RETURN_TO_POLICY: Record<ChefuAppId, AppRedirectPolicy> = {
         ],
         oauthClientIds: ["chefu-merchant-web"],
     },
-    flow: {
-        allowedOrigins: [
-            "https://flow.chefu.co.za",
-        ],
-        oauthClientIds: ["flow-web"],
-    },
-
     quantum: {
         allowedOrigins: [
             "https://quantum.chefu.co.za",
@@ -122,16 +107,6 @@ const OAUTH_CLIENT_RETURN_TO_POLICY: Record<string, OauthClientRedirectPolicy> =
         appId: "shopyethu",
         redirectUris: ["shopyethu://sso-callback"],
     },
-    "chefu-academy-web": {
-        appId: "academy",
-        redirectUris: [
-            "https://academy.chefu.co.za/auth/callback",
-        ],
-    },
-    "chefu-academy-mobile": {
-        appId: "academy",
-        redirectUris: ["chefu-academy://auth/sso"],
-    },
     "chefu-admin-web": {
         appId: "admin",
         redirectUris: [
@@ -144,20 +119,6 @@ const OAUTH_CLIENT_RETURN_TO_POLICY: Record<string, OauthClientRedirectPolicy> =
             "https://merchant.chefu.co.za/auth/callback",
         ],
     },
-    "chefu-inc-web": {
-        appId: "academy",
-        redirectUris: [
-            "https://chefu.co.za/auth/callback",
-            "https://myaccount.chefu.co.za/auth/callback",
-        ],
-    },
-    "flow-web": {
-        appId: "flow",
-        redirectUris: [
-            "https://flow.chefu.co.za/auth/callback",
-        ],
-    },
-
     "quantum-mobile": {
         appId: "quantum",
         redirectUris: ["quantum://auth"],
@@ -213,9 +174,7 @@ export function resolveChefuAppId(value?: string | null): ChefuAppId {
     const normalized = value?.trim().toLowerCase();
 
     if (normalized === "root") return "root";
-    if (normalized === "academy") return "academy";
     if (normalized === "admin" || normalized === "internal") return "admin";
-    if (normalized === "flow") return "flow";
     if (normalized === "quantum") return "quantum";
     if (normalized === "infinity") return "infinity";
     if (normalized === "logix") return "logix";
@@ -236,7 +195,6 @@ export function isKnownChefuAppParam(value?: string | null) {
         normalized === "root" ||
         normalized === "admin" ||
         normalized === "internal" ||
-        normalized === "flow" ||
         normalized === "quantum" ||
         normalized === "infinity" ||
         normalized === "logix" ||
@@ -245,7 +203,6 @@ export function isKnownChefuAppParam(value?: string | null) {
         normalized === "nook" ||
         normalized === "liftwise" ||
         normalized === "shopyethu" ||
-        normalized === "academy" ||
         normalized === "merchant"
     );
 }

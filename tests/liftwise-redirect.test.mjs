@@ -27,6 +27,19 @@ test("LiftWise mobile and deployed web PKCE flows are accepted", () => {
   assert.equal(validateAuthRedirectParams(params("liftwise-web", "https://liftwise.chefu.co.za/sso-callback")), null);
 });
 
+test("retired Flow app, origin and OAuth client cannot be used as sign-in return targets", () => {
+  const { isKnownChefuAppParam, isChefuAppId, validateReturnToForApp } = loadedModule.exports;
+  assert.equal(isKnownChefuAppParam("flow"), false);
+  assert.equal(isChefuAppId("flow"), false);
+  assert.equal(validateAuthRedirectParams(new URLSearchParams({ app: "flow", returnTo: "/account" })).reason, "invalid_app");
+  for (const app of ["root", "academy", "quantum", "shopyethu"]) {
+    assert.equal(validateReturnToForApp("https://flow.chefu.co.za/", app).ok, false);
+    const oauth = params("flow-web", "https://flow.chefu.co.za/auth/callback");
+    oauth.set("app", app);
+    assert.equal(validateAuthRedirectParams(oauth).ok, false);
+  }
+});
+
 test("ShopYethu web uses central sessions; only its registered mobile PKCE callback is accepted", () => {
   for (const path of ["/", "/login"]) {
     assert.equal(validateAuthRedirectParams(new URLSearchParams({ app: "shopyethu", returnTo: `https://shopyethu-admin.chefu.co.za${path}` })), null);

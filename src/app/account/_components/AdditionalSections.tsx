@@ -51,8 +51,6 @@ export function NotificationsSection({
         ["Account activity", "activity"],
         ["Product updates", "general"],
         ["Marketing communications", "marketing"],
-        ["Course reminders", "courseReminders"],
-        ["Weekly progress summary", "weeklyProgressSummary"],
     ] as const;
     return (
         <div>

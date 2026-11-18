@@ -12,9 +12,7 @@ import {
 import { mockAccount } from "./preview-account";
 import { useAccountLoad } from "./useAccountLoad";
 import { useProfileSave } from "./useProfileSave";
-import type { VerifiedPhone } from "../../../lib/phone-verification";
 import type {
-    AccountProfile,
     AccountResponse,
     EmailPreferences,
     PrivacyPreferences,
@@ -47,24 +45,12 @@ export function useAccountController() {
     const [website, setWebsite] = useState("");
     const [location, setLocation] = useState("");
     const [language, setLanguage] = useState("en");
-    const [learningGoal, setLearningGoal] = useState("");
-    const [skillLevel, setSkillLevel] =
-        useState<AccountProfile["skillLevel"]>("beginner");
-    const [weeklyLearningGoal, setWeeklyLearningGoal] = useState("3");
-    const [lessonStyle, setLessonStyle] =
-        useState<AccountProfile["lessonStyle"]>("example-heavy");
-    const [defaultCourseDifficulty, setDefaultCourseDifficulty] =
-        useState<AccountProfile["defaultCourseDifficulty"]>("beginner");
-    const [preferredContentFormat, setPreferredContentFormat] =
-        useState<AccountProfile["preferredContentFormat"]>("examples");
-    const [aiTutorSuggestions, setAiTutorSuggestions] = useState(true);
     const [privacy, setPrivacy] = useState<PrivacyPreferences>(
         defaultPrivacyPreferences,
     );
     const [emailPreferences, setEmailPreferences] = useState<EmailPreferences>(
         defaultEmailPreferences,
     );
-    const [learningInterestsInput, setLearningInterestsInput] = useState("");
     const [securityEmailsEnabled, setSecurityEmailsEnabled] = useState(true);
     const [accountSearch, setAccountSearch] = useState("");
     const [activeSection, setActiveSection] = useState(() =>
@@ -224,17 +210,6 @@ export function useAccountController() {
         }
     }
 
-    function handlePhoneVerified(receipt: VerifiedPhone) {
-        setPhone(receipt.phone);
-        setAccount(current => current ? {
-            ...current,
-            profile: {
-                ...current.profile, phone: receipt.phone,
-                phoneVerifiedAt: receipt.verifiedAt, phoneVerificationRequired: false,
-            },
-        } : current);
-    }
-
     function handleProfilePictureSuccess(imageUrl: string) {
         setAccount((prev) => {
             if (!prev) return prev;
@@ -262,19 +237,11 @@ export function useAccountController() {
         setWebsite(readText(data.profile.website));
         setLocation(readText(data.profile.location));
         setLanguage(readText(data.profile.language) || "en");
-        setLearningGoal(readText(data.profile.learningGoal));
-        setSkillLevel(readText(data.profile.skillLevel) as AccountProfile["skillLevel"] || "beginner");
-        setWeeklyLearningGoal(String(data.profile.weeklyLearningGoal || 3));
-        setLessonStyle(data.profile.lessonStyle || "example-heavy");
-        setDefaultCourseDifficulty(data.profile.defaultCourseDifficulty || "beginner");
-        setPreferredContentFormat(data.profile.preferredContentFormat || "examples");
-        setAiTutorSuggestions(data.profile.aiTutorSuggestions !== false);
         setPrivacy({ ...defaultPrivacyPreferences, ...(data.profile.privacy || {}) });
         setEmailPreferences({
             ...defaultEmailPreferences,
             ...(data.profile.emailPreferences || {}),
         });
-        setLearningInterestsInput((data.profile.learningInterests || []).join(", "));
         setSecurityEmailsEnabled(data.profile.securityEmailsEnabled);
     }
 
@@ -315,15 +282,12 @@ export function useAccountController() {
         accountSearch,
         activeSection,
         appId,
-        aiTutorSuggestions,
         bio,
-        defaultCourseDifficulty,
         emailPreferences,
         firstName,
         filteredSections,
         goToSection,
         handleProfilePictureSuccess,
-        handlePhoneVerified,
         handleSignOut,
         initials,
         isLoading,
@@ -332,43 +296,29 @@ export function useAccountController() {
         isSigningOut,
         isSwitchingAccount,
         language,
-        learningGoal,
-        learningInterestsInput,
-        lessonStyle,
         lastName,
         name,
         phone,
         website,
         location,
-        preferredContentFormat,
         privacy,
         saveProfile,
         savePersonalInfo,
         securityEmailsEnabled,
         sendResetEmail,
         setAccountSearch,
-        setAiTutorSuggestions,
         setBio,
         setWebsite,
         setLocation,
-        setDefaultCourseDifficulty,
         setEmailPreferences,
         setFirstName,
         setLanguage,
-        setLearningGoal,
         setLastName,
-        setLearningInterestsInput,
-        setLessonStyle,
         setName,
         setPhone,
-        setPreferredContentFormat,
         setPrivacy,
         setSecurityEmailsEnabled,
-        setSkillLevel,
-        setWeeklyLearningGoal,
-        skillLevel,
         switchAccount,
-        weeklyLearningGoal,
     };
 }
 

@@ -40,9 +40,10 @@ export function PersonalDetailRow({ field, values, editor, disabled }: {
         return <label className={styles.field}>
             {label}
             {key === "bio" ? <textarea {...attributes} maxLength={280} /> : <input {...attributes}
-                type={key === "website" ? "url" : "text"} autoComplete={autoComplete}
+                type={key === "website" ? "url" : key === "phone" ? "tel" : "text"}
+                autoComplete={key === "phone" ? "tel" : autoComplete}
                 required={key === "firstName" || key === "lastName" || key === "fullname"}
-                maxLength={key === "website" || key === "location" ? 200 : undefined} />}
+                maxLength={key === "website" || key === "location" ? 200 : key === "phone" ? 32 : undefined} />}
         </label>;
     }
 
