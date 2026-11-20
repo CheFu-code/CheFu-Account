@@ -86,7 +86,7 @@ const CHEFU_APP_RETURN_TO_POLICY: Record<ChefuAppId, AppRedirectPolicy> = {
     },
     cloudence: {
         allowedOrigins: ["https://cloudence.chefu.co.za"],
-        oauthClientIds: ["cloudence-web"],
+        oauthClientIds: ["cloudence-web", "cloudence-mobile"],
     },
     nook: {
         allowedOrigins: [],
@@ -143,6 +143,10 @@ const OAUTH_CLIENT_RETURN_TO_POLICY: Record<string, OauthClientRedirectPolicy> =
             "liftwise://sso-callback",
             "https://myaccount.chefu.co.za/app/liftwise/sso-callback",
         ],
+    },
+    "cloudence-mobile": {
+        appId: "cloudence",
+        redirectUris: ["cloudence://sso-callback"],
     },
     "liftwise-web": {
         appId: "liftwise",

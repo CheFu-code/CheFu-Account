@@ -27,6 +27,29 @@ test("LiftWise mobile and deployed web PKCE flows are accepted", () => {
   assert.equal(validateAuthRedirectParams(params("liftwise-web", "https://liftwise.chefu.co.za/sso-callback")), null);
 });
 
+test("Cloudence mobile accepts only its exact S256 PKCE callback", () => {
+  const mobile = params("cloudence-mobile", "cloudence://sso-callback");
+  mobile.set("app", "cloudence");
+  assert.equal(validateAuthRedirectParams(mobile), null);
+
+  for (const [client, redirect] of [
+    ["cloudence-web", "cloudence://sso-callback"],
+    ["cloudence-mobile", "cloudenceandroid://sso-callback"],
+    ["cloudence-mobile", "https://cloudence.chefu.co.za/auth/callback"],
+  ]) {
+    const invalid = params(client, redirect);
+    invalid.set("app", "cloudence");
+    assert.equal(validateAuthRedirectParams(invalid).ok, false);
+  }
+
+  const plain = params("cloudence-mobile", "cloudence://sso-callback");
+  plain.set("app", "cloudence");
+  const authorize = new URL(plain.get("returnTo"));
+  authorize.searchParams.set("code_challenge_method", "plain");
+  plain.set("returnTo", authorize.toString());
+  assert.equal(validateAuthRedirectParams(plain).ok, false);
+});
+
 test("retired Flow app, origin and OAuth client cannot be used as sign-in return targets", () => {
   const { isKnownChefuAppParam, isChefuAppId, validateReturnToForApp } = loadedModule.exports;
   assert.equal(isKnownChefuAppParam("flow"), false);
