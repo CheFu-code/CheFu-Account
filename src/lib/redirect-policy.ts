@@ -219,6 +219,10 @@ export function validateReturnToForApp(
     value: string | null | undefined,
     appId: ChefuAppId,
 ): RedirectValidationResult {
+    if (!isChefuAppId(appId)) {
+        return rejectRedirect("invalid_app", "The requested app is not valid.");
+    }
+
     if (!value) {
         return rejectRedirect("missing_value", "A return target is required.");
     }
