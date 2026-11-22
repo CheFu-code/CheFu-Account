@@ -21,6 +21,19 @@ function params(client = "liftwise-mobile", redirect = "liftwise://sso-callback"
   return new URLSearchParams({ app: "liftwise", returnTo: url.toString() });
 }
 
+test("admin session sign-in and sign-out accept the deployed console host only for the admin app", () => {
+  const { validateReturnToForApp } = loadedModule.exports;
+  for (const origin of ["https://admin.chefu.co.za", "https://internal.chefu.co.za"]) {
+    for (const path of ["/", "/?tab=users"]) {
+      assert.equal(validateAuthRedirectParams(new URLSearchParams({ app: "admin", returnTo: `${origin}${path}` })), null);
+    }
+  }
+  for (const target of ["https://admin.chefu.co.za.evil.example/", "https://admin-chefu.co.za/", "http://admin.chefu.co.za/", "https://admin.chefu.co.za@evil.example/"]) {
+    assert.equal(validateReturnToForApp(target, "admin").ok, false, target);
+  }
+  assert.equal(validateReturnToForApp("https://admin.chefu.co.za/", "merchant").ok, false);
+});
+
 test("LiftWise mobile and deployed web PKCE flows are accepted", () => {
   assert.equal(validateAuthRedirectParams(params()), null);
   assert.equal(validateAuthRedirectParams(params("liftwise-mobile", "https://myaccount.chefu.co.za/app/liftwise/sso-callback")), null);

@@ -52,6 +52,7 @@ const CHEFU_APP_RETURN_TO_POLICY: Record<ChefuAppId, AppRedirectPolicy> = {
     admin: {
         allowedOrigins: [
             "https://internal.chefu.co.za",
+            "https://admin.chefu.co.za",
         ],
         oauthClientIds: ["chefu-admin-web"],
     },
