@@ -15,12 +15,12 @@ export function RegisteredAppGate({
     policy: RuntimeAppPolicy | null;
     children: ReactNode;
 }) {
-    const [ready, setReady] = useState<string | null>(null);
+    const [ready, setReady] = useState<RuntimeAppPolicy | null>(null);
     useEffect(() => {
         installRuntimePolicy(policy);
-        setReady(policy?.id || null);
+        setReady(policy);
     }, [policy]);
-    if (policy && ready !== policy.id)
+    if (policy && ready !== policy)
         return (
             <main className="flex min-h-dvh items-center justify-center">
                 <p>Loading {policy.name} sign-in…</p>

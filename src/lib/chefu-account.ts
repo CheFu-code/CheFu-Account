@@ -53,7 +53,7 @@ export function resolveChefuApp(value?: string | null): ChefuAppId {
 }
 
 export function chefuAppLabel(appId: ChefuAppId) {
-    return appLabels[appId] || (currentRuntimePolicy()?.id === appId ? currentRuntimePolicy()?.name : appId);
+    return appLabels[appId] || (currentRuntimePolicy()?.id === appId ? currentRuntimePolicy()?.name : null) || appId;
 }
 
 export function safeReturnTo(value?: string | null, fallback?: string): string;

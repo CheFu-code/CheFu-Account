@@ -194,7 +194,7 @@ export function resolveChefuAppId(value?: string | null, registry = runtimePolic
     if (normalized === "liftwise") return "liftwise";
     if (normalized === "shopyethu") return "shopyethu";
     if (normalized === "merchant") return "merchant";
-    if (registry?.id === normalized) return normalized;
+    if (normalized && registry?.id === normalized) return normalized;
     return "root";
 }
 

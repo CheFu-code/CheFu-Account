@@ -21,6 +21,30 @@ function params(client = "liftwise-mobile", redirect = "liftwise://sso-callback"
   return new URLSearchParams({ app: "liftwise", returnTo: url.toString() });
 }
 
+test("newly registered apps use fresh server policies without weakening exact OAuth callback validation", () => {
+  const policy = { id: "new-product", name: "New Product", origins: ["https://new.example.test"], clients: [{ id: "new-product-web", redirectUris: ["https://new.example.test/callback"], scopes: ["openid"] }] };
+  const web = new URLSearchParams({ app: policy.id, returnTo: "https://new.example.test/settings" });
+  assert.equal(validateAuthRedirectParams(web).reason, "invalid_app");
+  assert.equal(validateAuthRedirectParams(web, policy), null);
+  for (const target of ["https://new.example.test.evil.test/", "https://user@new.example.test/", "http://new.example.test/", "https://new.example.test/\\evil"]) {
+    assert.equal(validateAuthRedirectParams(new URLSearchParams({ app: policy.id, returnTo: target }), policy).ok, false);
+  }
+  const oauth = params("new-product-web", "https://new.example.test/callback");
+  oauth.set("app", policy.id);
+  assert.equal(validateAuthRedirectParams(oauth, policy), null);
+  for (const [key, value] of [["redirect_uri", "https://new.example.test/other"], ["client_id", "liftwise-web"], ["code_challenge_method", "plain"]]) {
+    const invalid = new URLSearchParams(oauth);
+    const authorize = new URL(invalid.get("returnTo"));
+    authorize.searchParams.set(key, value); invalid.set("returnTo", authorize.toString());
+    assert.equal(validateAuthRedirectParams(invalid, policy).ok, false);
+  }
+  loadedModule.exports.installRuntimePolicy(policy);
+  assert.equal(loadedModule.exports.resolveChefuAppId(policy.id), policy.id);
+  assert.equal(validateAuthRedirectParams(web), null);
+  loadedModule.exports.installRuntimePolicy(null);
+  assert.equal(validateAuthRedirectParams(web).reason, "invalid_app");
+});
+
 test("admin session sign-in and sign-out accept the deployed console host only for the admin app", () => {
   const { validateReturnToForApp } = loadedModule.exports;
   for (const origin of ["https://admin.chefu.co.za", "https://internal.chefu.co.za"]) {
