@@ -2,6 +2,8 @@ import {
     resolveChefuAppId,
     validateReturnToForApp,
     type ChefuAppId,
+    isChefuAppId as isRegisteredChefuAppId,
+    currentRuntimePolicy,
 } from "./redirect-policy";
 import { authMutationFetch, shareAuthRead } from "./auth-reads";
 
@@ -51,7 +53,7 @@ export function resolveChefuApp(value?: string | null): ChefuAppId {
 }
 
 export function chefuAppLabel(appId: ChefuAppId) {
-    return appLabels[appId];
+    return appLabels[appId] || (currentRuntimePolicy()?.id === appId ? currentRuntimePolicy()?.name : appId);
 }
 
 export function safeReturnTo(value?: string | null, fallback?: string): string;
@@ -75,19 +77,7 @@ export function safeReturnTo(
 }
 
 function isChefuAppId(value: string): value is ChefuAppId {
-    return (
-        value === "root" ||
-        value === "admin" ||
-        value === "quantum" ||
-        value === "infinity" ||
-        value === "logix" ||
-        value === "logix-dash" ||
-        value === "merchant" ||
-        value === "cloudence" ||
-        value === "nook" ||
-        value === "liftwise" ||
-        value === "shopyethu"
-    );
+    return isRegisteredChefuAppId(value);
 }
 
 export function preserveAuthParams(

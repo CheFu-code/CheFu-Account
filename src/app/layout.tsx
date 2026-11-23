@@ -6,6 +6,8 @@ import { ToasterProvider } from "./_components/ToasterProvider";
 import { QueryProvider } from "./_components/QueryProvider";
 import { ServiceWorkerRegistration } from "./_components/ServiceWorkerRegistration";
 import "./globals.css";
+import { RegisteredAppGate } from './_components/RegisteredAppGate';
+import type { RuntimeAppPolicy } from '../lib/redirect-policy';
 
 const appUrl =
     process.env.NEXT_PUBLIC_ACCOUNT_APP_URL || "https://myaccount.chefu.co.za";
@@ -76,7 +78,9 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-    const nonce = (await headers()).get("x-nonce") || undefined;
+    const requestHeaders = await headers();
+    const nonce = requestHeaders.get("x-nonce") || undefined;
+    const policy = JSON.parse(requestHeaders.get('x-chefu-app-policy') || 'null') as RuntimeAppPolicy | null;
 
     return (
         <html lang="en" suppressHydrationWarning>
@@ -98,7 +102,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                 />
                 <QueryProvider>
                     <ServiceWorkerRegistration />
-                    {children}
+                    <RegisteredAppGate policy={policy}>{children}</RegisteredAppGate>
                 </QueryProvider>
                 <Analytics />
                 <ToasterProvider />

@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { validateAuthRedirectParams } from "./lib/redirect-policy";
+import { validateAuthRedirectParams, isKnownChefuAppParam } from "./lib/redirect-policy";
+import { loadAppPolicy } from './lib/load-app-policy';
 
 function createContentSecurityPolicy(nonce: string) {
     const developmentDirective =
@@ -23,9 +24,15 @@ const AUTH_REDIRECT_PATHS = new Set([
     "/register",
 ]);
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
+    const app = request.nextUrl.searchParams.get('app')?.trim().toLowerCase();
+    let policy = null;
+    if (app && !isKnownChefuAppParam(app)) {
+        try { policy = await loadAppPolicy(app); }
+        catch { return NextResponse.json({ error: 'registry_unavailable', message: 'Unable to validate this application. Please try again.' }, { status: 503 }); }
+    }
     if (AUTH_REDIRECT_PATHS.has(request.nextUrl.pathname)) {
-        const redirectValidation = validateAuthRedirectParams(request.nextUrl.searchParams);
+        const redirectValidation = validateAuthRedirectParams(request.nextUrl.searchParams, policy);
 
         if (redirectValidation && !redirectValidation.ok) {
             return NextResponse.json(
@@ -53,6 +60,8 @@ export function middleware(request: NextRequest) {
     const nonce = btoa(String.fromCharCode(...nonceBytes));
     const contentSecurityPolicy = createContentSecurityPolicy(nonce);
     const requestHeaders = new Headers(request.headers);
+    requestHeaders.delete('x-chefu-app-policy');
+    if (policy) requestHeaders.set('x-chefu-app-policy', JSON.stringify(policy));
     requestHeaders.set("x-nonce", nonce);
     requestHeaders.set("Content-Security-Policy", contentSecurityPolicy);
 

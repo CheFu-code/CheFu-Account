@@ -1,4 +1,9 @@
-export type ChefuAppId = "root" | "admin" | "merchant" | "quantum" | "infinity" | "logix" | "logix-dash" | "cloudence" | "nook" | "liftwise" | "shopyethu";
+type BuiltInAppId = "root" | "admin" | "merchant" | "quantum" | "infinity" | "logix" | "logix-dash" | "cloudence" | "nook" | "liftwise" | "shopyethu";
+export type ChefuAppId = BuiltInAppId | (string & {});
+export type RuntimeAppPolicy = { id: string; name: string; origins: string[]; clients: { id: string; redirectUris: string[]; scopes: string[] }[] };
+let runtimePolicy: RuntimeAppPolicy | null = null;
+export function installRuntimePolicy(policy: RuntimeAppPolicy | null) { runtimePolicy = policy; }
+export function currentRuntimePolicy() { return runtimePolicy; }
 
 export type RedirectTargetKind = "relative" | "app-origin" | "oauth-authorize";
 
@@ -36,7 +41,7 @@ type OauthClientRedirectPolicy = {
 
 const MAX_RETURN_TO_LENGTH = 2048;
 
-const CHEFU_APP_RETURN_TO_POLICY: Record<ChefuAppId, AppRedirectPolicy> = {
+const CHEFU_APP_RETURN_TO_POLICY: Record<BuiltInAppId, AppRedirectPolicy> = {
     shopyethu: {
         allowedOrigins: ["https://shopyethu-admin.chefu.co.za"],
         oauthClientIds: ["shopyethu-mobile"],
@@ -175,7 +180,7 @@ const OAUTH_AUTHORIZE_QUERY_KEYS = new Set([
 const OAUTH_OPAQUE_PARAM_PATTERN = /^[A-Za-z0-9._~:-]+$/;
 const ENCODED_UNSAFE_CHARACTER_PATTERN = /%(?:00|0a|0d|5c)/i;
 
-export function resolveChefuAppId(value?: string | null): ChefuAppId {
+export function resolveChefuAppId(value?: string | null, registry = runtimePolicy): ChefuAppId {
     const normalized = value?.trim().toLowerCase();
 
     if (normalized === "root") return "root";
@@ -189,14 +194,16 @@ export function resolveChefuAppId(value?: string | null): ChefuAppId {
     if (normalized === "liftwise") return "liftwise";
     if (normalized === "shopyethu") return "shopyethu";
     if (normalized === "merchant") return "merchant";
+    if (registry?.id === normalized) return normalized;
     return "root";
 }
 
-export function isKnownChefuAppParam(value?: string | null) {
+export function isKnownChefuAppParam(value?: string | null, registry = runtimePolicy) {
     if (!value) return true;
 
     const normalized = value.trim().toLowerCase();
     return (
+        registry?.id === normalized ||
         normalized === "root" ||
         normalized === "admin" ||
         normalized === "internal" ||
@@ -212,15 +219,16 @@ export function isKnownChefuAppParam(value?: string | null) {
     );
 }
 
-export function isChefuAppId(value: string): value is ChefuAppId {
-    return Object.prototype.hasOwnProperty.call(CHEFU_APP_RETURN_TO_POLICY, value);
+export function isChefuAppId(value: string, registry = runtimePolicy): value is ChefuAppId {
+    return registry?.id === value || Object.prototype.hasOwnProperty.call(CHEFU_APP_RETURN_TO_POLICY, value);
 }
 
 export function validateReturnToForApp(
     value: string | null | undefined,
     appId: ChefuAppId,
+    registry = runtimePolicy,
 ): RedirectValidationResult {
-    if (!isChefuAppId(appId)) {
+    if (!isChefuAppId(appId, registry)) {
         return rejectRedirect("invalid_app", "The requested app is not valid.");
     }
 
@@ -253,7 +261,7 @@ export function validateReturnToForApp(
         return rejectRedirect("unsafe_url", "The return target must be a safe absolute URL.");
     }
 
-    const policy = CHEFU_APP_RETURN_TO_POLICY[appId];
+    const policy = registry?.id === appId ? { allowedOrigins: registry.origins, oauthClientIds: registry.clients.map(client => client.id) } : CHEFU_APP_RETURN_TO_POLICY[appId as BuiltInAppId];
 
     if (isAllowedAppOriginReturn(url, policy)) {
         return {
@@ -263,7 +271,7 @@ export function validateReturnToForApp(
         };
     }
 
-    if (isAllowedOauthAuthorizeReturn(url, appId, policy)) {
+    if (isAllowedOauthAuthorizeReturn(url, appId, policy, registry)) {
         return {
             ok: true,
             target: url.toString(),
@@ -277,7 +285,7 @@ export function validateReturnToForApp(
     );
 }
 
-export function validateAuthRedirectParams(searchParams: URLSearchParams) {
+export function validateAuthRedirectParams(searchParams: URLSearchParams, registry = runtimePolicy) {
     if (searchParams.getAll("app").length > 1) {
         return rejectRedirect(
             "duplicate_param",
@@ -286,9 +294,9 @@ export function validateAuthRedirectParams(searchParams: URLSearchParams) {
     }
 
     const appParam = searchParams.get("app");
-    const appId = resolveChefuAppId(appParam);
+    const appId = resolveChefuAppId(appParam, registry);
 
-    if (!isKnownChefuAppParam(appParam)) {
+    if (!isKnownChefuAppParam(appParam, registry)) {
         return rejectRedirect("invalid_app", "The requested app is not valid.");
     }
 
@@ -303,7 +311,7 @@ export function validateAuthRedirectParams(searchParams: URLSearchParams) {
         }
 
         if (values.length === 1) {
-            const result = validateReturnToForApp(values[0], appId);
+            const result = validateReturnToForApp(values[0], appId, registry);
             if (!result.ok) return result;
         }
     }
@@ -323,6 +331,7 @@ function isAllowedOauthAuthorizeReturn(
     url: URL,
     appId: ChefuAppId,
     policy: AppRedirectPolicy,
+    registry: RuntimeAppPolicy | null,
 ) {
     if (!OAUTH_AUTHORIZE_ORIGINS.includes(url.origin)) return false;
     if (url.pathname !== "/oauth/authorize") return false;
@@ -336,7 +345,8 @@ function isAllowedOauthAuthorizeReturn(
     const clientId = url.searchParams.get("client_id");
     if (!clientId) return false;
 
-    const clientPolicy = OAUTH_CLIENT_RETURN_TO_POLICY[clientId];
+    const dynamicClient = registry?.id === appId ? registry.clients.find(client => client.id === clientId) : null;
+    const clientPolicy = dynamicClient ? { appId, redirectUris: dynamicClient.redirectUris } : OAUTH_CLIENT_RETURN_TO_POLICY[clientId];
 
     if (!clientPolicy || clientPolicy.appId !== appId) return false;
     if (!policy.oauthClientIds.includes(clientId)) return false;
