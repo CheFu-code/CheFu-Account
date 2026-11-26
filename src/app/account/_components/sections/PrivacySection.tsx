@@ -8,7 +8,7 @@ import { SaveButton, SectionCard, ToggleRow } from "../AccountControls";
 import type { AccountSettingsFormProps } from "../account-form-types";
 import { revokeChefuConnectedApp } from "../../../../lib/chefu-account";
 
-export function PrivacySection({ account, isSaving, onPrivacyChange, privacy }: AccountSettingsFormProps) {
+export function PrivacySection({ account, isSaving, onPrivacyChange, privacy, onConnectedAppRevoked }: AccountSettingsFormProps) {
     const [revokingAppId, setRevokingAppId] = useState<string | null>(null);
     const [revokedAppIds, setRevokedAppIds] = useState<string[]>([]);
     const enabledApps = useMemo(
@@ -26,6 +26,7 @@ export function PrivacySection({ account, isSaving, onPrivacyChange, privacy }: 
         try {
             await revokeChefuConnectedApp(appId);
             setRevokedAppIds((current) => [...current, appId]);
+            onConnectedAppRevoked?.(appId);
             toast.success("App access revoked.");
         } catch (error) {
             toast.error(error instanceof Error ? error.message : "Unable to revoke app access.");

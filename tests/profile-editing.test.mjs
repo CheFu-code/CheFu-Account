@@ -109,6 +109,9 @@ test("names save as a pair while other edits contain only their own changed fiel
 test("profile saves use one scoped PATCH and its returned account without a follow-up read", async () => {
     const requests = [];
     const api = load("lib/account-profile.ts", {
+        "./account-page-cache": { rememberAccountPage: async (appId, data) => {
+            assert.equal(appId, "shopyethu"); assert.equal(data.user.uid, "buyer");
+        } },
         "./chefu-account": { apiUrl: path => `https://api.example.test${path}` },
         "./auth-reads": { authMutationFetch: async (url, options) => {
             requests.push({ url, options });

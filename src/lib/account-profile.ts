@@ -1,4 +1,5 @@
 import { authMutationFetch } from "./auth-reads";
+import { rememberAccountPage } from "./account-page-cache";
 import { apiUrl, type ChefuAppId } from "./chefu-account";
 import type { AccountResponse, PrivacyPreferences } from "../app/account/_components/account-types";
 
@@ -26,5 +27,6 @@ export async function patchAccountProfile(
     if (data?.user?.uid !== uid || !data.profile || typeof data.profile !== "object" || Array.isArray(data.profile)) {
         throw new Error("We could not confirm your changes. Please refresh your account before trying again.");
     }
+    await rememberAccountPage(appId, data as AccountResponse);
     return data as AccountResponse;
 }

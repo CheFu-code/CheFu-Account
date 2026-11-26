@@ -12,6 +12,9 @@ import {
 import { mockAccount } from "./preview-account";
 import { useAccountLoad } from "./useAccountLoad";
 import { useProfileSave } from "./useProfileSave";
+import { readAccountSessions } from "../../../lib/account-data-api";
+import { subscribePageInvalidation } from "../../../lib/account-page-cache";
+import { authMutationFetch } from "../../../lib/auth-reads";
 import type {
     AccountResponse,
     EmailPreferences,
@@ -20,7 +23,6 @@ import type {
 import {
     apiUrl,
     clearChefuAccountSession,
-    listChefuAccountSessions,
     requestPasswordResetEmail,
     resolveChefuApp,
     switchChefuAccount,
@@ -66,11 +68,13 @@ export function useAccountController() {
     });
 
     const accountsQuery = useQuery({
-        queryKey: ["account-sessions", appId],
-        queryFn: () => listChefuAccountSessions(appId),
+        queryKey: ["account-sessions", appId, account?.user.uid],
+        queryFn: () => readAccountSessions(appId),
         enabled: Boolean(account) && !isDevPreview,
-        staleTime: 5 * 60_000,
     });
+    useEffect(() => subscribePageInvalidation(identityChanged => {
+        if (identityChanged && !isDevPreview) setAccount(null);
+    }), []);
 
     useEffect(() => {
         if (!account || isDevPreview) return;
@@ -152,7 +156,7 @@ export function useAccountController() {
                 "/account",
             );
             try {
-                const activityResponse = await fetch(apiUrl("/auth/security-activity"), {
+                const activityResponse = await authMutationFetch(apiUrl("/auth/security-activity"), {
                     method: "POST",
                     credentials: "include",
                     headers: {
@@ -227,6 +231,16 @@ export function useAccountController() {
         });
     }
 
+    function handleConnectedAppRevoked(appId: string) {
+        setAccount(current => current ? {
+            ...current,
+            profile: { ...current.profile, apps: Object.fromEntries(
+                Object.entries(current.profile.apps).map(([id, entry]) =>
+                    [id, id === appId ? { ...entry, enabled: false } : entry]),
+            ) },
+        } : current);
+    }
+
     function hydrateAccount(data: AccountResponse) {
         setAccount(data);
         setFirstName(readText(data.profile.firstName));
@@ -288,6 +302,7 @@ export function useAccountController() {
         filteredSections,
         goToSection,
         handleProfilePictureSuccess,
+        handleConnectedAppRevoked,
         handleSignOut,
         initials,
         isLoading,

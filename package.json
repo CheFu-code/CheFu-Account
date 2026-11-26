@@ -7,6 +7,7 @@
     "smoke": "npm run test:sso",
     "test:sso": "node --test tests/app-registration.test.mjs tests/liftwise-redirect.test.mjs tests/session-reuse.test.mjs tests/auth-reads.test.mjs tests/saved-accounts.test.mjs tests/account-entry.test.mjs tests/profile-editing.test.mjs",
     "test:trusted-browser": "node --test tests/trusted-browser.test.mjs",
+    "test:cache": "node --test tests/account-cache.test.mjs tests/auth-reads.test.mjs tests/profile-editing.test.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

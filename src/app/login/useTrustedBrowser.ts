@@ -74,18 +74,11 @@ export function useTrustedBrowser(email: string) {
         const cached = budget.current.cache.get(normalizedEmail);
         const delay = cached && cached.until > Date.now() ? 0 : Math.max(normalizedEmail ? 600 : 0, budget.current.next - Date.now());
         const debounce = setTimeout(() => void check(), delay);
-        const focus = () => {
-            if (Date.now() < budget.current.next && (budget.current.cache.get(normalizedEmail)?.until ?? 0) <= Date.now()) return;
-            clearTimeout(debounce);
-            void check();
-        };
-        window.addEventListener("focus", focus);
         return () => {
             active = false;
             clearTimeout(debounce);
             clearTimeout(timeout);
             controller?.abort();
-            window.removeEventListener("focus", focus);
         };
     }, [normalizedEmail, validEmail]);
 

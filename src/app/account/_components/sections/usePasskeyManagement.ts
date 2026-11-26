@@ -4,6 +4,8 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiUrl } from "../../../../lib/chefu-account";
+import { readAccountData } from "../../../../lib/account-data-api";
+import { authMutationFetch } from "../../../../lib/auth-reads";
 import { getPasskeyDeviceName } from "../../../../lib/passkey-device";
 
 export type PasskeyCredential = {
@@ -35,15 +37,7 @@ export function usePasskeyManagement() {
         try {
             setState((prev) => ({ ...prev, isLoadingCredentials: true, error: undefined }));
 
-            const response = await fetch(apiUrl("/auth/passkey/credentials"), {
-                credentials: "include",
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to load credentials");
-            }
-
-            const credentials: PasskeyCredential[] = await response.json();
+            const credentials = await readAccountData<PasskeyCredential[]>("/auth/passkey/credentials");
             setState((prev) => ({
                 ...prev,
                 credentials,
@@ -87,7 +81,7 @@ export function usePasskeyManagement() {
             const attResponse = await startRegistration(options);
 
             // Step 3: Verify registration with server
-            const verifyResponse = await fetch(apiUrl("/auth/passkey/register/verify"), {
+            const verifyResponse = await authMutationFetch(apiUrl("/auth/passkey/register/verify"), {
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },
@@ -126,7 +120,7 @@ export function usePasskeyManagement() {
                     error: undefined,
                 }));
 
-                const response = await fetch(
+                const response = await authMutationFetch(
                     apiUrl(`/auth/passkey/credentials/${credentialId}`),
                     {
                         method: "DELETE",

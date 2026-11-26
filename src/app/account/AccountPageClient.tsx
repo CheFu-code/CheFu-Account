@@ -70,6 +70,7 @@ export function AccountPageClient() {
                     onPrivacyChange={account.setPrivacy}
                     onProfilePictureSuccess={account.handleProfilePictureSuccess}
                     onSavePersonalInfo={account.savePersonalInfo}
+                    onConnectedAppRevoked={account.handleConnectedAppRevoked}
                     phone={account.phone}
                     onSendResetEmail={account.sendResetEmail}
                     onSubmit={account.saveProfile}

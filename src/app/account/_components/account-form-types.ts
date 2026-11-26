@@ -8,6 +8,7 @@ import type { ChefuAppId } from "../../../lib/chefu-account";
 import type { PersonalInfoUpdate } from "../../../lib/account-profile";
 
 export type AccountSettingsFormProps = {
+    onConnectedAppRevoked?: (appId: string) => void;
     account: AccountResponse;
     activeSection: string;
     appId: ChefuAppId;

@@ -1,15 +1,20 @@
 "use client";
 
 import QRCode from "qrcode";
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useSecurityReads } from "./useSecurityReads";
+import { sendSecurityNotification } from "./security-notifications";
+import { authMutationFetch } from "../../../../lib/auth-reads";
+export type { TrustedDevice } from "./useSecurityReads";
+import { useMemo, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import type { AccountResponse } from "../account-types";
 import { apiUrl, type ChefuAppId } from "../../../../lib/chefu-account";
 import {
-    accountLocationLabel,
     formatApiError,
     type PendingMfaAction,
     type SecuritySummary,
+    type ApiError,
+    type ReauthenticationResult,
 } from "./mfa-security-utils";
 
 type UseMfaSecurityOptions = {
@@ -17,36 +22,10 @@ type UseMfaSecurityOptions = {
     appId: ChefuAppId;
 };
 
-type ApiError = {
-    error?: string;
-    message?: string;
-    requestId?: string;
-};
-
-type ReauthenticationResult = ApiError & {
-    mfaRequired?: boolean;
-    mfaPendingCredential?: string;
-    mfaInfo?: Array<{ mfaEnrollmentId?: string; displayName?: string }>;
-    reauthToken?: string;
-};
-
-export type TrustedDevice = {
-    id: string;
-    deviceName: string;
-    createdAt: number;
-    lastSeenAt: number;
-    expiresAt: number;
-    isCurrent: boolean;
-};
-
 export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
-    const [summary, setSummary] = useState<SecuritySummary | null>(null);
-    const [trustedDevices, setTrustedDevices] = useState<TrustedDevice[]>([]);
-    const [isLoadingTrustedDevices, setIsLoadingTrustedDevices] = useState(false);
+    const { summary, setSummary, trustedDevices, isLoadingTrustedDevices, isLoading, isReady, loadSecuritySummary, loadTrustedDevices } = useSecurityReads(appId);
     const [revokingTrustedDevice, setRevokingTrustedDevice] = useState(false);
-    const [isReady, setIsReady] = useState(false);
     const [codes, setCodes] = useState<string[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
     const [isGeneratingCodes, setIsGeneratingCodes] = useState(false);
     const [isSendingVerification, setIsSendingVerification] = useState(false);
     const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
@@ -67,70 +46,14 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
     const [reauthEnrollmentId, setReauthEnrollmentId] = useState("");
     const [reauthToken, setReauthToken] = useState("");
     const [isReauthenticating, setIsReauthenticating] = useState(false);
+    const currentUser = { email: account.user.email,
+        displayName: account.profile.fullname || account.user.displayName || "" };
 
-    const currentUser = useMemo(
-        () => ({
-            email: account.user.email,
-            displayName: account.profile.fullname || account.user.displayName || "",
-        }),
-        [account.profile.fullname, account.user.displayName, account.user.email],
-    );
     const totpFactorUid = useMemo(
         () =>
             summary?.enrolledFactors.find((factor) => factor.factorId === "totp")?.uid,
         [summary?.enrolledFactors],
     );
-
-    const loadSecuritySummary = useCallback(async () => {
-        setIsLoading(true);
-        try {
-            const response = await fetch(apiUrl("/auth/security"), {
-                credentials: "include",
-                headers: { "x-chefu-app": appId },
-            });
-            const data = (await response.json().catch(() => null)) as SecuritySummary | ApiError | null;
-            if (!response.ok) {
-                throw new Error(formatApiError(data as ApiError | null, "Could not load security status."));
-            }
-            setSummary(data as SecuritySummary);
-        } catch (error) {
-            toast.error("Unable to load security status.", {
-                description: error instanceof Error ? error.message : "Please try again.",
-            });
-        } finally {
-            setIsLoading(false);
-            setIsReady(true);
-        }
-    }, [appId]);
-
-    const loadTrustedDevices = useCallback(async () => {
-        setIsLoadingTrustedDevices(true);
-        try {
-            const response = await fetch(apiUrl("/auth/trusted-devices"), {
-                credentials: "include",
-                headers: { "x-chefu-app": appId },
-            });
-            const data = (await response.json().catch(() => null)) as
-                | { devices?: TrustedDevice[] }
-                | ApiError
-                | null;
-            if (!response.ok || !data || !("devices" in data)) {
-                throw new Error(
-                    formatApiError(
-                        data && "error" in data ? data : null,
-                        "Could not load trusted devices.",
-                    ),
-                );
-            }
-            setTrustedDevices(data.devices || []);
-        } catch (error) {
-            toast.error("Unable to load trusted devices.", {
-                description: error instanceof Error ? error.message : "Please try again.",
-            });
-        } finally {
-            setIsLoadingTrustedDevices(false);
-        }
-    }, [appId]);
 
     async function revokeTrustedDevice(deviceId?: string) {
         const prompt = deviceId
@@ -143,7 +66,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
     async function performTrustedDeviceRevocation(token: string) {
         setRevokingTrustedDevice(true);
         try {
-            const response = await fetch(apiUrl("/auth/trusted-devices"), {
+            const response = await authMutationFetch(apiUrl("/auth/trusted-devices"), {
                 method: "DELETE",
                 credentials: "include",
                 headers: {
@@ -174,10 +97,6 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         }
     }
 
-    useEffect(() => {
-        void loadSecuritySummary();
-        void loadTrustedDevices();
-    }, [loadSecuritySummary, loadTrustedDevices]);
 
     async function requestReauthentication(
         action: PendingMfaAction,
@@ -209,35 +128,14 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         setConfirmNewPassword("");
     }
 
-    async function notifyPasswordChanged() {
-        const response = await fetch(apiUrl("/email/password-changed"), {
-            method: "POST",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json",
-                "x-chefu-app": appId,
-            },
-            body: JSON.stringify({
-                deviceInfo: navigator.userAgent,
-                location: accountLocationLabel(account.profile),
-                userName: currentUser.displayName || undefined,
-            }),
-        });
-        const data = (await response.json().catch(() => null)) as {
-            reason?: string;
-            sent?: boolean;
-        } | null;
-        if (!response.ok || data?.sent === false) {
-            throw new Error(data?.reason || "Password-change email could not be sent.");
-        }
-    }
+    async function notifyPasswordChanged() { await sendSecurityNotification(account, appId); }
 
     async function generateBackupCodes(
         successMessage = "Recovery codes generated.",
     ) {
         setIsGeneratingCodes(true);
         try {
-            const response = await fetch(apiUrl("/auth/mfa/backup-codes"), {
+            const response = await authMutationFetch(apiUrl("/auth/mfa/backup-codes"), {
                 method: "POST",
                 credentials: "include",
                 headers: { "x-chefu-app": appId },
@@ -263,7 +161,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
     async function sendVerificationEmail() {
         setIsSendingVerification(true);
         try {
-            const response = await fetch(apiUrl("/auth/security/email-verification"), {
+            const response = await authMutationFetch(apiUrl("/auth/security/email-verification"), {
                 method: "POST",
                 credentials: "include",
                 headers: { "x-chefu-app": appId },
@@ -302,7 +200,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
     async function createTotpSetup(token: string) {
         setIsStartingTotp(true);
         try {
-            const response = await fetch(apiUrl("/auth/security/totp/setup"), {
+            const response = await authMutationFetch(apiUrl("/auth/security/totp/setup"), {
                 method: "POST",
                 credentials: "include",
                 headers: {
@@ -339,7 +237,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         }
         setIsVerifyingTotp(true);
         try {
-            const response = await fetch(apiUrl("/auth/security/totp/verify"), {
+            const response = await authMutationFetch(apiUrl("/auth/security/totp/verify"), {
                 method: "POST",
                 credentials: "include",
                 headers: {
@@ -386,7 +284,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         if (!totpFactorUid) throw new Error("No authenticator factor is enrolled.");
         setIsDisablingTotp(true);
         try {
-            const response = await fetch(apiUrl("/auth/security/totp/disable"), {
+            const response = await authMutationFetch(apiUrl("/auth/security/totp/disable"), {
                 method: "POST",
                 credentials: "include",
                 headers: {
@@ -413,25 +311,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
 
     async function notifyMfaChanged(action: "enabled" | "disabled") {
         try {
-            const response = await fetch(apiUrl("/email/mfa-changed"), {
-                method: "POST",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                    "x-chefu-app": appId,
-                },
-                body: JSON.stringify({
-                    action,
-                    location: accountLocationLabel(account.profile),
-                    userName: currentUser.displayName || undefined,
-                }),
-            });
-            const data = (await response.json().catch(() => null)) as
-                | { reason?: string; sent?: boolean; error?: string; message?: string }
-                | null;
-            if (!response.ok || data?.sent === false) {
-                throw new Error(data?.reason || data?.message || "Could not send security email.");
-            }
+            await sendSecurityNotification(account, appId, action);
         } catch (error) {
             toast.warning("2FA changed, but the security email could not send.", {
                 description: error instanceof Error ? error.message : "Please try again.",
@@ -467,7 +347,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         }
         setIsReauthenticating(true);
         try {
-            const response = await fetch(apiUrl("/auth/security/reauthenticate"), {
+            const response = await authMutationFetch(apiUrl("/auth/security/reauthenticate"), {
                 method: "POST",
                 credentials: "include",
                 headers: {
@@ -517,7 +397,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
                 resetReauthentication();
                 return;
             }
-            const passwordResponse = await fetch(apiUrl("/auth/security/password"), {
+            const passwordResponse = await authMutationFetch(apiUrl("/auth/security/password"), {
                 method: "PATCH",
                 credentials: "include",
                 headers: {
@@ -585,7 +465,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         isSendingVerification,
         isStartingTotp,
         isVerifyingTotp,
-        loadSecuritySummary,
+        loadSecuritySummary: () => loadSecuritySummary(true),
         reauthCode,
         reauthPassword,
         confirmNewPassword,
@@ -610,7 +490,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         totpFactorUid,
         totpSetup: qrDataUrl && secretText ? { qrDataUrl, secretText } : null,
         trustedDevices,
-        loadTrustedDevices,
+        loadTrustedDevices: () => loadTrustedDevices(true),
         verifyTotpSetup,
         cancelTotpSetup,
         disableTotp,

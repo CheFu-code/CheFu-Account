@@ -227,7 +227,7 @@ export async function requestPasswordResetEmail(
     appId: ChefuAppId,
     returnTo: string,
 ) {
-    const response = await fetch(apiUrl("/auth/password-reset/request"), {
+    const response = await authMutationFetch(apiUrl("/auth/password-reset/request"), {
         method: "POST",
         headers: {
             "Content-Type": "application/json",

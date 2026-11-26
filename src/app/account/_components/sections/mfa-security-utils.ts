@@ -13,6 +13,14 @@ export type SecuritySummary = {
     backupCodesLastUsedAt: string | null;
 };
 
+export type ApiError = { error?: string; message?: string; requestId?: string };
+export type ReauthenticationResult = ApiError & {
+    mfaRequired?: boolean;
+    mfaPendingCredential?: string;
+    mfaInfo?: Array<{ mfaEnrollmentId?: string; displayName?: string }>;
+    reauthToken?: string;
+};
+
 export type PendingMfaAction =
     | "start-setup"
     | "disable"

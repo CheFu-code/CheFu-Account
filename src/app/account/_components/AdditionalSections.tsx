@@ -2,7 +2,8 @@
 
 import { useQuery } from "@tanstack/react-query";
 import type { AccountResponse, EmailPreferences } from "./account-types";
-import { apiUrl, type ChefuAppId } from "../../../lib/chefu-account";
+import type { ChefuAppId } from "../../../lib/chefu-account";
+import { readAccountData } from "../../../lib/account-data-api";
 import {
     FieldRow,
     AccountPanel,
@@ -101,17 +102,7 @@ export function ActivitySection({
 }) {
     const activityQuery = useQuery({
         queryKey: ["security-activity", appId, account.user.email],
-        queryFn: async () => {
-            const response = await fetch(apiUrl("/auth/activity"), {
-                    credentials: "include",
-                    headers: { "x-chefu-app": appId },
-                });
-            if (!response.ok) {
-                throw new Error("Could not load security activity.");
-            }
-            return (await response.json()) as SecurityActivity[];
-        },
-        staleTime: 30_000,
+        queryFn: () => readAccountData<SecurityActivity[]>("/auth/activity", appId),
     });
 
     const securityEvents = activityQuery.data || [];

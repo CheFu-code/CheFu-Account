@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
+import { pageCacheFixture } from './cache-harness.mjs';
 
 function load(file, dependencies = {}, globals = {}) {
     const loaded = { exports: {} };
@@ -19,14 +20,14 @@ function deferred() {
     return { promise, resolve };
 }
 
-test('concurrent profile reads parse one response; settled reads, other apps and errors are never cached', async () => {
+test('profile reads share responses and remain cached until invalidation; app contexts are separate', async () => {
     const reads = load('lib/auth-reads.ts');
     let requests = 0;
     let parsed = 0;
     let ok = true;
     const release = deferred();
     const { readCurrentAccount } = load('lib/account-read.ts', {
-        './chefu-account': { apiUrl: path => path }, './auth-reads': reads,
+        './chefu-account': { apiUrl: path => path }, './account-page-cache': pageCacheFixture({ reads }).cache,
     }, { fetch: async (_url, options) => {
         requests++;
         assert.equal(options.credentials, 'include');
@@ -38,19 +39,21 @@ test('concurrent profile reads parse one response; settled reads, other apps and
     const second = readCurrentAccount('root');
     assert.equal(first, second);
     const anotherApp = readCurrentAccount('admin');
-    await Promise.resolve();
+    await new Promise(setImmediate);
     assert.equal(requests, 2);
     release.resolve();
     assert.equal((await first).data.user.uid, 'alice');
     await Promise.all([second, anotherApp]);
     assert.equal(parsed, 2, 'one parsed response per shared request, no consumed Response bodies');
     await readCurrentAccount('root');
-    assert.equal(requests, 3, 'settled profiles are not cached');
+    assert.equal(requests, 2, 'settled profiles are reused during navigation');
+    reads.invalidateAuthReads(false);
     ok = false;
     await assert.rejects(readCurrentAccount('root'));
     ok = true;
+    reads.invalidateAuthReads(false);
     await readCurrentAccount('root');
-    assert.equal(requests, 5, 'failed reads do not poison retries');
+    assert.equal(requests, 4, 'explicit invalidation permits another attempt');
 });
 
 test('sign-out/profile mutations invalidate old reads and reads started before updated cookies arrive', async () => {
@@ -85,7 +88,7 @@ test('account hook remounts share one read; an unmounted effect cannot hydrate o
     let requests = 0;
     const release = deferred();
     const accountRead = load('lib/account-read.ts', {
-        './chefu-account': { apiUrl: path => path }, './auth-reads': reads,
+        './chefu-account': { apiUrl: path => path }, './account-page-cache': pageCacheFixture({ reads }).cache,
     }, { fetch: async () => {
         requests++; await release.promise;
         return { ok: true, status: 200, json: async () => ({ user: { uid: 'alice' } }) };
@@ -103,7 +106,7 @@ test('account hook remounts share one read; an unmounted effect cannot hydrate o
     cleanup();
     hook.useAccountLoad('root', data => hydrated.push(data), () => '/account');
     effect();
-    await Promise.resolve();
+    await new Promise(setImmediate);
     assert.equal(requests, 1);
     release.resolve();
     await new Promise(resolve => setImmediate(resolve));

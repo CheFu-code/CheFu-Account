@@ -4,6 +4,7 @@ import { startRegistration } from "@simplewebauthn/browser";
 import { Fingerprint, Loader2, X } from "lucide-react";
 import { useState } from "react";
 import { apiUrl } from "../../lib/chefu-account";
+import { authMutationFetch } from "../../lib/auth-reads";
 import { getPasskeyDeviceName } from "../../lib/passkey-device";
 
 export function PasskeyOfferDialog({
@@ -46,7 +47,7 @@ export function PasskeyOfferDialog({
 
             const { challengeId, options } = await optionsResponse.json();
             const credential = await startRegistration(options);
-            const verifyResponse = await fetch(
+            const verifyResponse = await authMutationFetch(
                 apiUrl("/auth/passkey/register/verify"),
                 {
                     method: "POST",

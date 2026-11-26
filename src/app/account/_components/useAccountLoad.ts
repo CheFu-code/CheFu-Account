@@ -27,7 +27,7 @@ export function useAccountLoad(
                 }
                 const result = await readCurrentAccount(appId);
                 if (cancelled) return;
-                if (result.status === 401) {
+                if (result.status === 401 || result.status === 403) {
                     router.replace(`/login?returnTo=${encodeURIComponent(callbacks.current.currentPath())}`);
                     return;
                 }

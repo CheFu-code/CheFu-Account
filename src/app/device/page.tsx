@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { authMutationFetch } from "../../lib/auth-reads";
 
 function DeviceAuthContent() {
     const searchParams = useSearchParams();
@@ -42,7 +43,7 @@ function DeviceAuthContent() {
         setMessage("Finishing sign-in…");
 
         try {
-            const response = await fetch(
+            const response = await authMutationFetch(
                 `${process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.chefu.co.za"}/auth/device/${mfaPendingCredential ? "mfa-complete" : "complete"}`,
                 {
                 method: "POST",
