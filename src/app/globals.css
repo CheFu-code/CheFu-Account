@@ -1217,7 +1217,6 @@ button.account-sidebar-account:hover {
 }
 
 @media (max-width: 767px) {
-    .account-auth-register-names { grid-template-columns: minmax(0, 1fr); }
     .account-auth-dialog { padding: 20px; }
     .account-shell { display: block; height: 100dvh; overflow: hidden; }
     .account-mobile-header { display: flex; height: 52px; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid var(--border); background: var(--surface); }

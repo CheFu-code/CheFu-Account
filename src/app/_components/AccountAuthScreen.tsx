@@ -19,9 +19,9 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
     const showPasskey = mode === "login" && Boolean(props.onPasskeyClick);
 
     return (
-        <main className="account-auth-screen flex min-h-dvh flex-col px-4">
-            <div className="flex flex-1 flex-col items-center justify-center py-12">
-                <div className="account-auth-card w-full max-w-105 rounded-xl border p-7 shadow-sm sm:p-9">
+        <main className="account-auth-screen flex min-h-dvh flex-col px-2 sm:px-4">
+            <div className="flex flex-1 flex-col items-center justify-center py-6 sm:py-12">
+                <div className="account-auth-card w-full rounded-xl border p-4 shadow-sm sm:max-w-105 sm:p-9">
                     <h1 className="text-2xl font-semibold tracking-tight">{copy.eyebrow}</h1>
                     <p className="account-auth-muted mt-1.5 text-sm">Continue to {appName}</p>
 
@@ -36,11 +36,11 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                     <form
                         onSubmit={onSubmit}
                         autoComplete={mode === "register" ? "off" : undefined}
-                        className="mt-8 space-y-5"
+                        className="mt-6 space-y-4 sm:mt-8 sm:space-y-5"
                     >
                         {mode === "register" ? (
-                            <div className="account-auth-register-names grid grid-cols-2 gap-3">
-                                <div>
+                            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                                <div className="min-w-0">
                                     <label htmlFor="first-name" className="account-auth-label mb-1.5 block text-sm font-medium">
                                         First name
                                     </label>
@@ -50,12 +50,12 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                                         value={props.firstName}
                                         onChange={(event) => props.setFirstName(event.target.value)}
                                         placeholder="First name"
-                                        className={inputClass}
+                                        className={`${inputClass} min-w-0`}
                                         autoComplete={mode === "register" ? "off" : "given-name"}
                                         autoFocus
                                     />
                                 </div>
-                                <div>
+                                <div className="min-w-0">
                                     <label htmlFor="last-name" className="account-auth-label mb-1.5 block text-sm font-medium">
                                         Last name
                                     </label>
@@ -65,7 +65,7 @@ export function AccountAuthScreen(props: AccountAuthScreenProps) {
                                         value={props.lastName}
                                         onChange={(event) => props.setLastName(event.target.value)}
                                         placeholder="Last name"
-                                        className={inputClass}
+                                        className={`${inputClass} min-w-0`}
                                         autoComplete={mode === "register" ? "off" : "family-name"}
                                     />
                                 </div>
