@@ -23,7 +23,7 @@ type UseMfaSecurityOptions = {
 };
 
 export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
-    const { summary, setSummary, trustedDevices, isLoadingTrustedDevices, isLoading, isReady, loadSecuritySummary, loadTrustedDevices } = useSecurityReads(appId);
+    const { summary, setSummary, trustedDevices, isLoadingTrustedDevices, isLoading, isReady, loadSecuritySummary, loadTrustedDevices } = useSecurityReads(appId, account.user.uid);
     const [revokingTrustedDevice, setRevokingTrustedDevice] = useState(false);
     const [codes, setCodes] = useState<string[]>([]);
     const [isGeneratingCodes, setIsGeneratingCodes] = useState(false);
@@ -32,6 +32,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
     const [secretText, setSecretText] = useState("");
     const [totpCode, setTotpCode] = useState("");
     const [totpSetupId, setTotpSetupId] = useState("");
+    const [totpSetupReauthToken, setTotpSetupReauthToken] = useState("");
     const [isStartingTotp, setIsStartingTotp] = useState(false);
     const [isVerifyingTotp, setIsVerifyingTotp] = useState(false);
     const [isDisablingTotp, setIsDisablingTotp] = useState(false);
@@ -44,7 +45,6 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
     const [confirmNewPassword, setConfirmNewPassword] = useState("");
     const [reauthPendingCredential, setReauthPendingCredential] = useState("");
     const [reauthEnrollmentId, setReauthEnrollmentId] = useState("");
-    const [reauthToken, setReauthToken] = useState("");
     const [isReauthenticating, setIsReauthenticating] = useState(false);
     const currentUser = { email: account.user.email,
         displayName: account.profile.fullname || account.user.displayName || "" };
@@ -108,7 +108,6 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         setReauthCode("");
         setReauthPendingCredential("");
         setReauthEnrollmentId("");
-        setReauthToken("");
         if (action === "change-password") {
             setNewPassword("");
             setConfirmNewPassword("");
@@ -123,7 +122,6 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         setReauthCode("");
         setReauthPendingCredential("");
         setReauthEnrollmentId("");
-        setReauthToken("");
         setNewPassword("");
         setConfirmNewPassword("");
     }
@@ -197,8 +195,9 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
         await requestReauthentication("start-setup");
     }
 
-    async function createTotpSetup(token: string) {
+    async function createTotpSetup(token: string): Promise<boolean> {
         setIsStartingTotp(true);
+        setTotpSetupReauthToken("");
         try {
             const response = await authMutationFetch(apiUrl("/auth/security/totp/setup"), {
                 method: "POST",
@@ -217,21 +216,29 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
             }
             const dataUrl = await QRCode.toDataURL(data.otpauthUrl, { margin: 1, width: 220 });
             setTotpSetupId(data.setupId);
+            setTotpSetupReauthToken(token);
             setSecretText(data.secret);
             setQrDataUrl(dataUrl);
             setTotpCode("");
+            return true;
         } catch (error) {
             toast.error("Unable to start 2FA setup.", {
                 description: error instanceof Error ? error.message : "Please try again.",
             });
+            setTotpSetupReauthToken("");
             resetReauthentication();
+            return false;
         } finally {
             setIsStartingTotp(false);
         }
     }
 
     async function verifyTotpSetup() {
-        if (!totpSetupId || !reauthToken || totpCode.length !== 6) {
+        if (!totpSetupId || !totpSetupReauthToken) {
+            toast.error("Authenticator setup expired. Start again.");
+            return;
+        }
+        if (totpCode.length !== 6) {
             toast.error("Enter the 6-digit authenticator code.");
             return;
         }
@@ -246,7 +253,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
                 },
                 body: JSON.stringify({
                     setupId: totpSetupId,
-                    reauthToken,
+                    reauthToken: totpSetupReauthToken,
                     verificationCode: totpCode,
                 }),
             });
@@ -380,10 +387,11 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
                 return;
             }
             if (!data?.reauthToken) throw new Error("The server did not confirm your sign-in.");
-            setReauthToken(data.reauthToken);
             const action = pendingReauthAction;
             if (action === "start-setup") {
-                await createTotpSetup(data.reauthToken);
+                const setupStarted = await createTotpSetup(data.reauthToken);
+                if (!setupStarted) return;
+                resetReauthentication();
                 toast.success("Sign-in confirmed. Scan the QR code to finish 2FA setup.");
                 return;
             }
@@ -444,6 +452,7 @@ export function useMfaSecurity({ account, appId }: UseMfaSecurityOptions) {
 
     function cancelTotpSetup() {
         setTotpSetupId("");
+        setTotpSetupReauthToken("");
         setQrDataUrl(null);
         setSecretText("");
         setTotpCode("");

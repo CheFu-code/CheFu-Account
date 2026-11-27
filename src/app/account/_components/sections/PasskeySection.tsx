@@ -1,13 +1,19 @@
 "use client";
 
 import { CheckCircle2, Loader2, Trash2, X } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AccountButton, SectionHeader } from "../AccountPrimitives";
 import { usePasskeyManagement } from "./usePasskeyManagement";
 
 export function PasskeySection() {
     const passkey = usePasskeyManagement();
     const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!passkey.error) return;
+        const timeout = window.setTimeout(passkey.clearError, 8000);
+        return () => window.clearTimeout(timeout);
+    }, [passkey.clearError, passkey.error]);
 
     const handleDeleteClick = useCallback((credentialId: string) => {
         setDeleteConfirm(credentialId);
@@ -105,11 +111,22 @@ export function PasskeySection() {
                         ))
                     )}
 
-                    {passkey.error && (
-                        <div className="account-inline-error">
-                            {passkey.error}
+                    {passkey.error ? (
+                        <div
+                            role="alert"
+                            className="account-inline-error flex items-start justify-between gap-3"
+                        >
+                            <span className="min-w-0 flex-1">{passkey.error}</span>
+                            <button
+                                type="button"
+                                onClick={passkey.clearError}
+                                className="shrink-0 rounded p-1 text-[var(--danger)] transition hover:bg-[var(--danger)]/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--danger)]"
+                                aria-label="Dismiss passkey error"
+                            >
+                                <X className="size-4" aria-hidden="true" />
+                            </button>
                         </div>
-                    )}
+                    ) : null}
             </div>
         </section>
     );

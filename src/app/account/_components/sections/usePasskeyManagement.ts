@@ -32,6 +32,10 @@ export function usePasskeyManagement() {
         isDeleting: {},
     });
 
+    const clearError = useCallback(() => {
+        setState((prev) => ({ ...prev, error: undefined }));
+    }, []);
+
     // Load existing credentials
     const loadCredentials = useCallback(async () => {
         try {
@@ -155,6 +159,7 @@ export function usePasskeyManagement() {
 
     return {
         ...state,
+        clearError,
         loadCredentials,
         startPasskeyRegistration,
         deleteCredential,

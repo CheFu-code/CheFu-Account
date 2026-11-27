@@ -2,7 +2,7 @@
 
 import { CheckCircle2, Loader2, X } from "lucide-react";
 import Image from "next/image";
-import type { KeyboardEvent } from "react";
+import { SixDigitCodeInput } from "../../../_components/SixDigitCodeInput";
 import { AccountButton } from "../AccountPrimitives";
 
 export function TotpSetupPanel({
@@ -23,12 +23,6 @@ export function TotpSetupPanel({
     secretText: string;
 }) {
     const canVerify = code.length === 6 && !isVerifying;
-
-    function handleCodeKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-        if (event.key !== "Enter") return;
-        event.preventDefault();
-        if (canVerify) onVerify();
-    }
 
     return (
         <div
@@ -81,27 +75,14 @@ export function TotpSetupPanel({
                                 {secretText}
                             </code>
                         </div>
-                        <label className="block space-y-2" htmlFor="totp-setup-code">
-                            <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#bdb5a8]">
-                                6-digit code
-                            </span>
-                            <input
-                                id="totp-setup-code"
-                                inputMode="numeric"
-                                pattern="[0-9]*"
-                                maxLength={6}
-                                value={code}
-                                onChange={(event) =>
-                                    onCodeChange(
-                                        event.target.value.replace(/\D/g, "").slice(0, 6),
-                                    )
-                                }
-                                onKeyDown={handleCodeKeyDown}
-                                className="h-12 w-full rounded-2xl border border-white/12 bg-[#11110f] px-4 text-center text-lg font-semibold tracking-[0.35em] text-[#f4f0e8] outline-none focus:border-[#e5ad5b]/70 focus:ring-4 focus:ring-[#e5ad5b]/10"
-                                autoComplete="one-time-code"
-                                autoFocus
-                            />
-                        </label>
+                        <SixDigitCodeInput
+                            code={code}
+                            label="6-digit code"
+                            onCodeChange={onCodeChange}
+                            onEnter={() => {
+                                if (canVerify) onVerify();
+                            }}
+                        />
                         <AccountButton
                             variant="primary"
                             onClick={onVerify}
@@ -109,9 +90,9 @@ export function TotpSetupPanel({
                             className="account-button-full"
                         >
                             {isVerifying ? (
-                                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                                <Loader2 className="size-4 animate-spin mr-2" aria-hidden="true" />
                             ) : (
-                                <CheckCircle2 className="size-4" aria-hidden="true" />
+                                <CheckCircle2 className="size-4 mr-2" aria-hidden="true" />
                             )}
                             Enable 2FA
                         </AccountButton>
